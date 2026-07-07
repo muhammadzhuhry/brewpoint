@@ -4,39 +4,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Current State
 
-This repository currently contains **no application code** — only planning docs (`docs/`, duplicated under `brewpoint-api/docs/` and `brewpoint-web/docs/`). The project is at the pre-Phase-0 stage of `ROADMAP.md`: repo layout, database, and app scaffolding have not been created yet.
+No application code exists yet — only planning docs in `docs/`. The project is pre-Phase-0: scaffolding has not been created.
 
-Before writing code, read (in this order): `docs/PRD.md` (what to build and why), `docs/TECH_SPEC.md` (how it's built — schema, API contracts, layering), `docs/ROADMAP.md` (build order/phases), `docs/DESIGN_SYSTEM.md` (frontend visual/component conventions). All four files are identical across `docs/`, `brewpoint-api/docs/`, and `brewpoint-web/docs/` — treat the root `docs/` copy as canonical and keep the others in sync if edited.
+Before writing any code, read (in this order): `docs/PRD.md` (what to build and why), `docs/TECH_SPEC.md` (schema, API contracts, layering), `docs/ROADMAP.md` (build phases and order), `docs/DESIGN_SYSTEM.md` (visual/component conventions). The build checklist lives in `TODO.md` — follow its Part 1 → 2 → 3 → 4 order.
 
-There is no build, lint, or test tooling yet. Once code is scaffolded per `TECH_SPEC.md` §2 and §9–10, commands should follow that spec's stack (Go Fiber backend with `go build`/`go test`, Next.js frontend with `npm run dev`/`build`/`lint`) — update this section with real commands as soon as `go.mod`/`package.json` exist.
+No build/test tooling exists yet. Once `package.json` is present (inside `brewpoint-web/`), commands will be:
 
-## Project Summary
+```bash
+npm run dev          # dev server
+npm run build        # production build
+npm run lint         # ESLint
+npx drizzle-kit generate   # generate migration SQL from schema changes
+npx drizzle-kit migrate    # apply pending migrations
+```
 
-BrewPoint is a single-outlet coffee shop POS (point of sale) web app for internal staff only (admin + cashier roles) — no customer-facing surface. Core loop: cashier builds a cart from the product catalog, checks out with cash payment, stock is deducted atomically; admin manages products/categories/staff and reviews a sales dashboard.
+Update this section once those files exist.
 
-**Planned stack** (from `TECH_SPEC.md`):
-- Backend: Go Fiber REST API (`brewpoint-api/`), GORM against PostgreSQL, layered `Handler → Service → Repository`.
-- Frontend: Next.js App Router (`brewpoint-web/`), shadcn/ui + Tailwind, Zustand (cart/UI state), TanStack Query (server state).
-- Auth: JWT in an `httpOnly` cookie, verified by Fiber middleware; two roles (`admin`, `cashier`) enforced both server- and client-side.
-- Money: Postgres `NUMERIC` + Go `decimal.Decimal` — never floats.
+## Stack (TECH_SPEC.md v2.0)
 
-## Architecture Notes (for when code lands)
+BrewPoint MVP is a **single Next.js app** (`brewpoint-web/`) — no separate backend service:
+- **API layer:** Route Handlers (`app/api/v1/**/route.ts`) — structured as a REST API, not Server Actions. This keeps the frontend decoupled from the API so a Go backend can replace the Route Handlers later with one env-var change (`API_BASE_URL`).
+- **ORM:** Drizzle ORM + `postgres.js` driver against PostgreSQL. No Prisma, no raw SQL.
+- **Auth:** JWT in an `httpOnly` cookie, signed with `jose`.
+- **UI:** Next.js App Router, shadcn/ui + Tailwind, Zustand (cart/UI state), TanStack Query (server state).
+- **Money:** Postgres `NUMERIC(12,2)`, string-based decimal handling in TypeScript — never JS floats.
 
-**Layering discipline (backend):** Handlers only parse requests/shape responses; business rules (e.g. "checkout is atomic," "can't deactivate the last admin") live in the Service layer so they're testable without HTTP or a real DB; Repositories isolate all GORM/DB access. When adding a feature, follow the existing module pattern per domain folder (`handler.go`, `service.go`, `repository.go`, `model.go`) — see `TECH_SPEC.md` §2.1 for the full planned tree (`auth`, `user`, `category`, `product`, `transaction`, `stockadjustment`, `dashboard`).
+## Architecture
 
-**Checkout is the most correctness-sensitive path in the system.** It must run inside a single DB transaction, lock each product row with `SELECT ... FOR UPDATE` (`clause.Locking{Strength: "UPDATE"}` in GORM) before checking/deducting stock, and roll back entirely on any failure (insufficient stock, invalid payment amount). See `TECH_SPEC.md` §5 for the reference implementation — any change to checkout or void logic must preserve this atomicity/locking behavior.
+**Layering:** Route Handler → Service (`lib/services/`) → Drizzle query. Handlers only parse requests and shape responses; all business rules live in the service layer. A separate repository file per module is unnecessary at this scale — co-locate Drizzle queries in the service file until a module's query logic is complex enough to extract.
 
-**Soft deletes and snapshotting exist for audit integrity, not convenience.** Products are never hard-deleted (`is_active = false`) because `transaction_items.product_id` must stay valid for historical transactions. `transaction_items` snapshots `product_name_snapshot`/`unit_price_snapshot` at sale time so later product edits never retroactively alter past receipts. Voided transactions are marked `status = 'voided'`, never deleted, and voiding restores stock. `stock_adjustments` is append-only (insert + read only, no update/delete) and is intentionally kept separate from sales-driven stock deductions so the two are distinguishable in audit history.
+**Auth is two-layered by design:**
+- `middleware.ts` — checks that a session cookie *exists*; cheap, runs on Edge, handles redirects.
+- `requireAuth(req, role?)` in `lib/auth/session.ts` — verifies the JWT signature and role *inside each Route Handler*. Never rely on `middleware.ts` alone to protect an admin-only endpoint.
 
-**Role enforcement is duplicated by design:** every admin-only action must be blocked both by backend middleware (`RequireRole`) and by frontend route/UI gating (`middleware.ts`, route groups) — see `TECH_SPEC.md` §7 and `PRD.md` Feature 2 acceptance criteria. Don't rely on frontend gating alone.
+**Checkout atomicity (`lib/services/transaction-service.ts`):** the entire checkout must run inside `db.transaction()`. Each product row is locked with `.for("update")` (Drizzle's `SELECT ... FOR UPDATE`) before checking and deducting stock. Any failure (`INSUFFICIENT_STOCK`, underpayment) rolls back the entire transaction. Do not change this path without preserving the lock/rollback behavior — see `TECH_SPEC.md` §5 for the reference implementation.
 
-**API responses** always use the envelope `{"success": bool, "data" | "error": {...}}`; errors carry a machine-readable `code` (e.g. `INSUFFICIENT_STOCK`) via typed errors in `pkg/apperror`, mapped once to HTTP status — handlers should never set status codes ad hoc (`TECH_SPEC.md` §8).
+**Soft deletes and snapshotting:** products use `is_active = false`, never hard-deleted (historical `transaction_items` must keep a valid FK). `transaction_items` snapshots `product_name_snapshot`/`unit_price_snapshot` at sale time — price edits must never alter past receipts. `stock_adjustments` is append-only (insert + read, no update/delete). Voided transactions are `status = 'voided'`, never deleted; voiding restores stock.
 
-**Frontend state split:** Zustand owns only local/client state (cart contents, UI toggles); everything server-derived (products, transactions, dashboard data) goes through TanStack Query. Don't duplicate server data into Zustand.
+**API envelope:** all responses use `{"success": bool, "data": {...}}` or `{"success": false, "error": {"code": "...", "message": "..."}}`. Error codes (e.g. `INSUFFICIENT_STOCK`, `FORBIDDEN`) are defined in `lib/app-error.ts` and map to HTTP status once — handlers throw `AppError`, never set status codes directly.
 
-## Roadmap Awareness
+**State split:** Zustand owns only client state (cart, UI toggles). All server-derived data (products, transactions, dashboard) goes through TanStack Query. Never duplicate server state into Zustand.
 
-`ROADMAP.md` defines a strict build order (Phase 0 foundation → Auth/Users → Category/Product → POS/Checkout → Transaction History/Stock Adjustment → Dashboard → v1.0 MVP → v1.1 performance/caching/rate-limiting → v1.2 reporting/realtime → v1.3 testing/CI). When asked to implement a feature, check which phase it belongs to and whether its stated prerequisites (per `PRD.md`'s "Dependencies" field on each feature) are already in place before building on top of them.
+## Build Order
+
+Follow `TODO.md` strictly: Part 1 (frontend with mock data) → Part 2 (Route Handlers + Drizzle, same app) → Part 3 (integration, replace mocks with real calls) → Part 4 (deploy). When asked to implement a feature, check its phase in `ROADMAP.md` and whether its prerequisites are satisfied.
 
 <!-- rtk-instructions v2 -->
 # RTK (Rust Token Killer) - Token-Optimized Commands
