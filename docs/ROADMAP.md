@@ -3,6 +3,7 @@
 This roadmap breaks down how BrewPoint gets built, from an empty repo to a live, portfolio-ready POS, and what comes after MVP. It maps directly to the features defined in `PRD.md`. Technical implementation detail (schema, API contracts, caching/indexing strategy) lives in `TECH_SPEC.md` — this document focuses on **what gets built, in what order, and why**.
 
 **Versioning convention:**
+
 - `v0.x` — pre-release build milestones (not usable end-to-end yet)
 - `v1.0` — MVP launch (all "Must" features from PRD, live and deployed)
 - `v1.x` — post-MVP enhancements (performance, reliability, reporting)
@@ -17,7 +18,8 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Goal:** Empty repo becomes a working skeleton — nothing user-facing yet, but the foundation is solid.
 
 **Scope:**
-- Single Next.js repo (`brewpoint-web`) — no separate backend service.
+
+- Single Next.js repo (`brewpoint`) — no separate backend service.
 - PostgreSQL running locally via Docker Compose.
 - Drizzle schema v1: `users`, `categories`, `products`, `transactions`, `transaction_items`.
 - `drizzle-kit` configured, first migration generated and applied.
@@ -37,6 +39,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Maps to PRD:** Feature 1 (Authentication & Session), Feature 2 (User Management)
 
 **Scope:**
+
 - Login Route Handler with username/password, JWT issued on success (`jose`).
 - Password hashing (`bcryptjs`).
 - `requireAuth()` session helper used inside every protected Route Handler; `middleware.ts` for fast redirect-level protection (see `TECH_SPEC.md` Section 7).
@@ -56,6 +59,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Maps to PRD:** Feature 3 (Category Management), Feature 4 (Product Management)
 
 **Scope:**
+
 - Category CRUD (admin-only).
 - Product CRUD: create, list (paginated), detail, update, soft-delete (admin-only).
 - Product list is readable by both roles; write actions are admin-only.
@@ -74,6 +78,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Maps to PRD:** Feature 5 (Point of Sale / Checkout)
 
 **Scope:**
+
 - Cart state on the frontend (add item, adjust quantity, remove item, clear cart) via Zustand.
 - Checkout Route Handler: validates stock, creates transaction + transaction items, deducts stock — wrapped in a single `db.transaction()` call with `.for("update")` row locking for atomicity (see `TECH_SPEC.md` Section 5).
 - Cash payment input (amount received → system computes change).
@@ -94,6 +99,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Maps to PRD:** Feature 6 (Transaction History), Feature 7 (Stock Adjustment)
 
 **Scope:**
+
 - Transaction list with filters (date range, cashier).
 - Transaction detail view (items, totals, payment, status, cashier, timestamp).
 - Stock adjustment endpoint (admin-only): increase/decrease stock with a required reason, logged separately from sales-driven deductions.
@@ -111,6 +117,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Maps to PRD:** Feature 8 (Sales Dashboard)
 
 **Scope:**
+
 - Today's total sales + transaction count.
 - Date range selector for custom period totals.
 - Best-selling products list (ranked by quantity sold).
@@ -127,6 +134,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Goal:** All Phase 0-5 work is integrated, tested end-to-end, deployed, and publicly demo-able.
 
 **Scope:**
+
 - Manual QA pass across all user flows defined in `PRD.md`.
 - Deploy the single Next.js app to Vercel (or containerize and deploy to Railway/Fly.io if you want the Docker experience) — one deployment target instead of two, since there's one app.
 - Provision managed PostgreSQL (e.g. Neon, Supabase, Railway Postgres).
@@ -147,6 +155,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Goal:** No new user-facing features — this version is entirely about making the existing system faster and more resilient. This is also the version where most of the "portfolio-impressive" technical depth gets added.
 
 **Scope:**
+
 - **Database indexing:** Add indexes on frequently queried columns (`products.name`, `products.barcode`, `transactions.created_at`, `transactions.cashier_id`). Benchmark query plans before/after with `EXPLAIN ANALYZE`.
 - **Redis caching:** Cache the product catalog (cache-aside pattern) and today's dashboard summary, with explicit invalidation on writes (product update, new transaction). Use **Upstash Redis** (HTTP-based, works cleanly with Vercel's serverless/Edge runtime) rather than a traditional persistent Redis connection.
 - **Rate limiting:** Apply rate limits to the login Route Handler (brute-force protection) and checkout Route Handler (abuse protection), using Upstash's `@upstash/ratelimit` package backed by the same Redis instance.
@@ -164,6 +173,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Goal:** Deepen the admin experience beyond the basic dashboard.
 
 **Scope:**
+
 - Expanded reporting: sales by category, sales by cashier, exportable CSV of transactions for a date range.
 - Realtime dashboard updates via WebSocket (new transaction reflects on the admin dashboard without a refresh) — this is the first realtime feature in the system.
 - Optional: materialized view or scheduled aggregation job for heavier reporting queries, if raw aggregation starts getting slow.
@@ -179,6 +189,7 @@ This roadmap breaks down how BrewPoint gets built, from an empty repo to a live,
 **Goal:** Bring engineering maturity to match the feature set — this is what separates a "project that works" from a "project built the way real teams build software."
 
 **Scope:**
+
 - Unit tests for core business logic (checkout, stock adjustment, auth) using **Vitest**.
 - Integration tests against a test database for critical Route Handlers.
 - End-to-end tests for the main user flows (login → checkout → dashboard) using Playwright.
@@ -208,19 +219,19 @@ These go beyond the original single-outlet PRD scope. Pursue only if BrewPoint's
 
 ## Summary Timeline
 
-| Version | Focus | Estimated Time |
-|---|---|---|
-| v0.1 | Project foundation | 2-3 days |
-| v0.2 | Auth & user management | 1 week |
-| v0.3 | Category & product management | 1 week |
-| v0.4 | Point of sale / checkout | 1.5 weeks |
-| v0.5 | Transaction history & stock adjustment | 4-5 days |
-| v0.6 | Sales dashboard | 4-5 days |
-| **v1.0** | **MVP launch (deployed, demo-able)** | **3-5 days** |
-| v1.1 | Performance & reliability (indexing, cache, rate limit) | 1-1.5 weeks |
-| v1.2 | Reporting & realtime | 1 week |
-| v1.3 | Testing, observability, CI/CD | 1-1.5 weeks |
-| v2.0+ | Feature expansion (optional) | Ongoing |
+| Version  | Focus                                                   | Estimated Time |
+| -------- | ------------------------------------------------------- | -------------- |
+| v0.1     | Project foundation                                      | 2-3 days       |
+| v0.2     | Auth & user management                                  | 1 week         |
+| v0.3     | Category & product management                           | 1 week         |
+| v0.4     | Point of sale / checkout                                | 1.5 weeks      |
+| v0.5     | Transaction history & stock adjustment                  | 4-5 days       |
+| v0.6     | Sales dashboard                                         | 4-5 days       |
+| **v1.0** | **MVP launch (deployed, demo-able)**                    | **3-5 days**   |
+| v1.1     | Performance & reliability (indexing, cache, rate limit) | 1-1.5 weeks    |
+| v1.2     | Reporting & realtime                                    | 1 week         |
+| v1.3     | Testing, observability, CI/CD                           | 1-1.5 weeks    |
+| v2.0+    | Feature expansion (optional)                            | Ongoing        |
 
 **Total to v1.3:** roughly 8-10 weeks at a sustainable, non-rushed pace.
 
@@ -230,6 +241,6 @@ These go beyond the original single-outlet PRD scope. Pursue only if BrewPoint's
 
 1. **Don't start a new phase until the current one has a working demo of its own.** Each phase should be independently showable, even if rough.
 2. **Commit at the end of every phase** with a message describing what became usable — this builds a clean, readable git history that doubles as a portfolio artifact.
-3. **Update the README incrementally**, not all at once at the end — explain *why* a technique was used (e.g., why indexing this column, why cache-aside over write-through) as it's added.
+3. **Update the README incrementally**, not all at once at the end — explain _why_ a technique was used (e.g., why indexing this column, why cache-aside over write-through) as it's added.
 4. **v1.1 is not optional filler** — it's the phase that turns BrewPoint from "another CRUD app" into a project that demonstrates real backend engineering judgment. Don't skip straight to features over this.
 5. **If a phase is taking meaningfully longer than estimated, that's fine** — the estimates are pacing guides, not deadlines. Understanding > speed.
