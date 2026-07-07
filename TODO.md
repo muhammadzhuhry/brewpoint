@@ -4,7 +4,7 @@
 
 **Stack note:** BrewPoint MVP is built as **one Next.js app** — Route Handlers as the API layer, Drizzle ORM, PostgreSQL. There is no separate Go service for MVP (see `TECH_SPEC.md` v2.0 and Section 12 for the optional future split).
 
-**Order:** Frontend UI first (builds a clickable template with mock data) → Backend logic (Route Handlers + Drizzle + database, added into the *same* app) → Integration (swap mocks for real calls) → Launch.
+**Order:** Frontend UI first (builds a clickable template with mock data) → Backend logic (Route Handlers + Drizzle + database, added into the _same_ app) → Integration (swap mocks for real calls) → Launch.
 
 Refer back to `PRD.md` for feature detail, `TECH_SPEC.md` for schema/API contracts, and `DESIGN_SYSTEM.md` for exact tokens.
 
@@ -16,7 +16,7 @@ Goal of this part: a fully clickable Next.js app with every screen built, using 
 
 ### 1.1 Project Setup
 
-- [ ] `create-next-app` with TypeScript, App Router, Tailwind CSS — this single app (`brewpoint-web`) will hold both UI and API
+- [ ] `create-next-app` with TypeScript, App Router, Tailwind CSS — this single app (`brewpoint`) will hold both UI and API
 - [ ] Install and init shadcn/ui (`npx shadcn init`)
 - [ ] Set up folder structure per `TECH_SPEC.md` Section 2 (`app/`, `components/`, `lib/`, `stores/`, `hooks/`) — you can leave `app/api/`, `lib/db/`, and `lib/services/` empty for now, they get filled in Part 2
 - [ ] Install fonts: Poppins + Inter via `next/font/google` (`app/fonts.ts`)
@@ -56,10 +56,12 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 ### 1.4 Screens — build each with hardcoded/mock data, covering all states from `DESIGN_PROMPT.md`
 
 **Login**
+
 - [ ] Build login form UI (username, password, submit)
 - [ ] Build inline error state (fake validation trigger)
 
 **POS / Checkout**
+
 - [ ] Build product grid with mock product array (include some out-of-stock items)
 - [ ] Build search bar (client-side filter over mock array)
 - [ ] Build category filter tabs (mock categories)
@@ -70,6 +72,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [ ] Build on-screen receipt success state
 
 **Product Management**
+
 - [ ] Build product list (table/grid) with mock paginated data
 - [ ] Build search + category filter controls
 - [ ] Build add/edit product form (modal), with `zod` validation wired even though submit is fake
@@ -77,27 +80,32 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [ ] Build empty state (no products)
 
 **Category Management**
+
 - [ ] Build category list with mock data
 - [ ] Build add/edit modal
 - [ ] Build blocked-delete state (mock condition: category has products)
 
 **User Management**
+
 - [ ] Build user list table with role/status badges, mock data
 - [ ] Build add/edit user form
 - [ ] Build reset password confirmation dialog
 - [ ] Build deactivate confirmation dialog
 
 **Transaction History**
+
 - [ ] Build transaction list with mock data, date range filter UI, cashier filter (admin-only visibility toggle)
 - [ ] Build transaction detail (drawer or page) with mock line items
 - [ ] Build void action + required-reason confirmation dialog
 - [ ] Build voided-state visual treatment on detail view
 
 **Stock Adjustment**
+
 - [ ] Build adjustment form (increase/decrease toggle, quantity, reason) — accessible from product detail
 - [ ] Build adjustment history list, mock data, color-coded increase/decrease
 
 **Sales Dashboard**
+
 - [ ] Build date range selector (default "Today")
 - [ ] Build headline metric cards (total sales, transaction count) with mock numbers, `tabular-nums`
 - [ ] Build best-sellers list/chart (`recharts`), mock data
