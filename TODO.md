@@ -29,22 +29,22 @@ Goal of this part: a fully clickable Next.js app with every screen built, using 
 
 Install shadcn primitives first, then build BrewPoint-specific compositions on top:
 
-- [ ] `npx shadcn add button` — verify `primary`/`secondary`/`outline`/`destructive`/`ghost` variants match `DESIGN_SYSTEM.md` 6.1
-- [ ] `npx shadcn add input`, `label`, `textarea`
-- [ ] `npx shadcn add select`, `dropdown-menu`
-- [ ] `npx shadcn add dialog` (modals), `sheet` (side drawers)
-- [ ] `npx shadcn add table`
-- [ ] `npx shadcn add card`
-- [ ] `npx shadcn add badge` — theme it for status tags (completed/voided/low-stock/out-of-stock/active/inactive) per 6.3
-- [ ] `npx shadcn add form` (pairs with `react-hook-form` + `zod`)
-- [ ] `npx shadcn add tabs` — for category filter chips on POS screen
-- [ ] `npx shadcn add skeleton` — loading states
-- [ ] `npx shadcn add sonner` or `toast` — success/error notifications
-- [ ] Build custom `<ProductTile />` — used in POS grid, `radius-xl`, touch-friendly
-- [ ] Build custom `<StatusBadge status="..." />` — wraps `Badge`, maps status string → correct color per 6.3
-- [ ] Build custom `<NumericValue />` — wraps text with `tabular-nums`, used for all prices/stock counts
-- [ ] Build custom `<EmptyState title icon action />` — reusable across every list screen
-- [ ] Build custom `<PageHeader title action />` — consistent page title (Poppins) + primary action button pattern
+- [x] `npx shadcn add button` — verify `primary`/`secondary`/`outline`/`destructive`/`ghost` variants match `DESIGN_SYSTEM.md` 6.1
+- [x] `npx shadcn add input`, `label`, `textarea`
+- [x] `npx shadcn add select`, `dropdown-menu`
+- [x] `npx shadcn add dialog` (modals), `sheet` (side drawers)
+- [x] `npx shadcn add table`
+- [x] `npx shadcn add card`
+- [x] `npx shadcn add badge` — theme it for status tags (completed/voided/low-stock/out-of-stock/active/inactive) per 6.3
+- [x] ~~`npx shadcn add form`~~ — shadcn no longer ships a single `form` component (confirmed via docs, 2026-07); used `npm install react-hook-form @hookform/resolvers zod` + `npx shadcn add field` instead, and the `<Controller>` + `<Field>`/`<FieldLabel>`/`<FieldError>` pattern in place of the old `<Form>`/`<FormField>`
+- [x] `npx shadcn add tabs` — for category filter chips on POS screen
+- [x] `npx shadcn add skeleton` — loading states
+- [x] `npx shadcn add sonner` or `toast` — success/error notifications
+- [x] Build custom `<ProductTile />` — used in POS grid, `radius-xl`, touch-friendly
+- [x] Build custom `<StatusBadge status="..." />` — wraps `Badge`, maps status string → correct color per 6.3
+- [x] Build custom `<NumericValue />` — wraps text with `tabular-nums`, used for all prices/stock counts
+- [x] Build custom `<EmptyState title icon action />` — reusable across every list screen
+- [x] Build custom `<PageHeader title action />` — consistent page title (Poppins) + primary action button pattern
 
 ### 1.3 Layout Shell
 
