@@ -70,42 +70,50 @@ BrewPoint uses shadcn/ui, which reads theme colors from CSS variables in HSL. Ma
 ```css
 /* app/globals.css */
 :root {
-  --background: 0 0% 94%;              /* neutral-50 #EFEFEF */
-  --foreground: 205 20% 12%;           /* neutral-700 #1F2933 */
+  --background: hsl(0 0% 94%);              /* neutral-50 #EFEFEF */
+  --foreground: hsl(205 20% 12%);           /* neutral-700 #1F2933 */
 
-  --card: 0 0% 100%;                   /* neutral-0 #FFFFFF */
-  --card-foreground: 205 20% 12%;
+  --card: hsl(0 0% 100%);                   /* neutral-0 #FFFFFF */
+  --card-foreground: hsl(205 20% 12%);
+  --popover: hsl(0 0% 100%);                /* same treatment as card, see Section 5 */
+  --popover-foreground: hsl(205 20% 12%);
 
-  --primary: 208 24% 23%;              /* navy-900 #2B3A4A */
-  --primary-foreground: 0 0% 100%;
+  --primary: hsl(208 24% 23%);              /* navy-900 #2B3A4A */
+  --primary-foreground: hsl(0 0% 100%);
 
-  --secondary: 43 39% 84%;             /* cream-200 #E8DCC5 */
-  --secondary-foreground: 208 24% 23%; /* navy-900 */
+  --secondary: hsl(43 39% 84%);             /* cream-200 #E8DCC5 */
+  --secondary-foreground: hsl(208 24% 23%); /* navy-900 */
 
-  --accent: 213 45% 51%;               /* blue-500 #4A7DBD */
-  --accent-foreground: 0 0% 100%;
+  --accent: hsl(213 45% 51%);               /* blue-500 #4A7DBD */
+  --accent-foreground: hsl(0 0% 100%);
 
-  --muted: 220 13% 91%;                /* neutral-100 #E5E7EB */
-  --muted-foreground: 220 9% 46%;      /* neutral-500 #6B7280 */
+  --muted: hsl(220 13% 91%);                /* neutral-100 #E5E7EB */
+  --muted-foreground: hsl(220 9% 46%);      /* neutral-500 #6B7280 */
 
-  --destructive: 6 42% 51%;            /* danger-500 #C0564D */
-  --destructive-foreground: 0 0% 100%;
+  --destructive: hsl(6 42% 51%);            /* danger-500 #C0564D */
+  --destructive-foreground: hsl(0 0% 100%);
 
-  --success: 133 27% 41%;              /* success-500 #4C8C5B */
-  --success-foreground: 0 0% 100%;
+  --success: hsl(133 27% 41%);              /* success-500 #4C8C5B */
+  --success-foreground: hsl(0 0% 100%);
 
-  --warning: 38 62% 56%;               /* warning-500 #D9A441 */
-  --warning-foreground: 208 24% 23%;
+  --warning: hsl(38 62% 56%);               /* warning-500 #D9A441 */
+  --warning-foreground: hsl(208 24% 23%);   /* navy-900 — better contrast than white on this mid-tone warning color */
 
-  --border: 220 13% 91%;               /* neutral-100 */
-  --input: 220 13% 91%;
-  --ring: 213 45% 51%;                 /* blue-500, focus ring */
+  --border: hsl(220 13% 91%);               /* neutral-100 */
+  --input: hsl(220 13% 91%);
+  --ring: hsl(213 45% 51%);                 /* blue-500, focus ring */
 
   --radius: 0.625rem;                  /* 10px, see Section 4 */
 }
 ```
 
 `--success` and `--warning` are not part of shadcn's default token set — they're added here as project-specific extensions, following the same `{name}` / `{name}-foreground` pairing convention shadcn uses for `--destructive`.
+
+**Note on Tailwind v4 (differs from the snippet above's original v3-era assumptions):**
+
+- BrewPoint's `create-next-app` scaffold generated a **Tailwind v4** project, which has no `tailwind.config.ts` — theme wiring happens entirely in CSS, via an `@theme inline { ... }` block at the top of `app/globals.css`. Each color variable above must have a matching line there (e.g. `--color-success: var(--success);`) — without it, Tailwind will not generate the corresponding utility class (`bg-success`, `text-success-foreground`, etc.), even if the variable exists in `:root`.
+- Each `:root` value must be a complete, valid CSS color — hence the `hsl(...)` wrapper around each value above (Tailwind v3 convention omitted the wrapper because components did `hsl(var(--primary))` at the point of use; Tailwind v4's `@theme inline` expects the variable itself to already resolve to a full color).
+- `--chart-1..5` (recharts palette) and `--sidebar-*` (shadcn's Sidebar component) are **not yet defined** by this design system — left as shadcn defaults until the Dashboard (charts) and nav shell (sidebar) are actually built in `TODO.md` Part 1.4/1.3.
 
 ---
 
