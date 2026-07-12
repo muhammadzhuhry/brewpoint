@@ -65,49 +65,51 @@ When text sits on a colored background (badge, chip, filled button), always pair
 
 ### 2.5 Tailwind / shadcn CSS Variables
 
-BrewPoint uses shadcn/ui, which reads theme colors from CSS variables in HSL. Mapped from the palette above:
+BrewPoint uses shadcn/ui theme colors as CSS variables. **Use hex directly, not HSL** — see the precision note below the table for why.
 
 ```css
 /* app/globals.css */
 :root {
-  --background: hsl(0 0% 94%);              /* neutral-50 #EFEFEF */
-  --foreground: hsl(205 20% 12%);           /* neutral-700 #1F2933 */
+  --background: #EFEFEF;              /* neutral-50 */
+  --foreground: #1F2933;              /* neutral-700 */
 
-  --card: hsl(0 0% 100%);                   /* neutral-0 #FFFFFF */
-  --card-foreground: hsl(205 20% 12%);
-  --popover: hsl(0 0% 100%);                /* same treatment as card, see Section 5 */
-  --popover-foreground: hsl(205 20% 12%);
+  --card: #FFFFFF;                    /* neutral-0 */
+  --card-foreground: #1F2933;
+  --popover: #FFFFFF;                 /* same treatment as card, see Section 5 */
+  --popover-foreground: #1F2933;
 
-  --primary: hsl(208 24% 23%);              /* navy-900 #2B3A4A */
-  --primary-foreground: hsl(0 0% 100%);
+  --primary: #2B3A4A;                 /* navy-900 */
+  --primary-foreground: #FFFFFF;
 
-  --secondary: hsl(43 39% 84%);             /* cream-200 #E8DCC5 */
-  --secondary-foreground: hsl(208 24% 23%); /* navy-900 */
+  --secondary: #E8DCC5;               /* cream-200 */
+  --secondary-foreground: #2B3A4A;    /* navy-900 */
 
-  --accent: hsl(213 45% 51%);               /* blue-500 #4A7DBD */
-  --accent-foreground: hsl(0 0% 100%);
+  --accent: #4A7DBD;                  /* blue-500 */
+  --accent-foreground: #FFFFFF;
 
-  --muted: hsl(220 13% 91%);                /* neutral-100 #E5E7EB */
-  --muted-foreground: hsl(220 9% 46%);      /* neutral-500 #6B7280 */
+  --muted: #E5E7EB;                   /* neutral-100 */
+  --muted-foreground: #6B7280;        /* neutral-500 */
 
-  --destructive: hsl(6 42% 51%);            /* danger-500 #C0564D */
-  --destructive-foreground: hsl(0 0% 100%);
+  --destructive: #C0564D;             /* danger-500 */
+  --destructive-foreground: #FFFFFF;
 
-  --success: hsl(133 27% 41%);              /* success-500 #4C8C5B */
-  --success-foreground: hsl(0 0% 100%);
+  --success: #4C8C5B;                 /* success-500 */
+  --success-foreground: #FFFFFF;
 
-  --warning: hsl(38 62% 56%);               /* warning-500 #D9A441 */
-  --warning-foreground: hsl(208 24% 23%);   /* navy-900 — better contrast than white on this mid-tone warning color */
+  --warning: #D9A441;                 /* warning-500 */
+  --warning-foreground: #2B3A4A;      /* navy-900 — better contrast than white on this mid-tone warning color */
 
-  --border: hsl(220 13% 91%);               /* neutral-100 */
-  --input: hsl(220 13% 91%);
-  --ring: hsl(213 45% 51%);                 /* blue-500, focus ring */
+  --border: #E5E7EB;                  /* neutral-100 */
+  --input: #E5E7EB;
+  --ring: #4A7DBD;                    /* blue-500, focus ring */
 
   --radius: 0.625rem;                  /* 10px, see Section 4 */
 }
 ```
 
 `--success` and `--warning` are not part of shadcn's default token set — they're added here as project-specific extensions, following the same `{name}` / `{name}-foreground` pairing convention shadcn uses for `--destructive`.
+
+**Precision note (corrected 2026-07):** earlier revisions of this section wrapped values in `hsl(...)`, using hand-rounded HSL numbers (e.g. `hsl(208 24% 23%)` for navy-900). Rounded HSL does **not** round-trip back to the exact source hex — converting `hsl(208 24% 23%)` back to RGB yields `#2D3C49`, visibly different from the actual `#2B3A4A`. Hex has no such rounding step, so it's the correct format to use here; treat any HSL-formatted color value elsewhere in this document as a lossy approximation, not ground truth.
 
 **Note on Tailwind v4 (differs from the snippet above's original v3-era assumptions):**
 
@@ -237,17 +239,22 @@ BrewPoint stays **flat by default** — no drop shadows for structural hierarchy
 
 ### 6.1 Buttons
 
-| Variant | Background | Text | Usage |
-|---|---|---|---|
-| `primary` | `navy-900` | white | The single main action per screen (e.g. "Checkout") |
-| `secondary` | `cream-200` | `navy-900` | Supporting actions (e.g. "Redeem points") |
-| `outline` | transparent, `navy-900` border | `navy-900` | Cancel, back, less-important actions |
-| `destructive` | `danger-500` | white | Void transaction, delete product |
-| `ghost` | transparent | `neutral-700` | Icon-only buttons, table row actions |
+**Source of truth:** `brewpoint_design_system.html` (rendered mockup) — its own "BUTTONS" showcase block is annotated `one primary per screen · sentence case · 40px min height`. Values below are transcribed directly from that block; they take precedence over any earlier, less precise description in this file.
+
+| Variant | Background | Text | Border | Font weight | Usage |
+|---|---|---|---|---|---|
+| `primary` | `navy-900` `#2B3A4A` | white | none | 600 | The single main action per screen (e.g. "Checkout") |
+| `secondary` | `cream-200` `#E8DCC5` | `navy-900` | none | 600 | Supporting actions (e.g. "Redeem points") |
+| `outline` | transparent | `navy-900` | `neutral-300` `#C7CCD1` (**not** navy-900 — corrected 2026-07) | 500 | Cancel, back, less-important actions |
+| `destructive` | `danger-500` `#C0564D` | white | none | 600 | Void transaction, delete product |
+| `ghost` | transparent | `neutral-500` `#6B7280` (**not** neutral-700 — corrected 2026-07) | none | 500 | Icon-only buttons, table row actions |
+| `disabled` | `neutral-300` `#C7CCD1` | white | none | 600 | Any variant in a disabled state, `cursor: not-allowed` |
+
+Sizing (all variants except `ghost`): height `42px`, border-radius `10px`, padding `0 18px`, font-size `14px`. `ghost` uses padding `0 12px` (more compact, since it's typically icon-only/table-row context). Primary's hover state is `navy-700` `#3B4E63` (exact value from the mockup's own "Hover" swatch) — other variants' hover states aren't pixel-specified by the mockup, use a sensible opacity/tint shift.
 
 - Only **one** `primary` button per screen/view — this keeps the cashier's eye trained on the one action that matters.
 - Buttons use `heading-3`-weight Inter (500), sentence case, never all-caps.
-- Minimum touch target: 40px height on desktop/tablet — the POS screen is used on a touchscreen at the counter, so tap targets should stay generous even before a dedicated mobile app exists.
+- Minimum touch target: **40px height** on desktop/tablet (the mockup implements this as 42px) — the POS screen is used on a touchscreen at the counter, so tap targets should stay generous even before a dedicated mobile app exists. shadcn's own default `Button` size (`h-8` = 32px) does **not** meet this — the `default` size must be overridden.
 
 ### 6.2 Cards
 
