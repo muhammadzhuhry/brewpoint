@@ -16,14 +16,14 @@ Goal of this part: a fully clickable Next.js app with every screen built, using 
 
 ### 1.1 Project Setup
 
-- [ ] `create-next-app` with TypeScript, App Router, Tailwind CSS — this single app (`brewpoint`) will hold both UI and API
-- [ ] Install and init shadcn/ui (`npx shadcn init`)
-- [ ] Set up folder structure per `TECH_SPEC.md` Section 2 (`app/`, `components/`, `lib/`, `stores/`, `hooks/`) — you can leave `app/api/`, `lib/db/`, and `lib/services/` empty for now, they get filled in Part 2
-- [ ] Install fonts: Poppins + Inter via `next/font/google` (`app/fonts.ts`)
-- [ ] Wire `--font-display` (Poppins) and `--font-body` (Inter) into `tailwind.config.ts`
-- [ ] Paste `DESIGN_SYSTEM.md` Section 2.5 CSS variables into `app/globals.css`
-- [ ] Add `--success`/`--warning` custom tokens on top of shadcn's default theme variables
-- [ ] Verify base layout renders with the correct fonts and background color before building anything else
+- [x] `create-next-app` with TypeScript, App Router, Tailwind CSS — this single app (`brewpoint`) will hold both UI and API
+- [x] Install and init shadcn/ui (`npx shadcn init`)
+- [x] Set up folder structure per `TECH_SPEC.md` Section 2 (`app/`, `components/`, `lib/`, `stores/`, `hooks/`) — you can leave `app/api/`, `lib/db/`, and `lib/services/` empty for now, they get filled in Part 2
+- [x] Install fonts: Poppins + Inter via `next/font/google` (`app/fonts.ts`)
+- [x] Wire `--font-display` (Poppins) and `--font-body` (Inter) into Tailwind — done via `app/globals.css` `@theme inline` block (project uses Tailwind v4, no `tailwind.config.ts`)
+- [x] Paste `DESIGN_SYSTEM.md` Section 2.5 CSS variables into `app/globals.css`
+- [x] Add `--success`/`--warning` custom tokens on top of shadcn's default theme variables
+- [x] Verify base layout renders with the correct fonts and background color before building anything else
 
 ### 1.2 Atomic / Reusable Components
 
