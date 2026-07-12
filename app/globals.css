@@ -5,54 +5,77 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Fonts */
   --font-sans: var(
     --font-body
   ); /* default: Inter, use on body/table/form via `html { @apply font-sans }` */
   --font-display: var(
     --font-display
   ); /* Poppins, used eksplisit in heading via class `font-display` */
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
+
+  /* Base surface & text */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Brand colors */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  /* Borders & focus ring */
   --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Semantic: destructive/danger */
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-success-subtle: var(--success-subtle);
-  --color-success-subtle-foreground: var(--success-subtle-foreground);
-  --color-warning-subtle: var(--warning-subtle);
-  --color-warning-subtle-foreground: var(--warning-subtle-foreground);
   --color-destructive-subtle: var(--destructive-subtle);
   --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
+
+  /* Semantic: success */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-subtle-foreground: var(--success-subtle-foreground);
+
+  /* Semantic: warning */
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-subtle-foreground: var(--warning-subtle-foreground);
+
+  /* Icon chips (empty states, etc.) */
+  --color-icon-chip-background: var(--icon-chip-background);
+  --color-icon-chip-foreground: var(--icon-chip-foreground);
+
+  /* Charts (recharts) — not yet themed, see DESIGN_SYSTEM.md 2.5 note */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar (shadcn component) — not yet themed, see DESIGN_SYSTEM.md 2.5 note */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Radius scale */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -63,43 +86,61 @@
 }
 
 :root {
+  --radius: 0.625rem; /* 10px, see DESIGN_SYSTEM.md 4.2 */
+
+  /* Base surface & text */
   --background: #efefef;
   --foreground: #1f2933;
   --card: #ffffff;
   --card-foreground: #1f2933;
   --popover: #ffffff;
   --popover-foreground: #1f2933;
+
+  /* Brand colors */
   --primary: #2b3a4a;
   --primary-foreground: #ffffff;
   --secondary: #e8dcc5;
   --secondary-foreground: #2b3a4a;
-  --muted: #e5e7eb;
-  --muted-foreground: #6b7280;
   --accent: #4a7dbd;
   --accent-foreground: #ffffff;
-  --destructive: #c0564d;
-  --destructive-foreground: #ffffff;
-  --success: #4c8c5b;
-  --success-foreground: #ffffff;
-  --warning: #d9a441;
-  --warning-foreground: #2b3a4a;
-  --success-subtle: #dcefe0;
-  --success-subtle-foreground: #3a7d4e;
-  --warning-subtle: #fbf0dd;
-  --warning-subtle-foreground: #8a5e17;
-  --destructive-subtle: #f6e1de;
-  --destructive-subtle-foreground: #a6413a;
+  --muted: #e5e7eb;
+  --muted-foreground: #6b7280;
 
+  /* Borders & focus ring */
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: #4a7dbd;
 
+  /* Semantic: destructive/danger */
+  --destructive: #c0564d;
+  --destructive-foreground: #ffffff;
+  --destructive-subtle: #f6e1de;
+  --destructive-subtle-foreground: #a6413a;
+
+  /* Semantic: success */
+  --success: #4c8c5b;
+  --success-foreground: #ffffff;
+  --success-subtle: #dcefe0;
+  --success-subtle-foreground: #3a7d4e;
+
+  /* Semantic: warning */
+  --warning: #d9a441;
+  --warning-foreground: #2b3a4a;
+  --warning-subtle: #fbf0dd;
+  --warning-subtle-foreground: #8a5e17;
+
+  /* Icon chips (empty states, etc.) */
+  --icon-chip-background: #f3ecdd;
+  --icon-chip-foreground: #b08d57;
+
+  /* Charts (recharts) — shadcn defaults, not yet themed */
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+
+  /* Sidebar (shadcn component) — shadcn defaults, not yet themed */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
