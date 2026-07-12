@@ -167,12 +167,14 @@ By default, `body` (Inter) applies globally via the base `<html>` class; `font-d
 
 ### 3.2 Type Scale
 
+**Correction (2026-07):** the sizes below were hand-rounded when this doc was first written. The mockup (`brewpoint_design_system.html`) has an explicit "Foundations/Typography" showcase that labels each heading with its real use-case and exact px — those values take precedence over the rounded ones. Confirmed from the mockup: `display-lg` is actually **30px/38px** (not 32/40), `heading-1` (labeled "page titles" — the exact `PageHeader` use-case) is **22px/~28px, weight 600** (not 24/32), `heading-2` is **18px** (not 20), `heading-3` is **15px, weight 500** (not 16). The mockup doesn't give an explicit line-height for `heading-1/2/3` (only `display-lg` shows a ratio, `30/38`) — the line-heights below for those three are a proportional estimate, not a directly sourced value.
+
 | Token | Font | Size / Line height | Weight | Usage |
 |---|---|---|---|---|
-| `display-lg` | Poppins | 32px / 40px | 600 | Login screen brand title, empty-state headlines |
-| `heading-1` | Poppins | 24px / 32px | 600 | Page titles ("Products", "Dashboard") |
-| `heading-2` | Poppins | 20px / 28px | 600 | Section headers, modal titles |
-| `heading-3` | Poppins | 16px / 24px | 500 | Card titles, table section headers |
+| `display-lg` | Poppins | 30px / 38px | 600 | Login screen brand title, empty-state headlines |
+| `heading-1` | Poppins | 22px / ~28px (estimated) | 600 | Page titles ("Products", "Dashboard") |
+| `heading-2` | Poppins | 18px / ~24px (estimated) | 600 | Section headers, modal titles |
+| `heading-3` | Poppins | 15px / ~20px (estimated) | 500 | Card titles, table section headers |
 | `body-lg` | Inter | 16px / 24px | 400 | Primary body text, form inputs |
 | `body-md` | Inter | 14px / 20px | 400 | Table cell content, default UI text |
 | `body-sm` | Inter | 13px / 18px | 400 | Secondary/supporting text, timestamps |
@@ -260,6 +262,8 @@ Sizing (all variants except `ghost`): height `42px`, border-radius `10px`, paddi
 
 - `neutral-0` background, `1px solid var(--border)`, `radius-lg` (12px), `space-4` (16px) padding.
 - Product cards on the POS screen use `radius-xl` (16px) and a slightly larger touch area than admin-side cards.
+
+**Note on currency (updated 2026-07):** BrewPoint is **USD-only**, no multi-currency support (`PRD.md` Assumption 2, changed from an earlier IDR assumption). This actually matches the `$` symbol already shown in the "POS-specific" (`#pos`) section of `brewpoint_design_system.html` ("Cart Line" examples) — use `Intl.NumberFormat("en-US", { style: "currency", currency: "USD" })` everywhere money is displayed.
 
 ### 6.3 Badges / Status Tags
 

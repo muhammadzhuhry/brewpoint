@@ -672,7 +672,8 @@ Only one `.env` is needed now (no separate frontend/backend env files) since it'
 | `jose`                   | JWT signing/verification (Edge-runtime compatible, unlike `jsonwebtoken`)    |
 | `bcryptjs`               | Password hashing (pure JS, works in more runtimes than native `bcrypt`)      |
 | `zod`                    | Runtime schema validation — shared between Route Handlers and frontend forms |
-| `react-hook-form`        | Form state management, paired with shadcn's `Form`                           |
+| `react-hook-form`        | Form state management, paired with shadcn's `Field` (**not** `Form` — shadcn removed the single `Form` component in favor of a form-library-agnostic `field` primitive; corrected 2026-07) |
+| `@hookform/resolvers`    | Bridges `react-hook-form`'s `resolver` option to a `zod` schema (`zodResolver`) |
 | `zustand`                | Client state — cart contents, local UI state                                 |
 | `@tanstack/react-query`  | Server state — fetching, caching, invalidation                               |
 | `recharts`               | Dashboard charts                                                             |

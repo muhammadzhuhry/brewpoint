@@ -371,7 +371,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 - **Question 2:** Should voided transactions be restricted to same-day voids only, or allowed at any time?
 - **Question 3:** Is a "draft"/held order (park a cart and resume later) needed for v1, or can it wait for a future release?
 - **Assumption 1:** The system is used by a single store with one physical counter/device context in mind for MVP, though multiple cashier accounts may use it.
-- **Assumption 2:** All monetary values are in a single currency (IDR) with no multi-currency support needed.
+- **Assumption 2:** All monetary values are in a single currency (USD, changed from IDR 2026-07 per product decision) with no multi-currency support needed.
 - **Assumption 3:** Tax is out of scope for v1 unless clarified otherwise; total = sum of line items.
 
 ---
