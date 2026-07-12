@@ -265,14 +265,19 @@ Sizing (all variants except `ghost`): height `42px`, border-radius `10px`, paddi
 
 Used for transaction status, stock status, and user active/inactive state.
 
-| Status | Background | Text |
-|---|---|---|
-| Completed | `success-100` | `success-500` |
-| Voided | `danger-100` | `danger-500` |
-| Low stock | `warning-100` | `warning-500` |
-| Out of stock | `danger-100` | `danger-500` |
-| Active (user) | `success-100` | `success-500` |
-| Inactive (user) | `neutral-100` | `neutral-500` |
+**Correction (2026-07):** the badge text color is **not** the plain `-500` semantic color — the mockup (`brewpoint_design_system.html`) uses a separate, darker shade for text-on-tint contrast. These are new CSS variables (`--success-subtle`/`--success-subtle-foreground`, and the `warning`/`destructive` equivalents), distinct from `--success`/`--warning`/`--destructive` (which stay as the solid `-500` values used for buttons, dots, icons).
+
+| Status | Background (`*-subtle`) | Text (`*-subtle-foreground`) | Dot (if used, solid `-500`) |
+|---|---|---|---|
+| Completed | `#DCEFE0` (success-100) | `#3A7D4E` | `#4C8C5B` |
+| In stock *(not in earlier revision — appears in mockup as the positive counterpart to "Out of stock")* | `#DCEFE0` | `#3A7D4E` | `#4C8C5B` |
+| Voided | `#F6E1DE` (danger-100) | `#A6413A` | — |
+| Out of stock | `#F6E1DE` | `#A6413A` | `#C0564D` |
+| Low stock | `#FBF0DD` (warning-100) | `#8A5E17` | — |
+| Active (user) | *unverified — not clearly present in the mockup; best guess is same treatment as Completed until confirmed when building User Management* | | |
+| Inactive (user) | `neutral-100` `#E5E7EB` (reuse `--muted`) | `neutral-500` `#6B7280` (reuse `--muted-foreground`) | |
+
+Admin/Cashier role tags (a different badge use-case, not a status) also appear in the mockup but aren't captured here yet — verify when building the User Management screen.
 
 Badges: `caption` typography, `radius-full`, `space-2` horizontal padding, `4px` vertical padding.
 
