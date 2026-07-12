@@ -47,6 +47,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-subtle-foreground: var(--success-subtle-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-subtle-foreground: var(--warning-subtle-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -77,6 +83,13 @@
   --success-foreground: #ffffff;
   --warning: #d9a441;
   --warning-foreground: #2b3a4a;
+  --success-subtle: #dcefe0;
+  --success-subtle-foreground: #3a7d4e;
+  --warning-subtle: #fbf0dd;
+  --warning-subtle-foreground: #8a5e17;
+  --destructive-subtle: #f6e1de;
+  --destructive-subtle-foreground: #a6413a;
+
   --border: #e5e7eb;
   --input: #e5e7eb;
   --ring: #4a7dbd;
