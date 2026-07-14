@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Coffee } from "lucide-react";
+import { Coffee, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#D9D5CD] p-6">
       <div className="flex w-full max-w-[1000px] min-h-[640px] overflow-hidden rounded-2xl shadow-2xl">
@@ -61,16 +67,33 @@ export default function LoginPage() {
                   id="username"
                   placeholder="e.g. sofia"
                   className="mt-1.5"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div>
                 <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Your password"
-                  className="mt-1.5"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Your password"
+                    className="mt-1.5"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute top-1/2 right-1 mt-0.5 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-[17px]" />
+                    ) : (
+                      <Eye className="size-[17px]" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
