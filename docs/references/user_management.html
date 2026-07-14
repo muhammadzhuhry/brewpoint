@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes menuIn{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:none}}
+  ::placeholder{color:#9AA1AB;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#fff;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+  <dc-import name="Sidebar" active="users" hint-size="240px,100%"></dc-import>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+    <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Staff</h2>
+        <span style="font-size:13px;color:#9AA1AB;font-variant-numeric:tabular-nums;">{{ totalLabel }}</span>
+      </div>
+      <button onClick="{{ openAdd }}" style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Add staff
+      </button>
+    </header>
+
+    <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="position:relative;width:300px;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search staff…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+        </div>
+        <div style="position:relative;">
+          <select value="{{ roleFilter }}" onChange="{{ onRoleFilter }}" style="height:40px;padding:0 34px 0 12px;border:1px solid #E5E7EB;border-radius:10px;font:500 14px Inter,sans-serif;color:#374151;background:#fff;appearance:none;cursor:pointer;outline:none;"><option>All roles</option><option>Admin</option><option>Cashier</option></select>
+          <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:visible;flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="overflow:auto;flex:1;border-radius:12px;">{{ tableBody }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:40;">
+      <div onClick="{{ stop }}" style="width:460px;background:#fff;border-radius:14px;box-shadow:0 16px 48px rgba(15,20,24,.3);animation:popIn .18s ease-out;">
+        <div style="padding:22px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:19px;color:#2B3A4A;">{{ modalTitle }}</h3>
+          <button onClick="{{ closeModal }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Full name <span style="color:#C0564D;">*</span></label>
+            <input value="{{ form.name }}" onInput="{{ onName }}" placeholder="e.g. Alex Moreno" style="{{ nameStyle }}" />
+            <sc-if value="{{ err.name }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.name }}</span></sc-if>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Username <span style="color:#C0564D;">*</span></label>
+            <input value="{{ form.username }}" onInput="{{ onUsername }}" placeholder="e.g. alex" style="{{ userStyle }}" />
+            <sc-if value="{{ err.username }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.username }}</span></sc-if>
+          </div>
+          <sc-if value="{{ showPassword }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Temporary password <span style="color:#C0564D;">*</span></label>
+              <div style="display:flex;gap:8px;">
+                <input value="{{ form.password }}" onInput="{{ onPassword }}" placeholder="Set or generate" style="{{ passStyle }}" />
+                <button onClick="{{ genPassword }}" style="height:42px;flex:none;background:#F3ECDD;color:#2B3A4A;border:none;border-radius:10px;padding:0 14px;font:600 13px Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:7px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2B3A4A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Generate
+                </button>
+              </div>
+              <span style="display:block;margin-top:6px;font-size:12px;color:#9AA1AB;">Staff will be prompted to change this on first login.</span>
+              <sc-if value="{{ err.password }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:2px;font-size:12px;color:#A6413A;">{{ err.password }}</span></sc-if>
+            </div>
+          </sc-if>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Role</label>
+            <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:10px;padding:3px;gap:2px;">
+              <button onClick="{{ setRoleAdmin }}" style="{{ roleAdminStyle }}">Admin</button>
+              <button onClick="{{ setRoleCashier }}" style="{{ roleCashierStyle }}">Cashier</button>
+            </div>
+            <span style="display:block;margin-top:6px;font-size:12px;color:#9AA1AB;">{{ roleHint }}</span>
+          </div>
+          <sc-if value="{{ showActiveToggle }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px;">
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <span style="font-size:13.5px;font-weight:500;color:#1F2933;">Account active</span>
+                <span style="font-size:12px;color:#9AA1AB;">Inactive staff can't log in</span>
+              </div>
+              <button onClick="{{ toggleActive }}" style="{{ toggleStyle }}"><span style="{{ knobStyle }}"></span></button>
+            </div>
+          </sc-if>
+        </div>
+        <div style="padding:18px 24px;border-top:1px solid #F1F0EC;display:flex;justify-content:flex-end;gap:12px;">
+          <button onClick="{{ closeModal }}" style="height:42px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 20px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ saveUser }}" style="height:42px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 20px;font:600 14px Inter,sans-serif;cursor:pointer;">{{ saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- DEACTIVATE / REACTIVATE CONFIRM -->
+  <sc-if value="{{ deactOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelDeact }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:40;">
+      <div onClick="{{ stop }}" style="width:430px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;gap:16px;animation:popIn .18s ease-out;">
+        <div style="width:46px;height:46px;border-radius:11px;background:{{ deactIconBg }};display:flex;align-items:center;justify-content:center;">{{ deactIcon }}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">{{ deactTitle }}</h3>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">{{ deactMessage }}</p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:2px;">
+          <button onClick="{{ cancelDeact }}" style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ doDeact }}" style="{{ deactBtnStyle }}">{{ deactBtnLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- RESET PASSWORD -->
+  <sc-if value="{{ resetOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelReset }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:40;">
+      <div onClick="{{ stop }}" style="width:430px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;gap:16px;animation:popIn .18s ease-out;">
+        <div style="width:46px;height:46px;border-radius:11px;background:#E7EFF7;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3A6BA8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">{{ resetTitle }}</h3>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">{{ resetMessage }}</p>
+        </div>
+        <sc-if value="{{ resetDone }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;color:#9AA1AB;">TEMPORARY PASSWORD</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#F7F7F5;border:1px solid #E5E7EB;border-radius:10px;">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:16px;font-weight:600;color:#2B3A4A;letter-spacing:.02em;">{{ tempPass }}</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#3A7D4E;font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3A7D4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Copied</span>
+            </div>
+            <span style="font-size:12px;color:#9AA1AB;line-height:1.5;">Share this with the staff member. They'll be asked to set a new password on next login.</span>
+          </div>
+        </sc-if>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:2px;">{{ resetActions }}</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- DETAIL DRAWER -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:absolute;inset:0;background:rgba(31,41,51,.45);display:flex;justify-content:flex-end;z-index:35;">
+      <div onClick="{{ stop }}" style="width:420px;height:100%;background:#fff;box-shadow:-8px 0 32px rgba(15,20,24,.2);display:flex;flex-direction:column;">
+        <div style="padding:20px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:15px;color:#6B7280;">Staff detail</span>
+          <button onClick="{{ closeDetail }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:24px;">{{ detailBody }}</div>
+        <div style="padding:16px 24px;border-top:1px solid #F1F0EC;display:flex;gap:10px;">
+          <button onClick="{{ editFromDetail }}" style="flex:1;height:42px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer;">Edit</button>
+          <button onClick="{{ resetFromDetail }}" style="height:42px;background:#E7EFF7;color:#3A6BA8;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Reset password</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    search: '', roleFilter: 'All roles',
+    menu: null, modal: null, deact: null, reset: null, detail: null,
+    resetDone: false, tempPass: '',
+    form: { name: '', username: '', password: '', role: 'Cashier', active: true },
+    err: {},
+    users: [
+      { id: 1, name: 'Marcus Bell', username: 'marcus', role: 'Admin', active: true, joined: 'Jan 12, 2024', last: 'Today, 8:04 AM' },
+      { id: 2, name: 'Sofia Reyes', username: 'sofia', role: 'Cashier', active: true, joined: 'Mar 03, 2024', last: 'Today, 7:41 AM' },
+      { id: 3, name: 'Daniel Okafor', username: 'daniel', role: 'Cashier', active: true, joined: 'Jun 21, 2024', last: 'Yesterday, 6:12 PM' },
+      { id: 4, name: 'Jenna Lowe', username: 'jenna', role: 'Cashier', active: true, joined: 'Sep 15, 2024', last: 'Jun 30, 2026' },
+      { id: 5, name: 'Priya Nair', username: 'priya', role: 'Cashier', active: false, joined: 'Nov 02, 2024', last: 'May 18, 2026' },
+      { id: 6, name: 'Tomás Vidal', username: 'tomas', role: 'Cashier', active: false, joined: 'Feb 08, 2025', last: 'Apr 02, 2026' },
+    ],
+    nextId: 7,
+  };
+
+  avatarColor(name) {
+    const palette = [['#E8DCC5', '#2B3A4A'], ['#DCE6F2', '#3A6BA8'], ['#E3EEE4', '#3A7D4E'], ['#F3E4E1', '#A6413A'], ['#EFE7F2', '#6C4A8A']];
+    let x = 0; for (const ch of name) x = (x * 31 + ch.charCodeAt(0)) % palette.length; return palette[x];
+  }
+  initials(name) { return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(); }
+  filtered() {
+    const q = this.state.search.trim().toLowerCase();
+    return this.state.users.filter(u => {
+      if (this.state.roleFilter !== 'All roles' && u.role !== this.state.roleFilter) return false;
+      if (q && !(u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }
+  genPass() { const w = ['brew', 'bean', 'roast', 'crema', 'latte', 'mocha']; return w[Math.floor(Math.random() * w.length)] + '-' + Math.floor(1000 + Math.random() * 9000); }
+
+  onSearch = (e) => this.setState({ search: e.target.value });
+  onRoleFilter = (e) => this.setState({ roleFilter: e.target.value });
+  toggleMenu = (id) => this.setState({ menu: this.state.menu === id ? null : id });
+  stop = (e) => e.stopPropagation();
+
+  openAdd = () => this.setState({ modal: { mode: 'add' }, form: { name: '', username: '', password: '', role: 'Cashier', active: true }, err: {}, menu: null });
+  openEdit = (u) => this.setState({ modal: { mode: 'edit', id: u.id }, form: { name: u.name, username: u.username, password: '', role: u.role, active: u.active }, err: {}, menu: null, detail: null });
+  closeModal = () => this.setState({ modal: null, err: {} });
+  setF = (k) => (e) => this.setState({ form: { ...this.state.form, [k]: e.target.value } });
+  setRole = (r) => () => this.setState({ form: { ...this.state.form, role: r } });
+  toggleActive = () => this.setState({ form: { ...this.state.form, active: !this.state.form.active } });
+  genPassword = () => this.setState({ form: { ...this.state.form, password: this.genPass() } });
+
+  saveUser = () => {
+    const f = this.state.form; const err = {};
+    if (!f.name.trim()) err.name = 'Full name is required.';
+    if (!f.username.trim()) err.username = 'Username is required.';
+    else if (!/^[a-z0-9_.]+$/i.test(f.username.trim())) err.username = 'Letters, numbers, dots and underscores only.';
+    else { const dup = this.state.users.find(u => u.username.toLowerCase() === f.username.trim().toLowerCase() && (!this.state.modal.id || u.id !== this.state.modal.id)); if (dup) err.username = 'This username is already taken.'; }
+    if (this.state.modal.mode === 'add' && !f.password.trim()) err.password = 'Set or generate a temporary password.';
+    if (Object.keys(err).length) { this.setState({ err }); return; }
+    if (this.state.modal.mode === 'add') {
+      const now = new Date();
+      const joined = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      this.setState({ users: [{ id: this.state.nextId, name: f.name.trim(), username: f.username.trim(), role: f.role, active: true, joined, last: '—' }, ...this.state.users], nextId: this.state.nextId + 1, modal: null, err: {} });
+    } else {
+      const id = this.state.modal.id;
+      this.setState({ users: this.state.users.map(u => u.id === id ? { ...u, name: f.name.trim(), username: f.username.trim(), role: f.role, active: f.active } : u), modal: null, err: {} });
+    }
+  };
+
+  askDeact = (u) => this.setState({ deact: u.id, menu: null, detail: null });
+  cancelDeact = () => this.setState({ deact: null });
+  doDeact = () => { const id = this.state.deact; this.setState({ users: this.state.users.map(u => u.id === id ? { ...u, active: !u.active } : u), deact: null }); };
+
+  askReset = (u) => this.setState({ reset: u.id, resetDone: false, tempPass: '', menu: null, detail: null });
+  cancelReset = () => this.setState({ reset: null, resetDone: false });
+  doReset = () => this.setState({ resetDone: true, tempPass: this.genPass() });
+
+  openDetail = (u) => this.setState({ detail: u.id, menu: null });
+  closeDetail = () => this.setState({ detail: null });
+  editFromDetail = () => { const u = this.state.users.find(x => x.id === this.state.detail); if (u) this.openEdit(u); };
+  resetFromDetail = () => { const u = this.state.users.find(x => x.id === this.state.detail); if (u) this.askReset(u); };
+
+  rolePill(role) {
+    const h = React.createElement;
+    const admin = role === 'Admin';
+    return h('span', { style: { padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: admin ? '#E8DCC5' : '#E7EFF7', color: admin ? '#2B3A4A' : '#3A6BA8', whiteSpace: 'nowrap' } }, role);
+  }
+  statusPill(active) {
+    const h = React.createElement;
+    return h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: active ? '#DCEFE0' : '#E5E7EB', color: active ? '#3A7D4E' : '#6B7280', whiteSpace: 'nowrap' } }, h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: active ? '#4C8C5B' : '#9AA1AB' } }), active ? 'Active' : 'Inactive');
+  }
+
+  renderVals() {
+    const h = React.createElement;
+    const total = this.state.users.length;
+    const fil = this.filtered();
+    const totalLabel = total + (total === 1 ? ' member' : ' members');
+
+    // ---- table ----
+    const th = (label, align) => h('th', { key: label, style: { padding: '0 16px', height: '44px', textAlign: align || 'left', fontFamily: 'Inter,sans-serif', fontWeight: 500, fontSize: '12px', color: '#6B7280', borderBottom: '1px solid #E5E7EB', position: 'sticky', top: 0, background: '#F7F7F5', whiteSpace: 'nowrap' } }, label);
+    const tdB = { padding: '0 16px', height: '64px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#374151', fontFamily: 'Inter,sans-serif' };
+
+    let tableBody;
+    if (fil.length === 0) {
+      tableBody = h('div', { style: { height: '100%', minHeight: '360px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' } },
+          h('div', { style: { width: '58px', height: '58px', borderRadius: '9999px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: '#B08D57', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>' } })),
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, 'No staff match'),
+          h('span', { style: { fontSize: '13px', color: '#6B7280' } }, 'Try a different name or clear the role filter.')));
+    } else {
+      const rows = fil.map(u => {
+        const [abg, afg] = this.avatarColor(u.name);
+        const isOpen = this.state.menu === u.id;
+        const menuItem = (icon, label, color, onClick) => h('button', { onClick: (e) => { e.stopPropagation(); onClick(); }, style: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '9px 12px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'Inter,sans-serif', fontSize: '13.5px', fontWeight: 500, color: color || '#374151', textAlign: 'left' }, onMouseEnter: (e) => e.currentTarget.style.background = '#F5F4F1', onMouseLeave: (e) => e.currentTarget.style.background = 'transparent' },
+          h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: color || '#6B7280', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: icon } }), label);
+        return h('tr', { key: u.id, onClick: () => this.openDetail(u), style: { cursor: 'pointer', opacity: u.active ? 1 : 0.72 }, onMouseEnter: (e) => e.currentTarget.style.background = '#FAFAF8', onMouseLeave: (e) => e.currentTarget.style.background = 'transparent' },
+          h('td', { style: tdB }, h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('div', { style: { width: '40px', height: '40px', borderRadius: '9999px', background: abg, color: afg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '13px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, this.initials(u.name)),
+            h('span', { style: { fontWeight: 500, color: '#1F2933', fontSize: '14px' } }, u.name))),
+          h('td', { style: { ...tdB, color: '#6B7280' } }, '@' + u.username),
+          h('td', { style: tdB }, this.rolePill(u.role)),
+          h('td', { style: tdB }, this.statusPill(u.active)),
+          h('td', { style: { ...tdB, color: '#9AA1AB', fontVariantNumeric: 'tabular-nums' } }, u.last),
+          h('td', { style: { ...tdB, textAlign: 'right', position: 'relative', overflow: 'visible' } },
+            h('button', { onClick: (e) => { e.stopPropagation(); this.toggleMenu(u.id); }, style: { width: '34px', height: '34px', borderRadius: '9px', border: '1px solid ' + (isOpen ? '#C7CCD1' : '#E9E8E4'), background: isOpen ? '#F3F3F1' : '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: '#6B7280', dangerouslySetInnerHTML: { __html: '<circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>' } })),
+            isOpen ? h('div', { onClick: (e) => e.stopPropagation(), style: { position: 'absolute', top: '48px', right: '16px', width: '188px', background: '#fff', border: '1px solid #E5E7EB', borderRadius: '11px', boxShadow: '0 10px 30px rgba(15,20,24,.16)', padding: '5px', zIndex: 10, animation: 'menuIn .12s ease-out' } },
+              menuItem('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>', 'Edit details', null, () => this.openEdit(u)),
+              menuItem('<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>', 'Reset password', null, () => this.askReset(u)),
+              h('div', { style: { height: '1px', background: '#F1F0EC', margin: '4px 8px' } }),
+              u.active
+                ? menuItem('<path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><line x1="12" x2="12" y1="2" y2="12"/>', 'Deactivate', '#C0564D', () => this.askDeact(u))
+                : menuItem('<path d="M20 6 9 17l-5-5"/>', 'Reactivate', '#3A7D4E', () => this.askDeact(u))) : null));
+      });
+      tableBody = h('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+        h('thead', null, h('tr', null, th('Staff member'), th('Username'), th('Role'), th('Status'), th('Last active'), th('', 'right'))),
+        h('tbody', null, rows));
+    }
+
+    // ---- modal ----
+    const md = this.state.modal; const modalOpen = !!md; const err = this.state.err;
+    const inB = 'width:100%;box-sizing:border-box;height:42px;padding:0 12px;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;';
+    const bd = (bad) => bad ? 'border:1px solid #C0564D;box-shadow:0 0 0 3px rgba(192,86,77,.12);' : 'border:1px solid #E5E7EB;';
+    const roleBtn = (on) => 'flex:1;border:none;background:' + (on ? '#fff' : 'transparent') + ';color:' + (on ? '#2B3A4A' : '#6B7280') + ';font:' + (on ? '600' : '500') + ' 14px Inter,sans-serif;padding:8px;border-radius:8px;cursor:pointer;' + (on ? 'box-shadow:0 1px 2px rgba(15,20,24,.08);' : '');
+    const active = this.state.form.active;
+
+    // ---- deactivate ----
+    const du = this.state.deact ? this.state.users.find(u => u.id === this.state.deact) : null;
+    const deactOpen = !!du; const reactivating = du && !du.active;
+    const deactIcon = du ? h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: reactivating ? '#3A7D4E' : '#C0564D', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: reactivating ? '<path d="M20 6 9 17l-5-5"/>' : '<path d="M18.36 6.64A9 9 0 1 1 5.64 6.64"/><line x1="12" x2="12" y1="2" y2="12"/>' } }) : null;
+
+    // ---- reset ----
+    const ru = this.state.reset ? this.state.users.find(u => u.id === this.state.reset) : null;
+    const resetOpen = !!ru; const resetDone = this.state.resetDone;
+    const resetActions = ru ? (resetDone
+      ? [h('button', { key: 'd', onClick: this.cancelReset, style: { height: '40px', background: '#2B3A4A', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 16px', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }, 'Done')]
+      : [h('button', { key: 'c', onClick: this.cancelReset, style: { height: '40px', background: 'transparent', color: '#2B3A4A', border: '1px solid #C7CCD1', borderRadius: '10px', padding: '0 16px', fontFamily: 'Inter,sans-serif', fontWeight: 500, fontSize: '14px', cursor: 'pointer' } }, 'Cancel'),
+         h('button', { key: 'g', onClick: this.doReset, style: { height: '40px', background: '#2B3A4A', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 16px', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '14px', cursor: 'pointer' } }, 'Generate password')]) : null;
+
+    // ---- detail ----
+    const dt = this.state.detail ? this.state.users.find(u => u.id === this.state.detail) : null;
+    const detailOpen = !!dt;
+    let detailBody = null;
+    if (dt) {
+      const [abg, afg] = this.avatarColor(dt.name);
+      const field = (label, val) => h('div', { key: label, style: { display: 'flex', flexDirection: 'column', gap: '4px', paddingBottom: '14px', borderBottom: '1px solid #F1F0EC' } },
+        h('span', { style: { fontSize: '11.5px', fontWeight: 600, letterSpacing: '.04em', color: '#9AA1AB' } }, label),
+        typeof val === 'string' ? h('span', { style: { fontSize: '15px', fontWeight: 500, color: '#1F2933' } }, val) : val);
+      detailBody = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '20px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px' } },
+          h('div', { style: { width: '68px', height: '68px', borderRadius: '9999px', background: abg, color: afg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '24px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, this.initials(dt.name)),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '20px', color: '#2B3A4A' } }, dt.name),
+            h('div', { style: { display: 'flex', gap: '8px' } }, this.rolePill(dt.role), this.statusPill(dt.active)))),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
+          field('USERNAME', '@' + dt.username),
+          field('ROLE', dt.role + (dt.role === 'Admin' ? ' — full access' : ' — POS & products (read-only admin)')),
+          field('JOINED', dt.joined),
+          field('LAST ACTIVE', dt.last)));
+    }
+
+    return {
+      totalLabel, tableBody, openAdd: this.openAdd,
+      search: this.state.search, onSearch: this.onSearch, roleFilter: this.state.roleFilter, onRoleFilter: this.onRoleFilter,
+      stop: this.stop,
+      // modal
+      modalOpen, modalTitle: md && md.mode === 'edit' ? 'Edit staff member' : 'Add staff member', saveLabel: md && md.mode === 'edit' ? 'Save changes' : 'Create account',
+      showPassword: md ? md.mode === 'add' : true, showActiveToggle: md ? md.mode === 'edit' : false,
+      form: this.state.form, err,
+      onName: this.setF('name'), onUsername: this.setF('username'), onPassword: this.setF('password'),
+      nameStyle: inB + bd(err.name), userStyle: inB + bd(err.username), passStyle: 'flex:1;' + inB + 'font-variant-numeric:tabular-nums;' + bd(err.password),
+      setRoleAdmin: this.setRole('Admin'), setRoleCashier: this.setRole('Cashier'),
+      roleAdminStyle: roleBtn(this.state.form.role === 'Admin'), roleCashierStyle: roleBtn(this.state.form.role === 'Cashier'),
+      roleHint: this.state.form.role === 'Admin' ? 'Full access — manage products, staff, and reports.' : 'Can ring up sales and view products; no admin management.',
+      genPassword: this.genPassword,
+      toggleActive: this.toggleActive,
+      toggleStyle: 'width:42px;height:24px;border:none;border-radius:9999px;background:' + (active ? '#4C8C5B' : '#C7CCD1') + ';position:relative;cursor:pointer;padding:0;',
+      knobStyle: 'position:absolute;top:2px;left:' + (active ? '20px' : '2px') + ';width:20px;height:20px;border-radius:9999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:left .15s;',
+      closeModal: this.closeModal, saveUser: this.saveUser,
+      // deactivate
+      deactOpen, deactIcon, deactIconBg: reactivating ? '#DCEFE0' : '#F6E1DE',
+      deactTitle: du ? (reactivating ? 'Reactivate ' + du.name + '?' : 'Deactivate ' + du.name + '?') : '',
+      deactMessage: du ? (reactivating ? 'They\u2019ll be able to log in again with their existing credentials.' : 'They\u2019ll lose login access immediately. Their past transactions stay intact and linked to their name for reporting. You can reactivate them anytime.') : '',
+      deactBtnLabel: reactivating ? 'Reactivate' : 'Deactivate',
+      deactBtnStyle: 'height:40px;background:' + (reactivating ? '#4C8C5B' : '#C0564D') + ';color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;',
+      cancelDeact: this.cancelDeact, doDeact: this.doDeact,
+      // reset
+      resetOpen, resetDone, tempPass: this.state.tempPass, resetActions,
+      resetTitle: ru ? (resetDone ? 'Password reset for ' + ru.name : 'Reset ' + ru.name + '\u2019s password?') : '',
+      resetMessage: ru ? (resetDone ? 'A temporary password has been generated. Their old password no longer works.' : 'This generates a new temporary password and invalidates the current one. The staff member will need the new password to log in.') : '',
+      cancelReset: this.cancelReset, doReset: this.doReset,
+      // detail
+      detailOpen, detailBody, closeDetail: this.closeDetail, editFromDetail: this.editFromDetail, resetFromDetail: this.resetFromDetail,
+    };
+  }
+}
+</script>
+</body>
+</html>

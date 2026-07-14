@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:240px;height:100%;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;font-family:Inter,sans-serif;">
+  <div style="padding:20px 18px 16px;display:flex;align-items:center;gap:11px;">
+    <div style="width:34px;height:34px;border-radius:9px;background:#2B3A4A;display:flex;align-items:center;justify-content:center;flex:none;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:1px;">
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;letter-spacing:-.01em;">BrewPoint</span>
+      <span style="font-size:11px;color:#6B7280;">Maple &amp; Vine Coffee</span>
+    </div>
+  </div>
+  <div style="padding:4px 12px 6px;">
+    <span style="font-size:10.5px;font-weight:600;letter-spacing:.09em;color:#9AA1AB;padding-left:12px;">MENU</span>
+  </div>
+  <nav style="flex:1;padding:0 12px;display:flex;flex-direction:column;gap:2px;">{{ nav }}</nav>
+  <div style="padding:12px;border-top:1px solid #E5E7EB;display:flex;align-items:center;gap:10px;">
+    <div style="width:34px;height:34px;border-radius:9999px;background:#E8DCC5;color:#2B3A4A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:none;font-family:Poppins,sans-serif;">{{ initials }}</div>
+    <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+      <span style="font-size:13px;font-weight:600;color:#1F2933;">{{ userName }}</span>
+      <span style="font-size:11px;color:#6B7280;">{{ userRole }}</span>
+    </div>
+    <button style="width:32px;height:32px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:240,&quot;height&quot;:720},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;register&quot;,&quot;dashboard&quot;,&quot;products&quot;,&quot;categories&quot;,&quot;users&quot;,&quot;stock&quot;,&quot;transactions&quot;],&quot;default&quot;:&quot;dashboard&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;admin&quot;,&quot;cashier&quot;],&quot;default&quot;:&quot;admin&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const h = React.createElement;
+    const active = this.props.active || 'dashboard';
+    const role = this.props.role || 'admin';
+    const cashier = role === 'cashier';
+    const allItems = [
+      ['register', 'Checkout', '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>', 'cashier'],
+      ['dashboard', 'Dashboard', '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>', 'admin'],
+      ['products', 'Products', '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>', 'both'],
+      ['categories', 'Categories', '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>', 'both'],
+      ['users', 'Users', '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>', 'admin'],
+      ['stock', 'Stock', '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>', 'both'],
+      ['transactions', cashier ? 'My sales' : 'Transactions', '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>', 'both'],
+    ];
+    const items = allItems.filter(([, , , vis]) => vis === 'both' || vis === role);
+    const nav = h(React.Fragment, null, items.map(([k, label, inner]) => {  // eslint-disable-line
+      const on = k === active;
+      return h('a', {
+        key: k, href: '#', style: {
+          display: 'flex', alignItems: 'center', gap: '11px', padding: '9px 12px',
+          borderRadius: '10px', textDecoration: 'none', fontSize: '14px',
+          fontWeight: on ? 600 : 500, color: on ? '#2B3A4A' : '#6B7280',
+          background: on ? '#F3ECDD' : 'transparent',
+        }
+      },
+        h('svg', { width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inner } }),
+        h('span', null, label)
+      );
+    }));
+    const person = cashier
+      ? { name: 'Sofia Reyes', role: 'Cashier', initials: 'SR' }
+      : { name: 'Marcus Bell', role: 'Admin', initials: 'MB' };
+    return { nav, userName: person.name, userRole: person.role, initials: person.initials };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes shimmer{0%{background-position:-680px 0}100%{background-position:680px 0}}
+  @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  ::placeholder{color:#9AA1AB;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#fff;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+  <dc-import name="Sidebar" active="products" hint-size="240px,100%"></dc-import>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+    <!-- HEADER -->
+    <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Products</h2>
+        <span style="font-size:13px;color:#9AA1AB;font-variant-numeric:tabular-nums;">{{ totalLabel }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <!-- role switch -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11.5px;font-weight:600;letter-spacing:.05em;color:#9AA1AB;">VIEW AS</span>
+          <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:9px;padding:3px;gap:2px;">
+            <button onClick="{{ setAdmin }}" style="{{ adminBtnStyle }}">Admin</button>
+            <button onClick="{{ setCashier }}" style="{{ cashierBtnStyle }}">Cashier</button>
+          </div>
+        </div>
+        <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openAdd }}" style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Add product
+          </button>
+        </sc-if>
+      </div>
+    </header>
+
+    <!-- BODY -->
+    <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+      <!-- cashier read-only note -->
+      <sc-if value="{{ showCashierNote }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#E7EFF7;border:1px solid #CFE0F0;border-radius:10px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A6BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span style="font-size:13px;color:#3A6BA8;font-weight:500;">Cashier view — you can browse and search products, but only an admin can add, edit, or remove them.</span>
+        </div>
+      </sc-if>
+
+      <!-- toolbar -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="position:relative;width:320px;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search by name or barcode…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+        </div>
+        <div style="position:relative;">
+          <select value="{{ category }}" onChange="{{ onCategory }}" style="height:40px;padding:0 34px 0 12px;border:1px solid #E5E7EB;border-radius:10px;font:500 14px Inter,sans-serif;color:#374151;background:#fff;appearance:none;cursor:pointer;outline:none;">{{ categoryOptions }}</select>
+          <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <div style="flex:1;"></div>
+        <button onClick="{{ reload }}" title="Reload" style="width:40px;height:40px;border:1px solid #E5E7EB;background:#fff;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        </button>
+      </div>
+
+      <!-- table card -->
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="overflow:auto;flex:1;">{{ tableBody }}</div>
+        <sc-if value="{{ showPager }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #E5E7EB;background:#fff;flex:none;">
+            <span style="font-size:13px;color:#6B7280;font-variant-numeric:tabular-nums;">{{ rangeLabel }}</span>
+            <div style="display:flex;gap:6px;">{{ pageButtons }}</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT MODAL -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:20;">
+      <div onClick="{{ stop }}" style="width:560px;max-height:820px;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;animation:popIn .18s ease-out;">
+        <div style="padding:22px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:19px;color:#2B3A4A;">{{ modalTitle }}</h3>
+          <button onClick="{{ closeModal }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Product name <span style="color:#C0564D;">*</span></label>
+            <input value="{{ form.name }}" onInput="{{ onFieldName }}" placeholder="e.g. Iced Caramel Macchiato" style="{{ nameInputStyle }}" />
+            <sc-if value="{{ err.name }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.name }}</span></sc-if>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Category <span style="color:#C0564D;">*</span></label>
+              <div style="position:relative;">
+                <select value="{{ form.category }}" onChange="{{ onFieldCategory }}" style="{{ catInputStyle }}">{{ formCatOptions }}</select>
+                <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <sc-if value="{{ err.category }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.category }}</span></sc-if>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Barcode <span style="font-weight:400;color:#9AA1AB;">· optional</span></label>
+              <input value="{{ form.barcode }}" onInput="{{ onFieldBarcode }}" placeholder="e.g. 785002147" style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;font-variant-numeric:tabular-nums;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Price (USD) <span style="color:#C0564D;">*</span></label>
+              <div style="position:relative;">
+                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9AA1AB;font-size:14px;">$</span>
+                <input value="{{ form.price }}" onInput="{{ onFieldPrice }}" placeholder="0.00" style="{{ priceInputStyle }}" />
+              </div>
+              <sc-if value="{{ err.price }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.price }}</span></sc-if>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Stock quantity <span style="color:#C0564D;">*</span></label>
+              <input value="{{ form.stock }}" onInput="{{ onFieldStock }}" placeholder="0" style="{{ stockInputStyle }}" />
+              <sc-if value="{{ err.stock }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ err.stock }}</span></sc-if>
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Product image <span style="font-weight:400;color:#9AA1AB;">· optional</span></label>
+            <div style="border:1.5px dashed #C7CCD1;border-radius:12px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;background:repeating-linear-gradient(45deg,#F7F5F1,#F7F5F1 10px,#F1EEE8 10px,#F1EEE8 20px);cursor:pointer;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+              <span style="font:500 13px Inter,sans-serif;color:#6B7280;">Drop an image or <span style="color:#4A7DBD;">browse</span></span>
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#9AA1AB;">PNG / JPG · up to 2MB</span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:18px 24px;border-top:1px solid #F1F0EC;display:flex;justify-content:flex-end;gap:12px;">
+          <button onClick="{{ closeModal }}" style="height:42px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 20px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ saveProduct }}" style="height:42px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 20px;font:600 14px Inter,sans-serif;cursor:pointer;">{{ saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- DELETE CONFIRM -->
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelDelete }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:30;">
+      <div onClick="{{ stop }}" style="width:420px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;gap:16px;animation:popIn .18s ease-out;">
+        <div style="width:46px;height:46px;border-radius:11px;background:#F6E1DE;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0564D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">Delete “{{ delName }}”?</h3>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">{{ delMessage }}</p>
+        </div>
+        <sc-if value="{{ delHasHistory }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:#FBF0DD;border:1px solid #F0DFBD;border-radius:10px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A5E17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+            <span style="font-size:12.5px;line-height:1.5;color:#8A5E17;">This product appears in <strong>{{ delTxnCount }}</strong> past transactions. It will be hidden from the catalog but kept for reporting (soft delete).</span>
+          </div>
+        </sc-if>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:2px;">
+          <button onClick="{{ cancelDelete }}" style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ doDelete }}" style="height:40px;background:#C0564D;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Delete product</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- DETAIL DRAWER -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:absolute;inset:0;background:rgba(31,41,51,.45);display:flex;justify-content:flex-end;z-index:25;">
+      <div onClick="{{ stop }}" style="width:420px;height:100%;background:#fff;box-shadow:-8px 0 32px rgba(15,20,24,.2);display:flex;flex-direction:column;">
+        <div style="padding:20px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:15px;color:#6B7280;">Product detail</span>
+          <button onClick="{{ closeDetail }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:24px;">{{ detailBody }}</div>
+        <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:16px 24px;border-top:1px solid #F1F0EC;display:flex;gap:10px;">
+            <button onClick="{{ editFromDetail }}" style="flex:1;height:42px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit
+            </button>
+            <button onClick="{{ deleteFromDetail }}" style="height:42px;background:#F6E1DE;color:#A6413A;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Delete</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    role: 'admin',
+    search: '',
+    category: 'All categories',
+    page: 1,
+    loading: false,
+    modal: null,      // {mode, id}
+    form: { name: '', category: '', price: '', stock: '', barcode: '' },
+    err: {},
+    confirm: null,    // product id
+    detail: null,     // product id
+    products: [
+      { id: 1, name: 'Cappuccino', category: 'Espresso', price: 4.25, stock: 36, barcode: '7850021401', txns: 214 },
+      { id: 2, name: 'Caffè Latte', category: 'Espresso', price: 4.75, stock: 41, barcode: '7850021418', txns: 288 },
+      { id: 3, name: 'Flat White', category: 'Espresso', price: 4.50, stock: 22, barcode: '7850021425', txns: 132 },
+      { id: 4, name: 'Americano', category: 'Espresso', price: 3.50, stock: 58, barcode: '7850021432', txns: 176 },
+      { id: 5, name: 'Cortado', category: 'Espresso', price: 4.00, stock: 7, barcode: '7850021449', txns: 54 },
+      { id: 6, name: 'Cold Brew', category: 'Brewed Coffee', price: 4.95, stock: 0, barcode: '7850021456', txns: 121 },
+      { id: 7, name: 'Nitro Cold Brew', category: 'Brewed Coffee', price: 5.75, stock: 14, barcode: '7850021463', txns: 88 },
+      { id: 8, name: 'Pour Over', category: 'Brewed Coffee', price: 5.50, stock: 8, barcode: '7850021470', txns: 41 },
+      { id: 9, name: 'Matcha Latte', category: 'Non-Coffee', price: 5.25, stock: 28, barcode: '7850021487', txns: 96 },
+      { id: 10, name: 'Chai Latte', category: 'Non-Coffee', price: 4.75, stock: 33, barcode: '7850021494', txns: 73 },
+      { id: 11, name: 'Hot Chocolate', category: 'Non-Coffee', price: 4.25, stock: 19, barcode: '7850021500', txns: 47 },
+      { id: 12, name: 'Butter Croissant', category: 'Pastry', price: 3.75, stock: 18, barcode: '7850021517', txns: 162 },
+      { id: 13, name: 'Almond Croissant', category: 'Pastry', price: 4.50, stock: 4, barcode: '7850021524', txns: 58 },
+      { id: 14, name: 'Blueberry Muffin', category: 'Pastry', price: 3.95, stock: 0, barcode: '7850021531', txns: 39 },
+      { id: 15, name: 'Cinnamon Roll', category: 'Pastry', price: 4.25, stock: 11, barcode: '7850021548', txns: 44 },
+      { id: 16, name: 'House Blend 12oz', category: 'Retail Beans', price: 16.00, stock: 24, barcode: '7850021555', txns: 22 },
+      { id: 17, name: 'Ethiopia 12oz', category: 'Retail Beans', price: 18.00, stock: 9, barcode: '7850021562', txns: 15 },
+      { id: 18, name: 'Decaf 12oz', category: 'Retail Beans', price: 16.00, stock: 6, barcode: '7850021579', txns: 8 },
+    ],
+    nextId: 19,
+  };
+
+  PAGE_SIZE = 8;
+  CATS = ['Espresso', 'Brewed Coffee', 'Non-Coffee', 'Pastry', 'Retail Beans'];
+
+  statusOf(s) { return s === 0 ? 'out' : (s <= 8 ? 'low' : 'ok'); }
+  statMeta(st) {
+    if (st === 'out') return { t: 'Out of stock', bg: '#F6E1DE', c: '#A6413A', dot: '#C0564D' };
+    if (st === 'low') return { t: 'Low stock', bg: '#FBF0DD', c: '#8A5E17', dot: '#D9A441' };
+    return { t: 'In stock', bg: '#DCEFE0', c: '#3A7D4E', dot: '#4C8C5B' };
+  }
+  tileColor(name) {
+    const palette = [['#F3ECDD', '#2B3A4A'], ['#DCE6F2', '#3A6BA8'], ['#E3EEE4', '#3A7D4E'], ['#F3E4E1', '#A6413A'], ['#EFE7F2', '#6C4A8A']];
+    let h = 0; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % palette.length;
+    return palette[h];
+  }
+
+  filtered() {
+    const q = this.state.search.trim().toLowerCase();
+    return this.state.products.filter(p => {
+      if (this.state.category !== 'All categories' && p.category !== this.state.category) return false;
+      if (q && !(p.name.toLowerCase().includes(q) || p.barcode.includes(q))) return false;
+      return true;
+    });
+  }
+
+  // ---- handlers ----
+  setAdmin = () => this.setState({ role: 'admin' });
+  setCashier = () => this.setState({ role: 'cashier', modal: null, confirm: null });
+  onSearch = (e) => this.setState({ search: e.target.value, page: 1 });
+  onCategory = (e) => this.setState({ category: e.target.value, page: 1 });
+  goPage = (p) => this.setState({ page: p });
+  reload = () => {
+    this.setState({ loading: true });
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ loading: false }), 1100);
+  };
+  stop = (e) => e.stopPropagation();
+
+  openAdd = () => this.setState({ modal: { mode: 'add' }, form: { name: '', category: '', price: '', stock: '', barcode: '' }, err: {} });
+  openEdit = (p) => this.setState({ modal: { mode: 'edit', id: p.id }, form: { name: p.name, category: p.category, price: String(p.price.toFixed(2)), stock: String(p.stock), barcode: p.barcode }, err: {}, detail: null });
+  closeModal = () => this.setState({ modal: null, err: {} });
+  setF = (k) => (e) => this.setState({ form: { ...this.state.form, [k]: e.target.value } });
+
+  saveProduct = () => {
+    const f = this.state.form; const err = {};
+    if (!f.name.trim()) err.name = 'Product name is required.';
+    if (f.price === '' ) err.price = 'Price is required.';
+    else if (isNaN(Number(f.price)) || Number(f.price) < 0) err.price = 'Enter a valid price (0 or more).';
+    if (!f.category) err.category = 'Choose a category.';
+    if (f.stock === '') err.stock = 'Stock quantity is required.';
+    else if (!Number.isInteger(Number(f.stock)) || Number(f.stock) < 0) err.stock = 'Enter a whole number (0 or more).';
+    if (Object.keys(err).length) { this.setState({ err }); return; }
+
+    const rec = { name: f.name.trim(), category: f.category, price: Number(Number(f.price).toFixed(2)), stock: parseInt(f.stock, 10), barcode: f.barcode.trim() || '—' };
+    if (this.state.modal.mode === 'add') {
+      this.setState({ products: [{ id: this.state.nextId, txns: 0, ...rec }, ...this.state.products], nextId: this.state.nextId + 1, modal: null, err: {}, page: 1 });
+    } else {
+      const id = this.state.modal.id;
+      this.setState({ products: this.state.products.map(p => p.id === id ? { ...p, ...rec } : p), modal: null, err: {} });
+    }
+  };
+
+  askDelete = (p) => this.setState({ confirm: p.id, detail: null });
+  cancelDelete = () => this.setState({ confirm: null });
+  doDelete = () => {
+    this.setState({ products: this.state.products.filter(p => p.id !== this.state.confirm), confirm: null });
+  };
+  openDetail = (p) => this.setState({ detail: p.id });
+  closeDetail = () => this.setState({ detail: null });
+  editFromDetail = () => { const p = this.state.products.find(x => x.id === this.state.detail); if (p) this.openEdit(p); };
+  deleteFromDetail = () => { const p = this.state.products.find(x => x.id === this.state.detail); if (p) this.askDelete(p); };
+
+  renderVals() {
+    const h = React.createElement;
+    const isAdmin = this.state.role === 'admin';
+    const total = this.state.products.length;
+    const fil = this.filtered();
+    const pages = Math.max(1, Math.ceil(fil.length / this.PAGE_SIZE));
+    const page = Math.min(this.state.page, pages);
+    const start = (page - 1) * this.PAGE_SIZE;
+    const pageItems = fil.slice(start, start + this.PAGE_SIZE);
+
+    const roleBtn = (on) => ({ border: 'none', background: on ? '#fff' : 'transparent', color: on ? '#2B3A4A' : '#6B7280', fontWeight: on ? 600 : 500, fontSize: '13px', fontFamily: 'Inter,sans-serif', padding: '6px 14px', borderRadius: '7px', cursor: 'pointer', boxShadow: on ? '0 1px 2px rgba(15,20,24,.1)' : 'none' });
+
+    // category filter options
+    const categoryOptions = ['All categories', ...this.CATS].map(c => h('option', { key: c, value: c }, c));
+    const formCatOptions = [h('option', { key: '_', value: '', disabled: true }, 'Select a category…'), ...this.CATS.map(c => h('option', { key: c, value: c }, c))];
+
+    // ---- TABLE BODY (loading / empty / no-results / rows) ----
+    const th = (label, align) => h('th', { key: label, style: { padding: '0 16px', height: '44px', textAlign: align || 'left', fontFamily: 'Inter,sans-serif', fontWeight: 500, fontSize: '12px', color: '#6B7280', borderBottom: '1px solid #E5E7EB', position: 'sticky', top: 0, background: '#F7F7F5', whiteSpace: 'nowrap' } }, label);
+    const header = h('thead', null, h('tr', null,
+      th('Product'), th('Category'), th('Price', 'right'), th('Stock', 'right'), th('Status'),
+      isAdmin ? th('Actions', 'right') : null));
+
+    let tableBody;
+    if (this.state.loading) {
+      const barc = (w) => ({ height: '12px', width: w, borderRadius: '6px', background: 'linear-gradient(90deg,#ECEBE7 25%,#F6F5F2 37%,#ECEBE7 63%)', backgroundSize: '680px 100%', animation: 'shimmer 1.4s infinite linear' });
+      tableBody = h('div', { style: { display: 'flex', flexDirection: 'column' } },
+        [0, 1, 2, 3, 4, 5, 6, 7].map(i => h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '0 18px', height: '62px', borderBottom: '1px solid #F1F0EC' } },
+          h('div', { style: { width: '40px', height: '40px', borderRadius: '9px', background: '#ECEBE7', flex: 'none' } }),
+          h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' } }, h('div', { style: barc('42%') }), h('div', { style: barc('22%') })),
+          h('div', { style: barc('54px') }), h('div', { style: barc('40px') }),
+          h('div', { style: { width: '84px', height: '22px', borderRadius: '9999px', background: '#ECEBE7', flex: 'none' } }))));
+    } else if (total === 0) {
+      tableBody = this.centerState(
+        '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>',
+        'No products yet',
+        isAdmin ? 'Add your first product to start selling it on the POS screen.' : 'No products have been added yet. Ask an admin to add the first one.',
+        isAdmin ? { label: 'Add your first product', onClick: this.openAdd } : null);
+    } else if (fil.length === 0) {
+      tableBody = this.centerState(
+        '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+        'No matching products',
+        'No products match your search or filter. Try a different term or clear the category filter.', null);
+    } else {
+      const tdB = { padding: '0 16px', height: '62px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#374151', fontFamily: 'Inter,sans-serif' };
+      const tdNum = { ...tdB, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: '#1F2933' };
+      const badge = (m, text) => h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: m.bg, color: m.c, whiteSpace: 'nowrap' } }, h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: m.dot } }), text);
+      const actBtn = (inner, color, onClick, title) => h('button', { onClick: (e) => { e.stopPropagation(); onClick(); }, title, style: { width: '32px', height: '32px', borderRadius: '8px', border: '1px solid #E9E8E4', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: color, strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inner } }));
+
+      const rows = pageItems.map(p => {
+        const st = this.statusOf(p.stock); const m = this.statMeta(st); const out = st === 'out';
+        const [bg, fg] = this.tileColor(p.name);
+        return h('tr', { key: p.id, onClick: () => this.openDetail(p), style: { cursor: 'pointer', background: out ? '#FCF7F6' : '#fff' }, onMouseEnter: (e) => e.currentTarget.style.background = out ? '#FBF1EF' : '#FAFAF8', onMouseLeave: (e) => e.currentTarget.style.background = out ? '#FCF7F6' : '#fff' },
+          h('td', { style: tdB }, h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+            h('div', { style: { position: 'relative', width: '40px', height: '40px', borderRadius: '9px', background: bg, color: fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '15px', fontFamily: 'Poppins,sans-serif', flex: 'none', opacity: out ? 0.55 : 1 } }, p.name[0]),
+            h('div', { style: { display: 'flex', flexDirection: 'column' } },
+              h('span', { style: { fontWeight: 500, color: '#1F2933', fontSize: '14px' } }, p.name),
+              h('span', { style: { fontSize: '11.5px', color: '#9AA1AB', fontVariantNumeric: 'tabular-nums' } }, p.barcode)))),
+          h('td', { style: tdB }, p.category),
+          h('td', { style: tdNum }, '$' + p.price.toFixed(2)),
+          h('td', { style: tdNum }, out ? h('span', { style: { color: '#C0564D', fontWeight: 600 } }, '0') : String(p.stock)),
+          h('td', { style: tdB }, badge(m, m.t)),
+          isAdmin ? h('td', { style: { ...tdB, textAlign: 'right', whiteSpace: 'nowrap' } }, h('div', { style: { display: 'inline-flex', gap: '6px' } },
+            actBtn('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>', '#6B7280', () => this.openEdit(p), 'Edit'),
+            actBtn('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>', '#C0564D', () => this.askDelete(p), 'Delete'))) : null);
+      });
+      tableBody = h('table', { style: { width: '100%', borderCollapse: 'collapse' } }, header, h('tbody', null, rows));
+    }
+
+    // ---- pager ----
+    const showPager = !this.state.loading && fil.length > 0;
+    const pageBtn = (label, p, opts = {}) => h('button', { key: label + p, disabled: opts.disabled, onClick: () => !opts.disabled && this.goPage(p), style: { minWidth: '34px', height: '34px', padding: '0 6px', border: opts.active ? 'none' : '1px solid #E5E7EB', background: opts.active ? '#2B3A4A' : '#fff', borderRadius: '8px', color: opts.disabled ? '#C7CCD1' : (opts.active ? '#fff' : '#374151'), fontFamily: 'Inter,sans-serif', fontWeight: opts.active ? 600 : 500, fontSize: '13px', cursor: opts.disabled ? 'not-allowed' : 'pointer' } }, label);
+    const pageButtons = [pageBtn('‹', page - 1, { disabled: page <= 1 })]
+      .concat(Array.from({ length: pages }, (_, i) => pageBtn(String(i + 1), i + 1, { active: i + 1 === page })))
+      .concat([pageBtn('›', page + 1, { disabled: page >= pages })]);
+    const rangeLabel = fil.length === 0 ? '' : `Showing ${start + 1}–${Math.min(start + this.PAGE_SIZE, fil.length)} of ${fil.length}${fil.length !== total ? ' filtered' : ''} products`;
+    const totalLabel = total === 1 ? '1 product' : total + ' products';
+
+    // ---- modal ----
+    const m = this.state.modal;
+    const modalOpen = !!m;
+    const err = this.state.err;
+    const inputBase = 'width:100%;box-sizing:border-box;height:42px;padding:0 12px;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;';
+    const bord = (bad) => bad ? 'border:1px solid #C0564D;box-shadow:0 0 0 3px rgba(192,86,77,.12);' : 'border:1px solid #E5E7EB;';
+    const nameInputStyle = inputBase + bord(err.name);
+    const catInputStyle = 'width:100%;box-sizing:border-box;height:42px;padding:0 34px 0 12px;border-radius:10px;font:400 14px Inter,sans-serif;color:' + (this.state.form.category ? '#1F2933' : '#9AA1AB') + ';background:#fff;appearance:none;cursor:pointer;outline:none;' + bord(err.category);
+    const priceInputStyle = 'width:100%;box-sizing:border-box;height:42px;padding:0 12px 0 26px;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;font-variant-numeric:tabular-nums;' + bord(err.price);
+    const stockInputStyle = inputBase + 'font-variant-numeric:tabular-nums;' + bord(err.stock);
+
+    // ---- delete confirm ----
+    const delP = this.state.confirm ? this.state.products.find(p => p.id === this.state.confirm) : null;
+    const confirmOpen = !!delP;
+    const delHasHistory = delP ? delP.txns > 0 : false;
+
+    // ---- detail ----
+    const detP = this.state.detail ? this.state.products.find(p => p.id === this.state.detail) : null;
+    const detailOpen = !!detP;
+    let detailBody = null;
+    if (detP) {
+      const st = this.statusOf(detP.stock); const dm = this.statMeta(st); const [bg, fg] = this.tileColor(detP.name);
+      const field = (label, val, mono) => h('div', { key: label, style: { display: 'flex', flexDirection: 'column', gap: '4px', paddingBottom: '14px', borderBottom: '1px solid #F1F0EC' } },
+        h('span', { style: { fontSize: '11.5px', fontWeight: 600, letterSpacing: '.04em', color: '#9AA1AB' } }, label),
+        h('span', { style: { fontSize: '15px', fontWeight: 500, color: '#1F2933', fontVariantNumeric: mono ? 'tabular-nums' : 'normal' } }, val));
+      detailBody = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '18px' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px' } },
+          h('div', { style: { width: '72px', height: '72px', borderRadius: '14px', background: bg, color: fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '30px', fontFamily: 'Poppins,sans-serif', flex: 'none', opacity: st === 'out' ? 0.6 : 1 } }, detP.name[0]),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '20px', color: '#2B3A4A' } }, detP.name),
+            h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: dm.bg, color: dm.c, alignSelf: 'flex-start' } }, h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: dm.dot } }), dm.t))),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '14px' } },
+          field('CATEGORY', detP.category),
+          field('PRICE', '$' + detP.price.toFixed(2), true),
+          field('STOCK QUANTITY', st === 'out' ? '0 — out of stock' : detP.stock + ' units', true),
+          field('BARCODE', detP.barcode, true),
+          field('SOLD IN', detP.txns + ' transactions', true)),
+        st === 'out' ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '9px', padding: '11px 13px', background: '#F6E1DE', border: '1px solid #EBC6C1', borderRadius: '10px' } },
+          h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: '#A6413A', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', style: { flex: 'none' }, dangerouslySetInnerHTML: { __html: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>' } }),
+          h('span', { style: { fontSize: '12.5px', color: '#A6413A', fontWeight: 500 } }, 'Out of stock — not sellable on the POS until restocked.')) : null);
+    }
+
+    return {
+      isAdmin, showCashierNote: !isAdmin, totalLabel,
+      adminBtnStyle: roleBtn(isAdmin), cashierBtnStyle: roleBtn(!isAdmin),
+      setAdmin: this.setAdmin, setCashier: this.setCashier,
+      openAdd: this.openAdd, reload: this.reload,
+      search: this.state.search, onSearch: this.onSearch,
+      category: this.state.category, onCategory: this.onCategory, categoryOptions,
+      tableBody, showPager, pageButtons, rangeLabel,
+      // modal
+      modalOpen, modalTitle: m && m.mode === 'edit' ? 'Edit product' : 'Add product', saveLabel: m && m.mode === 'edit' ? 'Save changes' : 'Add product',
+      closeModal: this.closeModal, stop: this.stop, saveProduct: this.saveProduct,
+      form: this.state.form, err,
+      onFieldName: this.setF('name'), onFieldCategory: this.setF('category'), onFieldPrice: this.setF('price'), onFieldStock: this.setF('stock'), onFieldBarcode: this.setF('barcode'),
+      formCatOptions, nameInputStyle, catInputStyle, priceInputStyle, stockInputStyle,
+      // delete
+      confirmOpen, delName: delP ? delP.name : '', delHasHistory, delTxnCount: delP ? delP.txns : 0,
+      delMessage: delHasHistory ? 'This product has sales history, so it will be soft-deleted — removed from the catalog but retained for reporting.' : 'This product has no sales history and will be permanently removed from the catalog.',
+      cancelDelete: this.cancelDelete, doDelete: this.doDelete,
+      // detail
+      detailOpen, detailBody, closeDetail: this.closeDetail, editFromDetail: this.editFromDetail, deleteFromDetail: this.deleteFromDetail,
+    };
+  }
+
+  centerState(icon, title, sub, action) {
+    const h = React.createElement;
+    return h('div', { style: { height: '100%', minHeight: '420px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' } },
+      h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center' } },
+        h('div', { style: { width: '64px', height: '64px', borderRadius: '9999px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+          h('svg', { width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: '#B08D57', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: icon } })),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '18px', color: '#2B3A4A' } }, title),
+          h('span', { style: { fontSize: '13.5px', color: '#6B7280', maxWidth: '340px', lineHeight: 1.5 } }, sub)),
+        action ? h('button', { onClick: action.onClick, style: { height: '40px', background: '#2B3A4A', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 16px', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' } },
+          h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: '#fff', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M5 12h14M12 5v14"/>' } }), action.label) : null));
+  }
+}
+</script>
+</body>
+</html>

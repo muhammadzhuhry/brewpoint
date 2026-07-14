@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes shimmer{0%{background-position:-680px 0}100%{background-position:680px 0}}
+</style>
+</helmet>
+
+<div style="padding:48px 56px;display:flex;flex-direction:column;gap:52px;width:1472px;box-sizing:border-box;">
+
+  <!-- COVER / SYSTEM LEGEND -->
+  <section style="display:flex;flex-direction:column;gap:20px;">
+    <div style="display:flex;align-items:center;gap:13px;">
+      <div style="width:44px;height:44px;border-radius:11px;background:#2B3A4A;display:flex;align-items:center;justify-content:center;flex:none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <h1 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:28px;color:#2B3A4A;letter-spacing:-.01em;">BrewPoint — Admin screens</h1>
+        <p style="margin:0;font-size:14px;color:#6B7280;">Static hi-fi · admin-side · desktop web · USD · design system v1.0</p>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:11px;">
+        <span style="font-size:11px;font-weight:600;letter-spacing:.07em;color:#9AA1AB;">PALETTE</span>
+        <div style="display:flex;gap:8px;">
+          <div style="width:34px;height:34px;border-radius:8px;background:#2B3A4A;" title="Navy #2B3A4A"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#4A7DBD;" title="Blue #4A7DBD"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#E8DCC5;" title="Cream #E8DCC5"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#4C8C5B;" title="Success"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#D9A441;" title="Warning"></div>
+          <div style="width:34px;height:34px;border-radius:8px;background:#C0564D;" title="Danger"></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:8px;justify-content:center;">
+        <span style="font-size:11px;font-weight:600;letter-spacing:.07em;color:#9AA1AB;">TYPE</span>
+        <div style="display:flex;align-items:baseline;gap:14px;">
+          <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Poppins</span>
+          <span style="font-size:12px;color:#6B7280;">headings</span>
+          <span style="font-family:Inter,sans-serif;font-weight:500;font-size:16px;color:#1F2933;">Inter</span>
+          <span style="font-size:12px;color:#6B7280;">body · tabular&nbsp;<span style="font-variant-numeric:tabular-nums;font-weight:600;">$1,284.50</span></span>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;justify-content:center;">
+        <span style="font-size:11px;font-weight:600;letter-spacing:.07em;color:#9AA1AB;">STATUS</span>
+        <div style="display:flex;gap:8px;">
+          <span style="padding:3px 10px;border-radius:9999px;font-size:12px;font-weight:600;background:#DCEFE0;color:#3A7D4E;">Completed</span>
+          <span style="padding:3px 10px;border-radius:9999px;font-size:12px;font-weight:600;background:#FBF0DD;color:#8A5E17;">Low stock</span>
+          <span style="padding:3px 10px;border-radius:9999px;font-size:12px;font-weight:600;background:#F6E1DE;color:#A6413A;">Voided</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S1 · SALES DASHBOARD ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S1">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S1</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Sales Dashboard</span>
+      <span style="font-size:12.5px;color:#6B7280;">Admin landing · today's totals, date-range control, best sellers, low-stock alerts</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+
+      <!-- default -->
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Default · today</span>
+        <div style="display:flex;width:1360px;height:840px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <dc-import name="Sidebar" active="dashboard" hint-size="240px,100%"></dc-import>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+            <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Dashboard</h2>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:10px;padding:3px;gap:2px;">
+                  <button style="border:none;background:#fff;color:#2B3A4A;font-weight:600;font-size:13px;font-family:Inter,sans-serif;padding:6px 14px;border-radius:8px;box-shadow:0 1px 2px rgba(15,20,24,.08);cursor:pointer;">Today</button>
+                  <button style="border:none;background:transparent;color:#6B7280;font-weight:500;font-size:13px;font-family:Inter,sans-serif;padding:6px 14px;border-radius:8px;cursor:pointer;">7 days</button>
+                  <button style="border:none;background:transparent;color:#6B7280;font-weight:500;font-size:13px;font-family:Inter,sans-serif;padding:6px 14px;border-radius:8px;cursor:pointer;">30 days</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:13px;color:#1F2933;font-weight:500;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+                  Jul 2, 2026
+                </div>
+              </div>
+            </header>
+            <div style="flex:1;overflow:hidden;padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">{{ statCards }}</div>
+              <div style="flex:1;display:flex;gap:16px;min-height:0;">
+                <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0;">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;">
+                    <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Sales by hour</h3>
+                    <span style="font-size:12.5px;color:#6B7280;">96 orders today</span>
+                  </div>
+                  {{ chart }}
+                </div>
+                <div style="width:392px;flex:none;display:flex;flex-direction:column;gap:16px;">
+                  <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;min-height:0;">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+                      <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Best sellers</h3>
+                      <span style="font-size:12px;color:#9AA1AB;">by units</span>
+                    </div>
+                    <sc-for list="{{ bestSellers }}" as="b" hint-placeholder-count="5">
+                      <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #F1F0EC;">
+                        <span style="width:20px;font-weight:600;color:#9AA1AB;font-size:13px;font-variant-numeric:tabular-nums;">{{ b.rank }}</span>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+                          <span style="font-size:13.5px;font-weight:500;color:#1F2933;">{{ b.name }}</span>
+                          <span style="font-size:11.5px;color:#9AA1AB;">{{ b.cat }}</span>
+                        </div>
+                        <span style="font-size:13.5px;font-weight:600;color:#2B3A4A;font-variant-numeric:tabular-nums;">{{ b.qty }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+                      <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Low stock</h3>
+                    </div>
+                    <sc-for list="{{ lowStock }}" as="l" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F1F0EC;">
+                        <span style="font-size:13.5px;font-weight:500;color:#1F2933;">{{ l.name }}</span>
+                        {{ l.badge }}
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- empty state -->
+      <div style="display:flex;flex-direction:column;gap:9px;" id="S1e">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Empty · no sales in range</span>
+        <div style="display:flex;width:1000px;height:840px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <dc-import name="Sidebar" active="dashboard" hint-size="240px,100%"></dc-import>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+            <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Dashboard</h2>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:13px;color:#1F2933;font-weight:500;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+                Jun 1 – Jun 7, 2026
+              </div>
+            </header>
+            <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">{{ statCardsEmpty }}</div>
+              <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                {{ emptyState }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ S2 · LOGIN ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S2">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S2</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Login</span>
+      <span style="font-size:12.5px;color:#6B7280;">Only brand moment · Poppins headline · generic error on invalid credentials</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+
+      <!-- default -->
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Default</span>
+        <div style="display:flex;width:960px;height:600px;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <div style="width:44%;background:#2B3A4A;padding:44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+            <div style="display:flex;align-items:center;gap:11px;position:relative;z-index:1;">
+              <div style="width:36px;height:36px;border-radius:9px;background:rgba(232,220,197,.16);display:flex;align-items:center;justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+              </div>
+              <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#fff;">BrewPoint</span>
+            </div>
+            <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:30px;line-height:1.2;color:#fff;letter-spacing:-.01em;">Calm, fast point of sale for your coffee bar.</h2>
+              <p style="margin:0;font-size:14px;line-height:1.6;color:rgba(255,255,255,.62);max-width:300px;">Ring up orders, track stock, and see the day's sales — all from one screen at the counter.</p>
+            </div>
+            <span style="position:relative;z-index:1;font-size:12px;color:rgba(255,255,255,.45);">Maple &amp; Vine Coffee · v1.0</span>
+            <svg style="position:absolute;right:-40px;bottom:-40px;opacity:.06;" width="280" height="280" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+          </div>
+          <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;padding:40px;">
+            <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:22px;">
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Sign in</h3>
+                <span style="font-size:13.5px;color:#6B7280;">Enter your staff credentials to continue.</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Username</label>
+                  <input value="sofia" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Password</label>
+                  <input type="password" value="password" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+                </div>
+              </div>
+              <button style="height:44px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 15px Inter,sans-serif;cursor:pointer;">Sign in</button>
+              <span style="text-align:center;font-size:12.5px;color:#9AA1AB;">Forgot your password? Ask your store admin.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- error -->
+      <div style="display:flex;flex-direction:column;gap:9px;" id="S2e">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Error · invalid credentials</span>
+        <div style="width:420px;height:600px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);display:flex;align-items:center;justify-content:center;padding:40px;">
+          <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:20px;">
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Sign in</h3>
+              <span style="font-size:13.5px;color:#6B7280;">Enter your staff credentials to continue.</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:#F6E1DE;border:1px solid #EBC6C1;border-radius:10px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A6413A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              <span style="font-size:13px;font-weight:500;color:#A6413A;">Invalid username or password.</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Username</label>
+                <input value="sofia" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #C0564D;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;box-shadow:0 0 0 3px rgba(192,86,77,.12);" />
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Password</label>
+                <input type="password" value="wrongpass" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #C0564D;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+              </div>
+            </div>
+            <button style="height:44px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 15px Inter,sans-serif;cursor:pointer;">Sign in</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ S3 · PRODUCTS LIST ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S3">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S3</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Products</span>
+      <span style="font-size:12.5px;color:#6B7280;">Search · category filter · out-of-stock flag · pagination · Add product (admin only)</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+
+      <!-- default -->
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Default · list</span>
+        <div style="display:flex;width:1360px;height:840px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <dc-import name="Sidebar" active="products" hint-size="240px,100%"></dc-import>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+            <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Products</h2>
+              <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Add product
+              </button>
+            </header>
+            <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="position:relative;width:300px;">
+                  <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input placeholder="Search by name or barcode…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+                </div>
+                <div style="position:relative;">
+                  <select style="height:40px;padding:0 34px 0 12px;border:1px solid #E5E7EB;border-radius:10px;font:500 14px Inter,sans-serif;color:#374151;background:#fff;appearance:none;cursor:pointer;"><option>All categories</option><option>Espresso</option><option>Brewed Coffee</option><option>Non-Coffee</option><option>Pastry</option><option>Retail Beans</option></select>
+                  <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+                <div style="flex:1;"></div>
+                <span style="font-size:13px;color:#6B7280;">42 products</span>
+              </div>
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0;">
+                <div style="overflow:auto;flex:1;">
+                  <table style="width:100%;border-collapse:collapse;">
+                    <thead><tr style="background:#F7F7F5;">
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Product</th>
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Category</th>
+                      <th style="padding:0 16px;height:44px;text-align:right;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Price</th>
+                      <th style="padding:0 16px;height:44px;text-align:right;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Stock</th>
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Status</th>
+                      <th style="padding:0 16px;height:44px;text-align:right;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Actions</th>
+                    </tr></thead>
+                    <tbody>{{ productRows }}</tbody>
+                  </table>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #E5E7EB;background:#fff;flex:none;">
+                  <span style="font-size:13px;color:#6B7280;font-variant-numeric:tabular-nums;">Showing 1–14 of 42 products</span>
+                  <div style="display:flex;gap:6px;">
+                    <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#C7CCD1;font-size:15px;cursor:not-allowed;">‹</button>
+                    <button style="width:34px;height:34px;border:none;background:#2B3A4A;border-radius:8px;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer;">1</button>
+                    <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#374151;font:500 13px Inter,sans-serif;cursor:pointer;">2</button>
+                    <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#374151;font:500 13px Inter,sans-serif;cursor:pointer;">3</button>
+                    <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#374151;font-size:15px;cursor:pointer;">›</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- empty + loading (content-only) -->
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;flex-direction:column;gap:9px;" id="S3e">
+          <span style="font-size:12px;color:#8A8577;font-weight:500;">Empty · no products yet</span>
+          <div style="width:560px;height:390px;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:14px;padding:24px;box-shadow:0 8px 24px rgba(15,20,24,.12);display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="position:relative;flex:1;">
+                <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C7CCD1" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input placeholder="Search by name or barcode…" disabled style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#C7CCD1;background:#fff;" />
+              </div>
+            </div>
+            <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;">
+                <div style="width:60px;height:60px;border-radius:9999px;background:#F3ECDD;display:flex;align-items:center;justify-content:center;">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B08D57" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:17px;color:#2B3A4A;">No products yet</span>
+                  <span style="font-size:13px;color:#6B7280;max-width:280px;">Add your first product to start selling it on the POS screen.</span>
+                </div>
+                <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Add your first product
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;" id="S3l">
+          <span style="font-size:12px;color:#8A8577;font-weight:500;">Loading · skeleton</span>
+          <div style="width:560px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+            {{ skeletonRows }}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ S4 · ADD / EDIT PRODUCT ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S4">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S4</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Add / edit product</span>
+      <span style="font-size:12.5px;color:#6B7280;">Name · price · category · stock · optional barcode &amp; image · inline validation</span>
+    </div>
+    <div style="display:flex;width:1360px;height:840px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+      <dc-import name="Sidebar" active="products" hint-size="240px,100%"></dc-import>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+        <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;gap:12px;padding:0 24px;">
+          <div style="display:flex;align-items:center;gap:6px;color:#6B7280;font-size:13px;"><span style="cursor:pointer;">Products</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C7CCD1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></div>
+          <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Add product</h2>
+        </header>
+        <div style="flex:1;overflow:auto;padding:28px 24px;display:flex;justify-content:center;">
+          <div style="width:100%;max-width:760px;display:flex;flex-direction:column;gap:16px;">
+            <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:20px;">
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Product name</label>
+                <input value="Iced Caramel Macchiato" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Category</label>
+                  <div style="position:relative;">
+                    <select style="width:100%;box-sizing:border-box;height:42px;padding:0 34px 0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;appearance:none;cursor:pointer;"><option>Espresso</option><option>Brewed Coffee</option><option>Non-Coffee</option><option>Pastry</option><option>Retail Beans</option></select>
+                    <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </div>
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Barcode <span style="font-weight:400;color:#9AA1AB;">· optional</span></label>
+                  <input value="785002147" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;font-variant-numeric:tabular-nums;" />
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Price (USD)</label>
+                  <div style="position:relative;">
+                    <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9AA1AB;font-size:14px;">$</span>
+                    <input value="-2.00" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px 0 26px;border:1px solid #C0564D;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;box-shadow:0 0 0 3px rgba(192,86,77,.12);font-variant-numeric:tabular-nums;" />
+                  </div>
+                  <span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">Price must be 0 or greater.</span>
+                </div>
+                <div>
+                  <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Stock quantity</label>
+                  <input value="40" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;font-variant-numeric:tabular-nums;" />
+                </div>
+              </div>
+              <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Product image <span style="font-weight:400;color:#9AA1AB;">· optional</span></label>
+                <div style="border:1.5px dashed #C7CCD1;border-radius:12px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:9px;background:repeating-linear-gradient(45deg,#F7F5F1,#F7F5F1 10px,#F1EEE8 10px,#F1EEE8 20px);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  <span style="font:500 13px Inter,sans-serif;color:#6B7280;">Drop an image here or <span style="color:#4A7DBD;">browse</span></span>
+                  <span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#9AA1AB;">product image · PNG / JPG · up to 2MB</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px;border-top:1px solid #F1F0EC;padding-top:18px;">
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <span style="font-size:13.5px;font-weight:500;color:#1F2933;">Available for sale</span>
+                  <span style="font-size:12px;color:#9AA1AB;">Show this product on the POS screen</span>
+                </div>
+                <div style="width:42px;height:24px;border-radius:9999px;background:#4C8C5B;position:relative;cursor:pointer;"><div style="position:absolute;top:2px;left:20px;width:20px;height:20px;border-radius:9999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;">
+              <button style="height:42px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 20px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+              <button style="height:42px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 20px;font:600 14px Inter,sans-serif;cursor:pointer;">Save product</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ S5 · CATEGORIES ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S5">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S5</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Category management</span>
+      <span style="font-size:12.5px;color:#6B7280;">Create / edit / delete · blocked delete when a category still holds products</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Default</span>
+        <div style="display:flex;width:1040px;height:640px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <dc-import name="Sidebar" active="categories" hint-size="240px,100%"></dc-import>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+            <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Categories</h2>
+              <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>New category
+              </button>
+            </header>
+            <div style="flex:1;overflow:auto;padding:24px;">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                <sc-for list="{{ categories }}" as="c" hint-placeholder-count="5">
+                  <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                      <div style="width:42px;height:42px;border-radius:11px;background:#F3ECDD;display:flex;align-items:center;justify-content:center;">{{ c.icon }}</div>
+                      <div style="display:flex;gap:2px;">
+                        <button style="width:30px;height:30px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                        <button style="width:30px;height:30px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C0564D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">{{ c.name }}</span>
+                      <span style="font-size:12.5px;color:#6B7280;font-variant-numeric:tabular-nums;">{{ c.count }}</span>
+                    </div>
+                    <span style="font-size:12.5px;color:#9AA1AB;line-height:1.5;">{{ c.sample }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- blocked delete -->
+      <div style="display:flex;flex-direction:column;gap:9px;" id="S5b">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Blocked delete</span>
+        <div style="width:560px;height:400px;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;padding:30px;">
+          <div style="width:400px;background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 32px rgba(15,20,24,.24);">
+            <div style="width:46px;height:46px;border-radius:11px;background:#F6E1DE;display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0564D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">Can't delete “Espresso”</h3>
+              <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">This category still has <strong style="color:#374151;">8 products</strong> assigned to it. Reassign or remove those products before deleting the category.</p>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px;">
+              <button style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+              <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">View products</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ S6 · USER MANAGEMENT ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S6">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S6</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">User management</span>
+      <span style="font-size:12.5px;color:#6B7280;">Admin only · role &amp; active badges · reset password · create / edit staff</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;">
+
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <span style="font-size:12px;color:#8A8577;font-weight:500;">Default · staff list</span>
+        <div style="display:flex;width:1040px;height:640px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+          <dc-import name="Sidebar" active="users" hint-size="240px,100%"></dc-import>
+          <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+            <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+              <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Staff</h2>
+              <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></svg>Add staff
+              </button>
+            </header>
+            <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+              <div style="position:relative;width:300px;">
+                <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input placeholder="Search staff…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+              </div>
+              <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0;">
+                <div style="overflow:auto;flex:1;">
+                  <table style="width:100%;border-collapse:collapse;">
+                    <thead><tr style="background:#F7F7F5;">
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Staff member</th>
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Role</th>
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Status</th>
+                      <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Joined</th>
+                      <th style="padding:0 16px;height:44px;text-align:right;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Actions</th>
+                    </tr></thead>
+                    <tbody>{{ userRows }}</tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- create / edit form + deactivate confirm -->
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;flex-direction:column;gap:9px;" id="S6f">
+          <span style="font-size:12px;color:#8A8577;font-weight:500;">Create / edit staff</span>
+          <div style="width:420px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:24px;box-shadow:0 8px 24px rgba(15,20,24,.12);display:flex;flex-direction:column;gap:18px;">
+            <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">Add staff member</h3>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Full name</label>
+              <input value="Alex Moreno" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Username</label>
+              <input value="alex" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Role</label>
+              <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:10px;padding:3px;gap:2px;">
+                <button style="flex:1;border:none;background:transparent;color:#6B7280;font:500 14px Inter,sans-serif;padding:8px;border-radius:8px;cursor:pointer;">Admin</button>
+                <button style="flex:1;border:none;background:#fff;color:#2B3A4A;font:600 14px Inter,sans-serif;padding:8px;border-radius:8px;box-shadow:0 1px 2px rgba(15,20,24,.08);cursor:pointer;">Cashier</button>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Temporary password</label>
+              <input value="brew-4821" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;" />
+              <span style="display:block;margin-top:6px;font-size:12px;color:#9AA1AB;">Staff will be asked to change this on first login.</span>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+              <button style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+              <button style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Create account</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;" id="S6d">
+          <span style="font-size:12px;color:#8A8577;font-weight:500;">Deactivate confirmation</span>
+          <div style="width:420px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:22px;box-shadow:0 8px 24px rgba(15,20,24,.12);display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:17px;color:#2B3A4A;">Deactivate Priya Nair?</h3>
+              <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">They'll lose access immediately but stay linked to their past transactions. You can reactivate them later.</p>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+              <button style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+              <button style="height:40px;background:#C0564D;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Deactivate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ S7 · STOCK ADJUSTMENT ============ -->
+  <section style="display:flex;flex-direction:column;gap:14px;" id="S7">
+    <div style="display:flex;align-items:baseline;gap:12px;padding-left:2px;">
+      <span style="font:600 11px ui-monospace,Menlo,monospace;padding:4px 8px;background:#2B3A4A;color:#fff;border-radius:6px;letter-spacing:.04em;">S7</span>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#1F2933;">Stock adjustment</span>
+      <span style="font-size:12.5px;color:#6B7280;">Increase / decrease with required reason · per-product adjustment history</span>
+    </div>
+    <div style="display:flex;width:1360px;height:760px;background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(15,20,24,.12);">
+      <dc-import name="Sidebar" active="stock" hint-size="240px,100%"></dc-import>
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+        <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;padding:0 24px;">
+          <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Stock adjustment</h2>
+        </header>
+        <div style="flex:1;padding:24px;display:flex;gap:16px;min-height:0;">
+          <!-- form -->
+          <div style="width:400px;flex:none;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:18px;">
+            <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Adjust stock</h3>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Product</label>
+              <div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid #E5E7EB;border-radius:10px;background:#F9F8F6;">
+                <div style="width:38px;height:38px;border-radius:9px;background:#F3ECDD;color:#2B3A4A;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;font-family:Poppins,sans-serif;flex:none;">B</div>
+                <div style="flex:1;display:flex;flex-direction:column;">
+                  <span style="font-size:14px;font-weight:500;color:#1F2933;">Butter Croissant</span>
+                  <span style="font-size:12px;color:#6B7280;">Current stock: <span style="font-weight:600;color:#374151;font-variant-numeric:tabular-nums;">18</span></span>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Adjustment type</label>
+              <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:10px;padding:3px;gap:2px;">
+                <button style="flex:1;border:none;background:#fff;color:#3A7D4E;font:600 14px Inter,sans-serif;padding:9px;border-radius:8px;box-shadow:0 1px 2px rgba(15,20,24,.08);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3A7D4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>Increase</button>
+                <button style="flex:1;border:none;background:transparent;color:#6B7280;font:500 14px Inter,sans-serif;padding:9px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>Decrease</button>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Quantity</label>
+              <input value="24" readonly style="width:100%;box-sizing:border-box;height:42px;padding:0 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;font-variant-numeric:tabular-nums;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Reason <span style="font-weight:400;color:#C0564D;">· required</span></label>
+              <textarea readonly style="width:100%;box-sizing:border-box;height:64px;padding:10px 12px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;resize:none;">Weekly delivery — Sysco</textarea>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#F3ECDD;border-radius:10px;">
+              <span style="font-size:13px;color:#6B7280;">New stock level</span>
+              <span style="font-family:Inter,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;font-variant-numeric:tabular-nums;">18 → 42</span>
+            </div>
+            <button style="height:44px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer;">Record adjustment</button>
+          </div>
+          <!-- history -->
+          <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0;">
+            <div style="padding:18px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:baseline;justify-content:space-between;">
+              <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Adjustment history</h3>
+              <span style="font-size:12.5px;color:#6B7280;">Butter Croissant</span>
+            </div>
+            <div style="overflow:auto;flex:1;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead><tr style="background:#F7F7F5;">
+                  <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Change</th>
+                  <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Reason</th>
+                  <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Adjusted by</th>
+                  <th style="padding:0 16px;height:44px;text-align:left;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Date &amp; time</th>
+                  <th style="padding:0 16px;height:44px;text-align:right;font-family:Inter,sans-serif;font-weight:500;font-size:12px;color:#6B7280;border-bottom:1px solid #E5E7EB;">Resulting stock</th>
+                </tr></thead>
+                <tbody>{{ stockRows }}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  // ---- shared helpers ----
+  h() { return React.createElement; }
+  badge(text, bg, color, dot) {
+    const h = React.createElement;
+    return h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: bg, color: color, fontFamily: 'Inter,sans-serif', whiteSpace: 'nowrap' } },
+      dot ? h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: dot } }) : null,
+      text);
+  }
+  statMeta(s) {
+    if (s === 'out') return { t: 'Out of stock', bg: '#F6E1DE', c: '#A6413A', dot: '#C0564D' };
+    if (s === 'low') return { t: 'Low stock', bg: '#FBF0DD', c: '#8A5E17', dot: '#D9A441' };
+    return { t: 'In stock', bg: '#DCEFE0', c: '#3A7D4E', dot: '#4C8C5B' };
+  }
+  statusOf(n) { return n === 0 ? 'out' : (n <= 8 ? 'low' : 'ok'); }
+
+  renderVals() {
+    const h = React.createElement;
+
+    // ---------- PRODUCTS (shared dataset) ----------
+    const P = [
+      ['Cappuccino', 'Espresso', '4.25', 36], ['Caffè Latte', 'Espresso', '4.75', 41],
+      ['Flat White', 'Espresso', '4.50', 22], ['Americano', 'Espresso', '3.50', 58],
+      ['Cortado', 'Espresso', '4.00', 7], ['Cold Brew', 'Brewed Coffee', '4.95', 0],
+      ['Nitro Cold Brew', 'Brewed Coffee', '5.75', 14], ['Pour Over', 'Brewed Coffee', '5.50', 8],
+      ['Matcha Latte', 'Non-Coffee', '5.25', 28], ['Chai Latte', 'Non-Coffee', '4.75', 33],
+      ['Butter Croissant', 'Pastry', '3.75', 18], ['Almond Croissant', 'Pastry', '4.50', 4],
+      ['Blueberry Muffin', 'Pastry', '3.95', 0], ['House Blend 12oz', 'Retail Beans', '16.00', 24],
+    ];
+    this._P = P;
+
+    // ---------- DASHBOARD ----------
+    const statData = [
+      { label: "Today's sales", val: '$1,284.50', up: true, delta: '↑ 12.4%', icon: '<line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+      { label: 'Transactions', val: '96', up: true, delta: '↑ 8', icon: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>' },
+      { label: 'Avg. ticket', val: '$13.38', up: false, delta: '↓ 2.1%', icon: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>' },
+      { label: 'Items sold', val: '214', up: true, delta: '↑ 15', icon: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>' },
+    ];
+    const statCard = (d, empty) => h('div', { key: d.label, style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        h('span', { style: { fontSize: '13px', color: '#6B7280', fontWeight: 500 } }, d.label),
+        h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' } },
+          h('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: '#2B3A4A', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d.icon } }))),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+        h('span', { style: { fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '28px', color: empty ? '#C7CCD1' : '#2B3A4A', fontVariantNumeric: 'tabular-nums', letterSpacing: '-.01em' } }, empty ? (d.val.indexOf('$') === 0 ? '$0.00' : '0') : d.val),
+        empty
+          ? h('span', { style: { fontSize: '12px', color: '#9AA1AB' } }, 'No data')
+          : h('div', { style: { display: 'flex', alignItems: 'center', gap: '7px' } },
+            this.badge(d.delta, d.up ? '#DCEFE0' : '#F6E1DE', d.up ? '#3A7D4E' : '#A6413A'),
+            h('span', { style: { fontSize: '12px', color: '#9AA1AB' } }, 'vs yesterday'))));
+    const statCards = statData.map(d => statCard(d, false));
+    const statCardsEmpty = statData.map(d => statCard(d, true));
+
+    // hourly chart
+    const hours = [['7a', 62], ['8a', 118], ['9a', 175], ['10a', 210], ['11a', 168], ['12p', 142], ['1p', 196], ['2p', 150], ['3p', 96], ['4p', 74], ['5p', 88], ['6p', 110], ['7p', 64], ['8p', 41]];
+    const max = Math.max(...hours.map(x => x[1]));
+    const chart = h('div', { style: { flex: 1, display: 'flex', alignItems: 'flex-end', gap: '10px', minHeight: 0 } },
+      hours.map(([lab, v], i) => h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '9px', height: '100%', justifyContent: 'flex-end' } },
+        h('div', { style: { width: '100%', maxWidth: '30px', height: (v / max * 100) + '%', minHeight: '4px', background: v >= 175 ? '#2B3A4A' : '#9DB4CE', borderRadius: '6px 6px 0 0' } }),
+        h('span', { style: { fontSize: '11px', color: '#9AA1AB', fontWeight: 500, fontVariantNumeric: 'tabular-nums' } }, lab))));
+
+    const bestSellers = [
+      { rank: 1, name: 'Caffè Latte', cat: 'Espresso', qty: 42 },
+      { rank: 2, name: 'Cappuccino', cat: 'Espresso', qty: 38 },
+      { rank: 3, name: 'Butter Croissant', cat: 'Pastry', qty: 31 },
+      { rank: 4, name: 'Cold Brew', cat: 'Brewed Coffee', qty: 27 },
+      { rank: 5, name: 'Americano', cat: 'Espresso', qty: 24 },
+    ];
+
+    const lowRaw = [['Cold Brew', 0], ['Blueberry Muffin', 0], ['Almond Croissant', 4], ['Cortado', 7], ['Pour Over', 8]];
+    const lowStock = lowRaw.map(([name, s]) => {
+      const st = this.statusOf(s);
+      const m = this.statMeta(st);
+      return { name, badge: this.badge(s === 0 ? 'Out of stock' : s + ' left', m.bg, m.c, m.dot) };
+    });
+
+    const emptyState = h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', textAlign: 'center' } },
+      h('div', { style: { width: '64px', height: '64px', borderRadius: '9999px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        h('svg', { width: 28, height: 28, viewBox: '0 0 24 24', fill: 'none', stroke: '#B08D57', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>' } })),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+        h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '18px', color: '#2B3A4A' } }, 'No sales in this range'),
+        h('span', { style: { fontSize: '13.5px', color: '#6B7280', maxWidth: '320px' } }, 'There were no completed transactions between Jun 1 and Jun 7. Try a different date range.')));
+
+    // ---------- shared table + action helpers ----------
+    const tdB = { padding: '0 16px', height: '54px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#374151', fontFamily: 'Inter,sans-serif' };
+    const tdNum = { ...tdB, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 500, color: '#1F2933' };
+    const actIcon = (inner, color) => h('button', { style: { width: '30px', height: '30px', borderRadius: '8px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: color || '#6B7280', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inner } }));
+    const pencil = '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>';
+    const trash = '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>';
+    const keyI = '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>';
+
+    // ---------- PRODUCTS TABLE ----------
+    const productRows = P.map((row, i) => {
+      const [n, cat, p, s] = row; const st = this.statusOf(s); const m = this.statMeta(st);
+      return h('tr', { key: n, style: { opacity: st === 'out' ? 0.7 : 1 } },
+        h('td', { style: tdB }, h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+          h('div', { style: { width: '38px', height: '38px', borderRadius: '9px', background: '#F3ECDD', color: '#2B3A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '15px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, n[0]),
+          h('div', { style: { display: 'flex', flexDirection: 'column' } },
+            h('span', { style: { fontWeight: 500, color: '#1F2933', fontSize: '14px' } }, n),
+            h('span', { style: { fontSize: '11.5px', color: '#9AA1AB', fontVariantNumeric: 'tabular-nums' } }, '785002' + (140 + i * 7))))),
+        h('td', { style: tdB }, cat),
+        h('td', { style: tdNum }, '$' + p),
+        h('td', { style: tdNum }, st === 'out' ? h('span', { style: { color: '#C0564D', fontWeight: 600 } }, '0') : String(s)),
+        h('td', { style: tdB }, this.badge(m.t, m.bg, m.c, m.dot)),
+        h('td', { style: { ...tdB, textAlign: 'right', whiteSpace: 'nowrap' } }, actIcon(pencil), actIcon(trash, '#C0564D')));
+    });
+
+    // ---------- USERS TABLE ----------
+    const U = [
+      ['Marcus Bell', 'marcus', 'Admin', true, 'Jan 12, 2024', '#E8DCC5', '#2B3A4A'],
+      ['Sofia Reyes', 'sofia', 'Cashier', true, 'Mar 03, 2024', '#DCE6F2', '#3A6BA8'],
+      ['Daniel Okafor', 'daniel', 'Cashier', true, 'Jun 21, 2024', '#E3EEE4', '#3A7D4E'],
+      ['Jenna Lowe', 'jenna', 'Cashier', true, 'Sep 15, 2024', '#F3E4E1', '#A6413A'],
+      ['Priya Nair', 'priya', 'Cashier', false, 'Nov 02, 2024', '#ECE9E2', '#6B7280'],
+      ['Tomás Vidal', 'tomas', 'Cashier', false, 'Feb 08, 2025', '#ECE9E2', '#6B7280'],
+    ];
+    const rolePill = (r) => r === 'Admin' ? this.badge('Admin', '#E8DCC5', '#2B3A4A') : this.badge('Cashier', '#E7EFF7', '#3A6BA8');
+    const userRows = U.map(u => {
+      const [name, un, role, active, joined, abg, ac] = u;
+      const initials = name.split(' ').map(x => x[0]).join('');
+      return h('tr', { key: un, style: { opacity: active ? 1 : 0.72 } },
+        h('td', { style: tdB }, h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+          h('div', { style: { width: '38px', height: '38px', borderRadius: '9999px', background: abg, color: ac, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '13px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, initials),
+          h('div', { style: { display: 'flex', flexDirection: 'column' } },
+            h('span', { style: { fontWeight: 500, color: '#1F2933', fontSize: '14px' } }, name),
+            h('span', { style: { fontSize: '12px', color: '#9AA1AB' } }, '@' + un)))),
+        h('td', { style: tdB }, rolePill(role)),
+        h('td', { style: tdB }, active ? this.badge('Active', '#DCEFE0', '#3A7D4E', '#4C8C5B') : this.badge('Inactive', '#E5E7EB', '#6B7280', '#9AA1AB')),
+        h('td', { style: { ...tdB, color: '#6B7280' } }, joined),
+        h('td', { style: { ...tdB, textAlign: 'right', whiteSpace: 'nowrap' } }, actIcon(keyI), actIcon(pencil), actIcon(trash, '#C0564D')));
+    });
+
+    // ---------- STOCK ADJUSTMENT HISTORY ----------
+    const SH = [
+      ['increase', 24, 'Weekly delivery — Sysco', 'Marcus Bell', 'Jul 1, 2026 · 08:12', 42],
+      ['decrease', 6, 'Spoilage — end of day', 'Marcus Bell', 'Jun 30, 2026 · 21:05', 18],
+      ['increase', 30, 'Weekly delivery — Sysco', 'Marcus Bell', 'Jun 24, 2026 · 08:20', 35],
+      ['decrease', 3, 'Inventory count correction', 'Marcus Bell', 'Jun 23, 2026 · 19:40', 5],
+      ['increase', 20, 'Opening stock count', 'Marcus Bell', 'Jun 17, 2026 · 09:00', 8],
+    ];
+    const stockRows = SH.map((r, i) => {
+      const [type, qty, reason, by, when, result] = r; const inc = type === 'increase';
+      return h('tr', { key: i },
+        h('td', { style: tdB }, h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '7px', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: inc ? '#3A7D4E' : '#A6413A' } },
+          h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inc ? '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>' : '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>' } }),
+          (inc ? '+' : '−') + qty)),
+        h('td', { style: { ...tdB, color: '#374151' } }, reason),
+        h('td', { style: { ...tdB, color: '#6B7280' } }, by),
+        h('td', { style: { ...tdB, color: '#6B7280', fontVariantNumeric: 'tabular-nums' } }, when),
+        h('td', { style: tdNum }, result));
+    });
+
+    // ---------- CATEGORIES ----------
+    const catIcon = inner => h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: '#2B3A4A', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inner } });
+    const catRaw = [
+      ['Espresso', 8, 'Cappuccino · Latte · Flat White · Cortado', '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>'],
+      ['Brewed Coffee', 4, 'Cold Brew · Nitro · Pour Over · Drip', '<path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8Z"/><path d="M5 8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3"/><path d="M12 5V2"/>'],
+      ['Non-Coffee', 5, 'Matcha · Chai · Hot Chocolate · London Fog', '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/>'],
+      ['Pastry', 6, 'Croissant · Muffin · Cinnamon Roll · Cookie', '<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/>'],
+      ['Retail Beans', 3, 'House Blend · Ethiopia · Decaf', '<path d="M7.5 4.27 16.5 9.4"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>'],
+    ];
+    const categories = catRaw.map(([name, count, sample, inner]) => ({ name, count: count + ' products', sample, icon: catIcon(inner) }));
+
+    // ---------- LOADING SKELETON ----------
+    const bar = (w) => h('div', { style: { height: '12px', width: w, borderRadius: '6px', background: 'linear-gradient(90deg,#ECEBE7 25%,#F6F5F2 37%,#ECEBE7 63%)', backgroundSize: '680px 100%', animation: 'shimmer 1.4s infinite linear' } });
+    const skeletonRows = h('div', { style: { display: 'flex', flexDirection: 'column' } },
+      [0, 1, 2, 3, 4, 5].map(i => h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '14px', padding: '0 18px', height: '58px', borderBottom: '1px solid #F1F0EC' } },
+        h('div', { style: { width: '38px', height: '38px', borderRadius: '9px', background: '#ECEBE7', flex: 'none' } }),
+        h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' } }, bar('45%'), bar('25%')),
+        bar('60px'), bar('40px'),
+        h('div', { style: { width: '84px', height: '22px', borderRadius: '9999px', background: '#ECEBE7', flex: 'none' } }))));
+
+    return { statCards, statCardsEmpty, chart, bestSellers, lowStock, emptyState, productRows, userRows, stockRows, categories, skeletonRows };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  ::placeholder{color:#9AA1AB;}
+  .num{font-variant-numeric:tabular-nums;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#fff;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+  <dc-import name="Sidebar" active="transactions" hint-size="240px,100%"></dc-import>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+    <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Transactions</h2>
+        <span class="num" style="font-size:13px;color:#9AA1AB;">{{ subLabel }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11.5px;font-weight:600;letter-spacing:.05em;color:#9AA1AB;">VIEW AS</span>
+        <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:9px;padding:3px;gap:2px;">
+          <button onClick="{{ setAdmin }}" style="{{ adminBtnStyle }}">Admin</button>
+          <button onClick="{{ setCashier }}" style="{{ cashierBtnStyle }}">Cashier</button>
+        </div>
+      </div>
+    </header>
+
+    <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-height:0;">
+      <!-- summary stats -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">{{ statCards }}</div>
+
+      <!-- filter row -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="position:relative;width:260px;">
+          <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search receipt no…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+        </div>
+        <div style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+          <span style="font-size:13px;color:#1F2933;font-weight:500;">{{ dateLabel }}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;">
+            <select value="{{ cashier }}" onChange="{{ onCashier }}" style="height:40px;padding:0 34px 0 12px;border:1px solid #E5E7EB;border-radius:10px;font:500 14px Inter,sans-serif;color:#374151;background:#fff;appearance:none;cursor:pointer;outline:none;">{{ cashierOptions }}</select>
+            <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+        </sc-if>
+        <div style="flex:1;"></div>
+        <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:9px;padding:3px;gap:2px;">
+          <button onClick="{{ statusAll }}" style="{{ sAllStyle }}">All</button>
+          <button onClick="{{ statusCompleted }}" style="{{ sCompStyle }}">Completed</button>
+          <button onClick="{{ statusVoided }}" style="{{ sVoidStyle }}">Voided</button>
+        </div>
+      </div>
+
+      <!-- table -->
+      <div style="background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="overflow:auto;flex:1;">{{ tableBody }}</div>
+        <sc-if value="{{ showFooter }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid #E5E7EB;background:#fff;flex:none;">
+            <span class="num" style="font-size:13px;color:#6B7280;">{{ rangeLabel }}</span>
+            <div style="display:flex;gap:6px;">
+              <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#C7CCD1;cursor:not-allowed;">‹</button>
+              <button style="width:34px;height:34px;border:none;background:#2B3A4A;border-radius:8px;color:#fff;font:600 13px Inter,sans-serif;cursor:pointer;">1</button>
+              <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#374151;font:500 13px Inter,sans-serif;cursor:pointer;">2</button>
+              <button style="width:34px;height:34px;border:1px solid #E5E7EB;background:#fff;border-radius:8px;color:#374151;cursor:pointer;">›</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL DRAWER -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeDetail }}" style="position:absolute;inset:0;background:rgba(31,41,51,.45);display:flex;justify-content:flex-end;z-index:25;">
+      <div onClick="{{ stop }}" style="width:440px;height:100%;background:#fff;box-shadow:-8px 0 32px rgba(15,20,24,.2);display:flex;flex-direction:column;">
+        <div style="padding:20px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:15px;color:#6B7280;">Transaction detail</span>
+          <button onClick="{{ closeDetail }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:24px;">{{ detailBody }}</div>
+        <sc-if value="{{ canVoid }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:16px 24px;border-top:1px solid #F1F0EC;">
+            <button onClick="{{ openVoid }}" style="width:100%;height:44px;background:#F6E1DE;color:#A6413A;border:none;border-radius:10px;font:600 14px Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A6413A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>Void this transaction
+            </button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- VOID MODAL -->
+  <sc-if value="{{ voidOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelVoid }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:40;">
+      <div onClick="{{ stop }}" style="width:440px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;gap:16px;animation:popIn .18s ease-out;">
+        <div style="width:46px;height:46px;border-radius:11px;background:#F6E1DE;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C0564D" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">Void {{ voidRef }}?</h3>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">This reverses the sale of <strong style="color:#374151;">{{ voidTotal }}</strong> and returns its items to stock. Voided transactions stay in history for reporting. This can't be undone.</p>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Reason for voiding <span style="color:#C0564D;">· required</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;">{{ voidChips }}</div>
+          <textarea value="{{ voidReason }}" onInput="{{ onVoidReason }}" placeholder="Explain why this sale is being voided…" style="{{ voidReasonStyle }}"></textarea>
+          <sc-if value="{{ voidErr }}" hint-placeholder-val="{{ false }}"><span style="display:block;margin-top:6px;font-size:12px;color:#A6413A;">{{ voidErr }}</span></sc-if>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button onClick="{{ cancelVoid }}" style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ doVoid }}" style="height:40px;background:#C0564D;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Void transaction</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    role: 'admin', search: '', cashier: 'All cashiers', status: 'all',
+    detail: null, void: null, voidReason: '', voidErr: '',
+    txns: [
+      { id: 'TX-2041', time: 'Jul 8, 2026 · 09:14 AM', cashier: 'Sofia Reyes', status: 'completed', method: 'Cash', received: 20.00, items: [['Caffè Latte', 2, 4.75], ['Butter Croissant', 1, 3.75]] },
+      { id: 'TX-2040', time: 'Jul 8, 2026 · 09:02 AM', cashier: 'Sofia Reyes', status: 'completed', method: 'Cash', received: 10.00, items: [['Americano', 1, 3.50], ['Blueberry Muffin', 1, 3.95]] },
+      { id: 'TX-2039', time: 'Jul 8, 2026 · 08:47 AM', cashier: 'Daniel Okafor', status: 'completed', method: 'Cash', received: 30.00, items: [['Cold Brew', 2, 4.95], ['Nitro Cold Brew', 1, 5.75], ['Almond Croissant', 1, 4.50]] },
+      { id: 'TX-2038', time: 'Jul 8, 2026 · 08:31 AM', cashier: 'Daniel Okafor', status: 'voided', method: 'Cash', received: 15.00, items: [['Matcha Latte', 1, 5.25], ['Chai Latte', 1, 4.75]], voidReason: 'Wrong item rung up', voidBy: 'Marcus Bell' },
+      { id: 'TX-2037', time: 'Jul 8, 2026 · 08:19 AM', cashier: 'Sofia Reyes', status: 'completed', method: 'Cash', received: 12.00, items: [['Cappuccino', 1, 4.25], ['Flat White', 1, 4.50]] },
+      { id: 'TX-2036', time: 'Jul 8, 2026 · 08:05 AM', cashier: 'Daniel Okafor', status: 'completed', method: 'Cash', received: 6.00, items: [['Cortado', 1, 4.00]] },
+      { id: 'TX-2035', time: 'Jul 7, 2026 · 06:52 PM', cashier: 'Sofia Reyes', status: 'completed', method: 'Cash', received: 50.00, items: [['House Blend 12oz', 2, 16.00], ['Cappuccino', 1, 4.25]] },
+      { id: 'TX-2034', time: 'Jul 7, 2026 · 05:38 PM', cashier: 'Daniel Okafor', status: 'completed', method: 'Cash', received: 20.00, items: [['Pour Over', 1, 5.50], ['Cinnamon Roll', 1, 4.25], ['Americano', 2, 3.50]] },
+      { id: 'TX-2033', time: 'Jul 7, 2026 · 04:11 PM', cashier: 'Sofia Reyes', status: 'voided', method: 'Cash', received: 10.00, items: [['Hot Chocolate', 2, 4.25]], voidReason: 'Customer changed mind', voidBy: 'Marcus Bell' },
+      { id: 'TX-2032', time: 'Jul 7, 2026 · 03:47 PM', cashier: 'Daniel Okafor', status: 'completed', method: 'Cash', received: 15.00, items: [['Chai Latte', 1, 4.75], ['Almond Croissant', 2, 4.50]] },
+    ],
+  };
+
+  CASHIERS = ['All cashiers', 'Sofia Reyes', 'Daniel Okafor'];
+
+  total(t) { return t.items.reduce((s, [, q, p]) => s + q * p, 0); }
+  count(t) { return t.items.reduce((s, [, q]) => s + q, 0); }
+  fmt(n) { return '$' + n.toFixed(2); }
+
+  setRole = (r) => () => this.setState({ role: r, cashier: 'All cashiers', detail: r === 'cashier' && this.state.detail ? null : this.state.detail });
+  setAdmin = this.setRole('admin'); setCashier = this.setRole('cashier');
+  onSearch = (e) => this.setState({ search: e.target.value });
+  onCashier = (e) => this.setState({ cashier: e.target.value });
+  setStatus = (s) => () => this.setState({ status: s });
+  statusAll = this.setStatus('all'); statusCompleted = this.setStatus('completed'); statusVoided = this.setStatus('voided');
+  stop = (e) => e.stopPropagation();
+
+  openDetail = (t) => this.setState({ detail: t.id });
+  closeDetail = () => this.setState({ detail: null });
+  openVoid = () => this.setState({ void: this.state.detail, voidReason: '', voidErr: '' });
+  cancelVoid = () => this.setState({ void: null, voidErr: '' });
+  onVoidReason = (e) => this.setState({ voidReason: e.target.value, voidErr: '' });
+  pickVoidReason = (r) => () => this.setState({ voidReason: r, voidErr: '' });
+  doVoid = () => {
+    if (!this.state.voidReason.trim()) { this.setState({ voidErr: 'A reason is required to void a transaction.' }); return; }
+    const id = this.state.void;
+    this.setState({ txns: this.state.txns.map(t => t.id === id ? { ...t, status: 'voided', voidReason: this.state.voidReason.trim(), voidBy: 'Marcus Bell' } : t), void: null, voidReason: '', voidErr: '' });
+  };
+
+  filtered() {
+    const q = this.state.search.trim().toLowerCase();
+    return this.state.txns.filter(t => {
+      if (this.state.status !== 'all' && t.status !== this.state.status) return false;
+      if (this.state.role === 'admin' && this.state.cashier !== 'All cashiers' && t.cashier !== this.state.cashier) return false;
+      if (q && !t.id.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  statusPill(status) {
+    const h = React.createElement;
+    const done = status === 'completed';
+    return h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: done ? '#DCEFE0' : '#F6E1DE', color: done ? '#3A7D4E' : '#A6413A', whiteSpace: 'nowrap' } }, h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: done ? '#4C8C5B' : '#C0564D' } }), done ? 'Completed' : 'Voided');
+  }
+
+  renderVals() {
+    const h = React.createElement;
+    const isAdmin = this.state.role === 'admin';
+    const fil = this.filtered();
+    const completed = this.state.txns.filter(t => t.status === 'completed');
+    const gross = completed.reduce((s, t) => s + this.total(t), 0);
+    const voided = this.state.txns.filter(t => t.status === 'voided');
+    const avg = completed.length ? gross / completed.length : 0;
+
+    const roleBtn = (on) => 'border:none;background:' + (on ? '#fff' : 'transparent') + ';color:' + (on ? '#2B3A4A' : '#6B7280') + ';font:' + (on ? '600' : '500') + ' 13px Inter,sans-serif;padding:6px 14px;border-radius:7px;cursor:pointer;' + (on ? 'box-shadow:0 1px 2px rgba(15,20,24,.1);' : '');
+    const segStyle = (on) => 'border:none;background:' + (on ? '#fff' : 'transparent') + ';color:' + (on ? '#2B3A4A' : '#6B7280') + ';font:' + (on ? '600' : '500') + ' 13px Inter,sans-serif;padding:6px 14px;border-radius:7px;cursor:pointer;' + (on ? 'box-shadow:0 1px 2px rgba(15,20,24,.08);' : '');
+
+    // stat cards
+    const statData = [
+      { label: 'Gross sales', val: this.fmt(gross), icon: '<line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+      { label: 'Transactions', val: String(completed.length), icon: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>' },
+      { label: 'Avg. ticket', val: this.fmt(avg), icon: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>' },
+      { label: 'Voided', val: String(voided.length), danger: true, icon: '<circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/>' },
+    ];
+    const statCards = statData.map(d => h('div', { key: d.label, style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '12px' } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        h('span', { style: { fontSize: '13px', color: '#6B7280', fontWeight: 500 } }, d.label),
+        h('div', { style: { width: '30px', height: '30px', borderRadius: '8px', background: d.danger ? '#F6E1DE' : '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+          h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: d.danger ? '#C0564D' : '#2B3A4A', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d.icon } }))),
+      h('span', { className: 'num', style: { fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '24px', color: d.danger && voided.length ? '#A6413A' : '#2B3A4A', letterSpacing: '-.01em' } }, d.val)));
+
+    const cashierOptions = this.CASHIERS.map(c => h('option', { key: c, value: c }, c));
+
+    // table
+    const th = (label, align) => h('th', { key: label, style: { padding: '0 16px', height: '44px', textAlign: align || 'left', font: '500 12px Inter,sans-serif', color: '#6B7280', borderBottom: '1px solid #E5E7EB', background: '#F7F7F5', position: 'sticky', top: 0, whiteSpace: 'nowrap' } }, label);
+    let tableBody;
+    if (fil.length === 0) {
+      tableBody = h('div', { style: { height: '100%', minHeight: '320px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' } },
+          h('div', { style: { width: '58px', height: '58px', borderRadius: '9999px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: '#B08D57', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>' } })),
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, 'No transactions found'),
+          h('span', { style: { fontSize: '13px', color: '#6B7280' } }, 'Try a different date range, cashier, or status filter.')));
+    } else {
+      const cols = ['Receipt', 'Date & time'];
+      const rows = fil.map(t => {
+        const voided = t.status === 'voided';
+        return h('tr', { key: t.id, onClick: () => this.openDetail(t), style: { cursor: 'pointer' }, onMouseEnter: (e) => e.currentTarget.style.background = '#FAFAF8', onMouseLeave: (e) => e.currentTarget.style.background = 'transparent' },
+          h('td', { style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC' } }, h('div', { style: { display: 'flex', alignItems: 'center', gap: '11px' } },
+            h('div', { style: { width: '34px', height: '34px', borderRadius: '9px', background: voided ? '#F6E1DE' : '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' } }, h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: voided ? '#C0564D' : '#2B3A4A', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>' } })),
+            h('span', { className: 'num', style: { fontSize: '14px', fontWeight: 600, color: '#2B3A4A' } }, t.id))),
+          h('td', { className: 'num', style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC', fontSize: '13px', color: '#6B7280' } }, t.time),
+          h('td', { style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#374151' } }, t.cashier),
+          h('td', { className: 'num', style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC', textAlign: 'right', fontSize: '13.5px', color: '#6B7280' } }, this.count(t)),
+          h('td', { className: 'num', style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC', textAlign: 'right', fontSize: '14px', fontWeight: 600, color: voided ? '#9AA1AB' : '#1F2933', textDecoration: voided ? 'line-through' : 'none' } }, this.fmt(this.total(t))),
+          h('td', { style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC' } }, this.statusPill(t.status)),
+          h('td', { style: { padding: '0 16px', height: '60px', borderBottom: '1px solid #F1F0EC', textAlign: 'right' } }, h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: '#C7CCD1', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="m9 18 6-6-6-6"/>' } })));
+      });
+      tableBody = h('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+        h('thead', null, h('tr', null, th('Receipt'), th('Date & time'), th('Cashier'), th('Items', 'right'), th('Total', 'right'), th('Status'), th('', 'right'))),
+        h('tbody', null, rows));
+    }
+
+    // detail
+    const dt = this.state.detail ? this.state.txns.find(t => t.id === this.state.detail) : null;
+    const detailOpen = !!dt;
+    let detailBody = null, canVoid = false;
+    if (dt) {
+      const tot = this.total(dt); const voided = dt.status === 'voided'; const change = dt.received - tot;
+      canVoid = isAdmin && !voided;
+      const row = (label, val, opts = {}) => h('div', { key: label, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        h('span', { style: { fontSize: '13.5px', color: opts.strong ? '#1F2933' : '#6B7280', fontWeight: opts.strong ? 600 : 400 } }, label),
+        h('span', { className: 'num', style: { fontSize: opts.big ? '20px' : '14px', fontWeight: opts.strong ? 600 : 500, color: opts.color || '#1F2933' } }, val));
+      detailBody = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '20px' } },
+        h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' } },
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '5px' } },
+            h('span', { className: 'num', style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '22px', color: '#2B3A4A' } }, dt.id),
+            h('span', { className: 'num', style: { fontSize: '13px', color: '#9AA1AB' } }, dt.time)),
+          this.statusPill(dt.status)),
+        voided ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '12px 14px', background: '#F6E1DE', border: '1px solid #EBC6C1', borderRadius: '10px' } },
+          h('span', { style: { fontSize: '12px', fontWeight: 600, color: '#A6413A' } }, 'Voided by ' + (dt.voidBy || 'Admin')),
+          h('span', { style: { fontSize: '12.5px', color: '#A6413A' } }, 'Reason: ' + (dt.voidReason || '—'))) : null,
+        h('div', { style: { display: 'flex', flexDirection: 'column' } },
+          h('span', { style: { fontSize: '11.5px', fontWeight: 600, letterSpacing: '.04em', color: '#9AA1AB', marginBottom: '8px' } }, 'ITEMS'),
+          h('div', { style: { display: 'flex', flexDirection: 'column' } }, dt.items.map(([name, qty, price], i) => h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #F1F0EC' } },
+            h('span', { className: 'num', style: { width: '30px', height: '26px', borderRadius: '7px', background: '#F3ECDD', color: '#2B3A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '12.5px', flex: 'none' } }, '×' + qty),
+            h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column' } }, h('span', { style: { fontSize: '14px', fontWeight: 500, color: '#1F2933' } }, name), h('span', { className: 'num', style: { fontSize: '12px', color: '#9AA1AB' } }, this.fmt(price) + ' each')),
+            h('span', { className: 'num', style: { fontSize: '14px', fontWeight: 500, color: '#1F2933' } }, this.fmt(qty * price)))))),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', background: '#F7F7F5', borderRadius: '12px' } },
+          row('Subtotal', this.fmt(tot)),
+          row('Payment · ' + dt.method, this.fmt(dt.received)),
+          row('Change', this.fmt(change)),
+          h('div', { style: { height: '1px', background: '#E5E7EB' } }),
+          row('Total', this.fmt(tot), { strong: true, big: true, color: '#2B3A4A' })),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+          h('span', { style: { fontSize: '12.5px', color: '#9AA1AB' } }, 'Cashier'),
+          h('span', { style: { fontSize: '14px', fontWeight: 500, color: '#374151' } }, dt.cashier)));
+    }
+
+    // void modal
+    const vt = this.state.void ? this.state.txns.find(t => t.id === this.state.void) : null;
+    const voidOpen = !!vt;
+    const voidReasons = ['Wrong item rung up', 'Customer changed mind', 'Duplicate charge', 'Cashier error', 'Refund issued'];
+    const voidChips = voidReasons.map(r => {
+      const on = this.state.voidReason === r;
+      return h('button', { key: r, onClick: this.pickVoidReason(r), style: { padding: '6px 12px', borderRadius: '9999px', border: '1px solid ' + (on ? '#C0564D' : '#E5E7EB'), background: on ? '#C0564D' : '#fff', color: on ? '#fff' : '#6B7280', font: '500 12.5px Inter,sans-serif', cursor: 'pointer' } }, r);
+    });
+
+    return {
+      subLabel: this.state.txns.length + ' transactions',
+      isAdmin, setAdmin: this.setAdmin, setCashier: this.setCashier,
+      adminBtnStyle: roleBtn(isAdmin), cashierBtnStyle: roleBtn(!isAdmin),
+      statCards, dateLabel: 'Jul 7 – Jul 8, 2026',
+      search: this.state.search, onSearch: this.onSearch,
+      cashier: this.state.cashier, onCashier: this.onCashier, cashierOptions,
+      statusAll: this.statusAll, statusCompleted: this.statusCompleted, statusVoided: this.statusVoided,
+      sAllStyle: segStyle(this.state.status === 'all'), sCompStyle: segStyle(this.state.status === 'completed'), sVoidStyle: segStyle(this.state.status === 'voided'),
+      tableBody, showFooter: fil.length > 0, rangeLabel: 'Showing ' + fil.length + ' of ' + this.state.txns.length + ' transactions',
+      detailOpen, detailBody, canVoid, closeDetail: this.closeDetail, stop: this.stop,
+      openVoid: this.openVoid,
+      voidOpen, voidRef: vt ? vt.id : '', voidTotal: vt ? this.fmt(this.total(vt)) : '',
+      voidChips, voidReason: this.state.voidReason, onVoidReason: this.onVoidReason, voidErr: this.state.voidErr,
+      voidReasonStyle: 'width:100%;box-sizing:border-box;height:64px;padding:10px 12px;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;resize:none;' + (this.state.voidErr ? 'border:1px solid #C0564D;box-shadow:0 0 0 3px rgba(192,86,77,.12);' : 'border:1px solid #E5E7EB;'),
+      cancelVoid: this.cancelVoid, doVoid: this.doVoid,
+    };
+  }
+}
+</script>
+</body>
+</html>

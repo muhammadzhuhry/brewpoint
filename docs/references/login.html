@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  ::placeholder{color:#9AA1AB;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1000px;height:640px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(15,20,24,.22);font-family:Inter,sans-serif;">
+  <!-- BRAND PANEL -->
+  <div style="width:44%;background:#2B3A4A;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:12px;position:relative;z-index:1;">
+      <div style="width:38px;height:38px;border-radius:10px;background:rgba(232,220,197,.16);display:flex;align-items:center;justify-content:center;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+      </div>
+      <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:19px;color:#fff;letter-spacing:-.01em;">BrewPoint</span>
+    </div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:16px;">
+      <h1 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:32px;line-height:1.18;color:#fff;letter-spacing:-.015em;">Good morning.<br>Let's open up.</h1>
+      <p style="margin:0;font-size:14.5px;line-height:1.6;color:rgba(255,255,255,.62);max-width:290px;">Sign in to ring up orders, manage the menu, and keep an eye on the day's sales — all from the counter.</p>
+    </div>
+    <span style="position:relative;z-index:1;font-size:12px;color:rgba(255,255,255,.42);">Maple &amp; Vine Coffee · POS v1.0</span>
+    <svg style="position:absolute;right:-46px;bottom:-52px;opacity:.06;" width="300" height="300" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/></svg>
+  </div>
+
+  <!-- FORM PANEL -->
+  <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;padding:44px;">
+    <sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;animation:fadeUp .3s ease-out;">
+        <div style="width:64px;height:64px;border-radius:9999px;background:#DCEFE0;display:flex;align-items:center;justify-content:center;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3A7D4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Welcome back{{ welcomeName }}</span>
+          <span style="font-size:13.5px;color:#6B7280;">Signing you in…</span>
+        </div>
+        <button onClick="{{ reset }}" style="margin-top:6px;height:38px;background:transparent;color:#4A7DBD;border:none;font:600 13px Inter,sans-serif;cursor:pointer;">Sign in as someone else</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+      <div style="width:100%;max-width:328px;display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:23px;color:#2B3A4A;">Sign in</h2>
+          <span style="font-size:13.5px;color:#6B7280;">Enter your staff credentials to continue.</span>
+        </div>
+
+        <sc-if value="{{ error }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:#F6E1DE;border:1px solid #EBC6C1;border-radius:10px;animation:shake .4s ease;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#A6413A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span style="font-size:13px;font-weight:500;color:#A6413A;">Incorrect username or password.</span>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Username</label>
+            <input value="{{ username }}" onInput="{{ onUser }}" onKeyDown="{{ onKey }}" placeholder="e.g. sofia" style="{{ userStyle }}" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Password</label>
+            <div style="position:relative;">
+              <input value="{{ password }}" onInput="{{ onPass }}" onKeyDown="{{ onKey }}" type="{{ passType }}" placeholder="Your password" style="{{ passStyle }}" />
+              <button onClick="{{ toggleShow }}" title="{{ toggleTitle }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);width:32px;height:32px;border:none;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;">{{ eyeIcon }}</button>
+            </div>
+          </div>
+        </div>
+
+        <button onClick="{{ submit }}" style="height:46px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;font:600 15px Inter,sans-serif;cursor:pointer;">Log in</button>
+        <span style="text-align:center;font-size:12.5px;color:#9AA1AB;line-height:1.5;">Forgot your password? Ask your store admin to reset it.</span>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:640}}">
+class Component extends DCLogic {
+  state = { username: '', password: '', show: false, error: false, loggedIn: false, name: '' };
+
+  // demo credentials
+  ACCOUNTS = { marcus: { pass: 'admin123', name: 'Marcus' }, sofia: { pass: 'password', name: 'Sofia' } };
+
+  onUser = (e) => this.setState({ username: e.target.value, error: false });
+  onPass = (e) => this.setState({ password: e.target.value, error: false });
+  toggleShow = () => this.setState({ show: !this.state.show });
+  onKey = (e) => { if (e.key === 'Enter') this.submit(); };
+
+  submit = () => {
+    const u = this.state.username.trim().toLowerCase();
+    const acct = this.ACCOUNTS[u];
+    if (acct && acct.pass === this.state.password) {
+      this.setState({ loggedIn: true, error: false, name: acct.name });
+    } else {
+      this.setState({ error: true });
+    }
+  };
+  reset = () => this.setState({ username: '', password: '', error: false, loggedIn: false, show: false, name: '' });
+
+  renderVals() {
+    const h = React.createElement;
+    const err = this.state.error;
+    const base = 'width:100%;box-sizing:border-box;height:44px;padding:0 12px;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;';
+    const bd = err ? 'border:1px solid #C0564D;box-shadow:0 0 0 3px rgba(192,86,77,.10);' : 'border:1px solid #E5E7EB;';
+    const eyeOpen = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+    const eyeOff = '<path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>';
+    const eyeIcon = h('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: '#9AA1AB', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: this.state.show ? eyeOff : eyeOpen } });
+
+    return {
+      loggedIn: this.state.loggedIn, showForm: !this.state.loggedIn,
+      username: this.state.username, password: this.state.password, error: err,
+      onUser: this.onUser, onPass: this.onPass, onKey: this.onKey, submit: this.submit, toggleShow: this.toggleShow, reset: this.reset,
+      passType: this.state.show ? 'text' : 'password',
+      toggleTitle: this.state.show ? 'Hide password' : 'Show password',
+      eyeIcon,
+      userStyle: base + bd,
+      passStyle: base + 'padding-right:44px;' + bd,
+      welcomeName: this.state.name ? ', ' + this.state.name : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

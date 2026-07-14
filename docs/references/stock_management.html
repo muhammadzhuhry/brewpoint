@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes rowIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  ::placeholder{color:#9AA1AB;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#fff;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+  <dc-import name="Sidebar" active="stock" hint-size="240px,100%"></dc-import>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+    <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;align-items:baseline;gap:12px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Stock</h2>
+        <span style="font-size:13px;color:#9AA1AB;font-variant-numeric:tabular-nums;">{{ subLabel }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 13px;background:#FBF0DD;border:1px solid #F0DFBD;border-radius:9px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A5E17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+          <span class="num" style="font-size:12.5px;font-weight:600;color:#8A5E17;">{{ alertLabel }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div style="flex:1;display:flex;min-height:0;">
+      <!-- LEFT: product picker -->
+      <div style="width:400px;flex:none;border-right:1px solid #E5E7EB;background:#fff;display:flex;flex-direction:column;min-height:0;">
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid #F1F0EC;">
+          <div style="position:relative;">
+            <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search products…" style="width:100%;box-sizing:border-box;height:40px;padding:0 12px 0 36px;border:1px solid #E5E7EB;border-radius:10px;font:400 14px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+          </div>
+          <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:9px;padding:3px;gap:2px;">
+            <button onClick="{{ filterAll }}" style="{{ fAllStyle }}">All</button>
+            <button onClick="{{ filterLow }}" style="{{ fLowStyle }}">Low</button>
+            <button onClick="{{ filterOut }}" style="{{ fOutStyle }}">Out</button>
+          </div>
+        </div>
+        <div style="flex:1;overflow:auto;">{{ productList }}</div>
+      </div>
+
+      <!-- RIGHT: adjust + history -->
+      <div style="flex:1;min-width:0;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px;">{{ detailPanel }}</div>
+    </div>
+  </div>
+
+  <!-- CONFIRM ADJUSTMENT -->
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelConfirm }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:30;">
+      <div onClick="{{ stop }}" style="width:420px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 16px 48px rgba(15,20,24,.3);display:flex;flex-direction:column;gap:16px;animation:popIn .18s ease-out;">
+        <div style="width:46px;height:46px;border-radius:11px;background:{{ confIconBg }};display:flex;align-items:center;justify-content:center;">{{ confIcon }}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">{{ confTitle }}</h3>
+          <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B7280;">{{ confMessage }}</p>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#F7F7F5;border:1px solid #E5E7EB;border-radius:10px;">
+          <span style="font-size:13px;color:#6B7280;">New stock level</span>
+          <span class="num" style="font-family:Inter,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">{{ confPreview }}</span>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;">
+          <button onClick="{{ cancelConfirm }}" style="height:40px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:10px;padding:0 16px;font:500 14px Inter,sans-serif;cursor:pointer;">Cancel</button>
+          <button onClick="{{ doAdjust }}" style="height:40px;background:#2B3A4A;color:#fff;border:none;border-radius:10px;padding:0 16px;font:600 14px Inter,sans-serif;cursor:pointer;">Confirm adjustment</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    search: '', filter: 'all',
+    selected: 12,
+    type: 'increase', qty: '', reason: '',
+    err: {},
+    confirm: false,
+    toast: null,
+    products: [
+      { id: 1, name: 'Cappuccino', category: 'Espresso', stock: 36 },
+      { id: 2, name: 'Caffè Latte', category: 'Espresso', stock: 41 },
+      { id: 3, name: 'Flat White', category: 'Espresso', stock: 22 },
+      { id: 4, name: 'Americano', category: 'Espresso', stock: 58 },
+      { id: 5, name: 'Cortado', category: 'Espresso', stock: 7 },
+      { id: 6, name: 'Cold Brew', category: 'Brewed Coffee', stock: 0 },
+      { id: 7, name: 'Nitro Cold Brew', category: 'Brewed Coffee', stock: 14 },
+      { id: 8, name: 'Pour Over', category: 'Brewed Coffee', stock: 8 },
+      { id: 9, name: 'Matcha Latte', category: 'Non-Coffee', stock: 28 },
+      { id: 10, name: 'Chai Latte', category: 'Non-Coffee', stock: 33 },
+      { id: 11, name: 'Almond Croissant', category: 'Pastry', stock: 4 },
+      { id: 12, name: 'Butter Croissant', category: 'Pastry', stock: 18 },
+      { id: 13, name: 'Blueberry Muffin', category: 'Pastry', stock: 0 },
+      { id: 14, name: 'House Blend 12oz', category: 'Retail Beans', stock: 24 },
+      { id: 15, name: 'Ethiopia 12oz', category: 'Retail Beans', stock: 9 },
+    ],
+    history: {
+      12: [
+        { type: 'decrease', qty: 6, reason: 'Spoilage — end of day', by: 'Marcus Bell', when: 'Jun 30, 2026 · 21:05', result: 18 },
+        { type: 'increase', qty: 30, reason: 'Weekly delivery — Sysco', by: 'Marcus Bell', when: 'Jun 24, 2026 · 08:20', result: 24 },
+        { type: 'increase', qty: 20, reason: 'Opening stock count', by: 'Marcus Bell', when: 'Jun 17, 2026 · 09:00', result: 8 },
+      ],
+      6: [
+        { type: 'decrease', qty: 14, reason: 'Sold out — busy morning', by: 'Sofia Reyes', when: 'Jul 5, 2026 · 11:40', result: 0 },
+        { type: 'increase', qty: 14, reason: 'Weekly delivery — Sysco', by: 'Marcus Bell', when: 'Jul 1, 2026 · 08:12', result: 14 },
+      ],
+      11: [
+        { type: 'decrease', qty: 8, reason: 'Spoilage — end of day', by: 'Marcus Bell', when: 'Jul 2, 2026 · 21:10', result: 4 },
+        { type: 'increase', qty: 12, reason: 'Weekly delivery — Sysco', by: 'Marcus Bell', when: 'Jul 1, 2026 · 08:12', result: 12 },
+      ],
+    },
+    presetReasons: ['Weekly delivery', 'Inventory recount', 'Spoilage / waste', 'Damaged in transit', 'Transfer to storage'],
+  };
+
+  statusOf(s) { return s === 0 ? 'out' : (s <= 8 ? 'low' : 'ok'); }
+  statMeta(st) {
+    if (st === 'out') return { t: 'Out of stock', bg: '#F6E1DE', c: '#A6413A', dot: '#C0564D' };
+    if (st === 'low') return { t: 'Low stock', bg: '#FBF0DD', c: '#8A5E17', dot: '#D9A441' };
+    return { t: 'In stock', bg: '#DCEFE0', c: '#3A7D4E', dot: '#4C8C5B' };
+  }
+  sel() { return this.state.products.find(p => p.id === this.state.selected); }
+  histOf(id) { return this.state.history[id] || []; }
+  delta() { const q = parseInt(this.state.qty, 10); return isNaN(q) ? 0 : q; }
+  newLevel() { const p = this.sel(); if (!p) return 0; const d = this.delta(); return this.state.type === 'increase' ? p.stock + d : Math.max(0, p.stock - d); }
+
+  onSearch = (e) => this.setState({ search: e.target.value });
+  setFilter = (f) => () => this.setState({ filter: f });
+  filterAll = this.setFilter('all'); filterLow = this.setFilter('low'); filterOut = this.setFilter('out');
+  select = (id) => this.setState({ selected: id, type: 'increase', qty: '', reason: '', err: {} });
+  setType = (t) => () => this.setState({ type: t });
+  onQty = (e) => this.setState({ qty: e.target.value.replace(/[^0-9]/g, ''), err: { ...this.state.err, qty: null } });
+  onReason = (e) => this.setState({ reason: e.target.value, err: { ...this.state.err, reason: null } });
+  pickReason = (r) => () => this.setState({ reason: r, err: { ...this.state.err, reason: null } });
+  stop = (e) => e.stopPropagation();
+
+  openConfirm = () => {
+    const err = {}; const q = parseInt(this.state.qty, 10);
+    if (!this.state.qty || isNaN(q) || q <= 0) err.qty = 'Enter a quantity greater than 0.';
+    if (!this.state.reason.trim()) err.reason = 'A reason is required for every adjustment.';
+    const p = this.sel();
+    if (this.state.type === 'decrease' && p && q > p.stock) err.qty = 'Can\u2019t remove more than current stock (' + p.stock + ').';
+    if (Object.keys(err).length) { this.setState({ err }); return; }
+    this.setState({ confirm: true });
+  };
+  cancelConfirm = () => this.setState({ confirm: false });
+  doAdjust = () => {
+    const p = this.sel(); const q = this.delta(); const result = this.newLevel();
+    const entry = { type: this.state.type, qty: q, reason: this.state.reason.trim(), by: 'Marcus Bell', when: 'Today · ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), result };
+    this.setState({
+      products: this.state.products.map(x => x.id === p.id ? { ...x, stock: result } : x),
+      history: { ...this.state.history, [p.id]: [entry, ...this.histOf(p.id)] },
+      confirm: false, qty: '', reason: '', type: 'increase', err: {},
+      toast: (this.state.type === 'increase' ? 'Added ' + q : 'Removed ' + q) + ' — ' + p.name + ' now at ' + result,
+    });
+    clearTimeout(this._t); this._t = setTimeout(() => this.setState({ toast: null }), 2600);
+  };
+
+  filtered() {
+    const q = this.state.search.trim().toLowerCase();
+    return this.state.products.filter(p => {
+      const st = this.statusOf(p.stock);
+      if (this.state.filter === 'low' && st !== 'low') return false;
+      if (this.state.filter === 'out' && st !== 'out') return false;
+      if (q && !p.name.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  renderVals() {
+    const h = React.createElement;
+    const lowCount = this.state.products.filter(p => this.statusOf(p.stock) !== 'ok').length;
+    const outCount = this.state.products.filter(p => p.stock === 0).length;
+    const fil = this.filtered();
+
+    const segStyle = (on) => 'flex:1;border:none;background:' + (on ? '#fff' : 'transparent') + ';color:' + (on ? '#2B3A4A' : '#6B7280') + ';font:' + (on ? '600' : '500') + ' 13px Inter,sans-serif;padding:7px;border-radius:7px;cursor:pointer;' + (on ? 'box-shadow:0 1px 2px rgba(15,20,24,.08);' : '');
+
+    // ---- product list ----
+    let productList;
+    if (fil.length === 0) {
+      productList = h('div', { style: { padding: '40px 20px', textAlign: 'center', color: '#9AA1AB', fontSize: '13px' } }, 'No products match.');
+    } else {
+      productList = h('div', null, fil.map(p => {
+        const st = this.statusOf(p.stock); const m = this.statMeta(st); const on = p.id === this.state.selected;
+        return h('div', { key: p.id, onClick: () => this.select(p.id), style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px', height: '62px', borderBottom: '1px solid #F1F0EC', cursor: 'pointer', background: on ? '#F3ECDD' : 'transparent', borderLeft: on ? '3px solid #2B3A4A' : '3px solid transparent' }, onMouseEnter: (e) => { if (!on) e.currentTarget.style.background = '#FAFAF8'; }, onMouseLeave: (e) => { if (!on) e.currentTarget.style.background = 'transparent'; } },
+          h('div', { style: { width: '38px', height: '38px', borderRadius: '9px', background: on ? '#fff' : '#F3ECDD', color: '#2B3A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '15px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, p.name[0]),
+          h('div', { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' } },
+            h('span', { style: { fontSize: '14px', fontWeight: 500, color: '#1F2933', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, p.name),
+            h('span', { style: { fontSize: '11.5px', color: '#9AA1AB' } }, p.category)),
+          h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' } },
+            h('span', { className: 'num', style: { fontSize: '15px', fontWeight: 600, color: st === 'out' ? '#C0564D' : '#2B3A4A' } }, p.stock),
+            h('span', { style: { width: '7px', height: '7px', borderRadius: '9999px', background: m.dot } })));
+      }));
+    }
+
+    // ---- detail panel ----
+    const p = this.sel();
+    let detailPanel;
+    if (!p) {
+      detailPanel = h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9AA1AB', fontSize: '14px' } }, 'Select a product to adjust its stock.');
+    } else {
+      const st = this.statusOf(p.stock); const m = this.statMeta(st);
+      const err = this.state.err;
+      const hist = this.histOf(p.id);
+      const inc = this.state.type === 'increase';
+
+      // header card
+      const headerCard = h('div', { style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '20px', display: 'flex', alignItems: 'center', gap: '16px' } },
+        h('div', { style: { width: '56px', height: '56px', borderRadius: '13px', background: '#F3ECDD', color: '#2B3A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: '24px', fontFamily: 'Poppins,sans-serif', flex: 'none' } }, p.name[0]),
+        h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' } },
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '20px', color: '#2B3A4A' } }, p.name),
+          h('span', { style: { fontSize: '13px', color: '#6B7280' } }, p.category)),
+        h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '7px' } },
+          h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '6px' } },
+            h('span', { className: 'num', style: { fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '30px', color: st === 'out' ? '#C0564D' : '#2B3A4A', letterSpacing: '-.01em' } }, p.stock),
+            h('span', { style: { fontSize: '13px', color: '#9AA1AB' } }, 'in stock')),
+          h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: m.bg, color: m.c } }, h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: m.dot } }), m.t)));
+
+      // adjust form
+      const preview = this.state.qty ? (p.stock + '  →  ' + this.newLevel()) : '—';
+      const reasonChips = h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '7px' } }, this.state.presetReasons.map(r => {
+        const on = this.state.reason === r;
+        return h('button', { key: r, onClick: this.pickReason(r), style: { padding: '6px 12px', borderRadius: '9999px', border: '1px solid ' + (on ? '#2B3A4A' : '#E5E7EB'), background: on ? '#2B3A4A' : '#fff', color: on ? '#fff' : '#6B7280', fontFamily: 'Inter,sans-serif', fontWeight: 500, fontSize: '12.5px', cursor: 'pointer' } }, r);
+      }));
+      const adjustCard = h('div', { style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '22px', display: 'flex', flexDirection: 'column', gap: '18px' } },
+        h('h3', { style: { margin: 0, fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, 'Adjust stock'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
+          h('div', null,
+            h('label', { style: { display: 'block', fontSize: '12px', fontWeight: 600, color: '#6B7280', marginBottom: '6px' } }, 'Adjustment type'),
+            h('div', { style: { display: 'flex', background: '#EFEFEF', border: '1px solid #E5E7EB', borderRadius: '10px', padding: '3px', gap: '2px' } },
+              h('button', { onClick: this.setType('increase'), style: { flex: 1, border: 'none', background: inc ? '#fff' : 'transparent', color: inc ? '#3A7D4E' : '#6B7280', font: (inc ? '600' : '500') + ' 14px Inter,sans-serif', padding: '9px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', boxShadow: inc ? '0 1px 2px rgba(15,20,24,.08)' : 'none' } }, h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: inc ? '#3A7D4E' : '#9AA1AB', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>' } }), 'Increase'),
+              h('button', { onClick: this.setType('decrease'), style: { flex: 1, border: 'none', background: !inc ? '#fff' : 'transparent', color: !inc ? '#A6413A' : '#6B7280', font: (!inc ? '600' : '500') + ' 14px Inter,sans-serif', padding: '9px', borderRadius: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', boxShadow: !inc ? '0 1px 2px rgba(15,20,24,.08)' : 'none' } }, h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: !inc ? '#A6413A' : '#9AA1AB', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>' } }), 'Decrease'))),
+          h('div', null,
+            h('label', { style: { display: 'block', fontSize: '12px', fontWeight: 600, color: '#6B7280', marginBottom: '6px' } }, 'Quantity'),
+            h('input', { value: this.state.qty, onInput: this.onQty, placeholder: '0', className: 'num', style: { width: '100%', boxSizing: 'border-box', height: '44px', padding: '0 12px', borderRadius: '10px', font: '400 15px Inter,sans-serif', color: '#1F2933', background: '#fff', outline: 'none', border: err.qty ? '1px solid #C0564D' : '1px solid #E5E7EB', boxShadow: err.qty ? '0 0 0 3px rgba(192,86,77,.12)' : 'none' } }),
+            err.qty ? h('span', { style: { display: 'block', marginTop: '6px', fontSize: '12px', color: '#A6413A' } }, err.qty) : null)),
+        h('div', null,
+          h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '6px' } },
+            h('label', { style: { fontSize: '12px', fontWeight: 600, color: '#6B7280' } }, ['Reason ', h('span', { key: 'r', style: { color: '#C0564D' } }, '· required')])),
+          reasonChips,
+          h('textarea', { value: this.state.reason, onInput: this.onReason, placeholder: 'Pick a reason above or type your own…', style: { width: '100%', boxSizing: 'border-box', height: '60px', marginTop: '10px', padding: '10px 12px', borderRadius: '10px', font: '400 14px Inter,sans-serif', color: '#1F2933', background: '#fff', outline: 'none', resize: 'none', border: err.reason ? '1px solid #C0564D' : '1px solid #E5E7EB', boxShadow: err.reason ? '0 0 0 3px rgba(192,86,77,.12)' : 'none' } }),
+          err.reason ? h('span', { style: { display: 'block', marginTop: '6px', fontSize: '12px', color: '#A6413A' } }, err.reason) : null),
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', paddingTop: '4px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: '#F3ECDD', borderRadius: '10px', flex: 1 } },
+            h('span', { style: { fontSize: '13px', color: '#8A6D3B', fontWeight: 500 } }, 'New level'),
+            h('span', { className: 'num', style: { fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, preview)),
+          h('button', { onClick: this.openConfirm, style: { height: '44px', background: '#2B3A4A', color: '#fff', border: 'none', borderRadius: '10px', padding: '0 22px', font: '600 14px Inter,sans-serif', cursor: 'pointer', flex: 'none' } }, 'Record adjustment')));
+
+      // history
+      const th = (label, align) => h('th', { key: label, style: { padding: '0 16px', height: '44px', textAlign: align || 'left', font: '500 12px Inter,sans-serif', color: '#6B7280', borderBottom: '1px solid #E5E7EB', background: '#F7F7F5', position: 'sticky', top: 0 } }, label);
+      const historyCard = h('div', { style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' } },
+        h('div', { style: { padding: '18px 20px', borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' } },
+          h('h3', { style: { margin: 0, fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, 'Adjustment history'),
+          h('span', { className: 'num', style: { fontSize: '12.5px', color: '#9AA1AB' } }, hist.length + (hist.length === 1 ? ' entry' : ' entries'))),
+        hist.length === 0
+          ? h('div', { style: { padding: '36px', textAlign: 'center', color: '#9AA1AB', fontSize: '13px' } }, 'No adjustments recorded for this product yet.')
+          : h('table', { style: { width: '100%', borderCollapse: 'collapse' } },
+              h('thead', null, h('tr', null, th('Change'), th('Reason'), th('Adjusted by'), th('When'), th('Result', 'right'))),
+              h('tbody', null, hist.map((e, i) => {
+                const up = e.type === 'increase';
+                return h('tr', { key: i, style: i === 0 && this.state.toast ? { animation: 'rowIn .3s ease-out' } : null },
+                  h('td', { style: { padding: '0 16px', height: '52px', borderBottom: '1px solid #F1F0EC' } }, h('span', { className: 'num', style: { display: 'inline-flex', alignItems: 'center', gap: '7px', fontWeight: 600, color: up ? '#3A7D4E' : '#A6413A' } }, h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: up ? '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>' : '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>' } }), (up ? '+' : '−') + e.qty)),
+                  h('td', { style: { padding: '0 16px', height: '52px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#374151' } }, e.reason),
+                  h('td', { style: { padding: '0 16px', height: '52px', borderBottom: '1px solid #F1F0EC', fontSize: '13.5px', color: '#6B7280' } }, e.by),
+                  h('td', { style: { padding: '0 16px', height: '52px', borderBottom: '1px solid #F1F0EC', fontSize: '13px', color: '#9AA1AB' }, className: 'num' }, e.when),
+                  h('td', { style: { padding: '0 16px', height: '52px', borderBottom: '1px solid #F1F0EC', textAlign: 'right', fontWeight: 500, color: '#1F2933' }, className: 'num' }, e.result));
+              }))));
+
+      const toast = this.state.toast ? h('div', { style: { position: 'sticky', bottom: 0, alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '11px 16px', background: '#2B3A4A', color: '#fff', borderRadius: '10px', boxShadow: '0 8px 24px rgba(15,20,24,.24)', animation: 'popIn .2s ease-out' } },
+        h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: '#8FE0A6', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<path d="M20 6 9 17l-5-5"/>' } }),
+        h('span', { style: { fontSize: '13.5px', fontWeight: 500 } }, this.state.toast)) : null;
+
+      detailPanel = h(React.Fragment, null, headerCard, adjustCard, historyCard, toast);
+    }
+
+    // ---- confirm ----
+    const cp = this.sel(); const inc = this.state.type === 'increase';
+    const confIcon = h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: inc ? '#3A7D4E' : '#A6413A', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: inc ? '<path d="M12 19V5"/><path d="m5 12 7-7 7 7"/>' : '<path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>' } });
+
+    return {
+      subLabel: this.state.products.length + ' products tracked',
+      alertLabel: outCount > 0 ? (lowCount + ' need attention · ' + outCount + ' out') : (lowCount + ' need attention'),
+      search: this.state.search, onSearch: this.onSearch,
+      filterAll: this.filterAll, filterLow: this.filterLow, filterOut: this.filterOut,
+      fAllStyle: segStyle(this.state.filter === 'all'), fLowStyle: segStyle(this.state.filter === 'low'), fOutStyle: segStyle(this.state.filter === 'out'),
+      productList, detailPanel, stop: this.stop,
+      confirmOpen: this.state.confirm,
+      confIcon, confIconBg: inc ? '#DCEFE0' : '#F6E1DE',
+      confTitle: cp ? (inc ? 'Add ' + this.delta() + ' to ' + cp.name + '?' : 'Remove ' + this.delta() + ' from ' + cp.name + '?') : '',
+      confMessage: this.state.reason ? ('Reason: \u201C' + this.state.reason.trim() + '\u201D. This is logged to the adjustment history under your name.') : '',
+      confPreview: cp ? (cp.stock + '  →  ' + this.newLevel()) : '',
+      cancelConfirm: this.cancelConfirm, doAdjust: this.doAdjust,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  .num{font-variant-numeric:tabular-nums;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#fff;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+  <dc-import name="Sidebar" active="dashboard" hint-size="240px,100%"></dc-import>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:#EFEFEF;">
+    <header style="height:64px;flex:none;background:#fff;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;padding:0 24px;">
+      <div style="display:flex;flex-direction:column;gap:1px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:22px;color:#2B3A4A;">Dashboard</h2>
+        <span style="font-size:12px;color:#9AA1AB;">Good morning, Marcus — here's how the shop is doing.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;background:#EFEFEF;border:1px solid #E5E7EB;border-radius:10px;padding:3px;gap:2px;">
+          <button onClick="{{ setToday }}" style="{{ pTodayStyle }}">Today</button>
+          <button onClick="{{ setWeek }}" style="{{ pWeekStyle }}">7 days</button>
+          <button onClick="{{ setMonth }}" style="{{ pMonthStyle }}">30 days</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 13px;background:#fff;border:1px solid #E5E7EB;border-radius:10px;font-size:13px;color:#1F2933;font-weight:500;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+          <span class="num">{{ dateLabel }}</span>
+        </div>
+      </div>
+    </header>
+
+    <div style="flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">{{ statCards }}</div>
+
+      <div style="display:flex;gap:16px;align-items:stretch;">
+        <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;">
+            <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">{{ chartTitle }}</h3>
+            <span style="font-size:12.5px;color:#6B7280;">{{ chartMeta }}</span>
+          </div>
+          <div style="height:260px;">{{ chart }}</div>
+        </div>
+
+        <div style="width:392px;flex:none;display:flex;flex-direction:column;gap:16px;">
+          <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+              <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Best sellers</h3>
+              <span style="font-size:12px;color:#9AA1AB;">by units</span>
+            </div>
+            {{ bestSellers }}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:16px;align-items:stretch;">
+        <div style="flex:1;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;min-width:0;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+            <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Sales by category</h3>
+            <span style="font-size:12.5px;color:#6B7280;">{{ catMeta }}</span>
+          </div>
+          {{ categoryBars }}
+        </div>
+        <div style="width:392px;flex:none;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+            <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:16px;color:#2B3A4A;">Low stock</h3>
+          </div>
+          {{ lowStock }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { period: 'today' };
+
+  PERIODS = {
+    today: {
+      date: 'Jul 8, 2026', chartTitle: 'Sales by hour', chartMeta: '96 orders today',
+      stats: { sales: '$1,284.50', txns: '96', avg: '$13.38', items: '214' },
+      deltas: { sales: ['↑ 12.4%', true], txns: ['↑ 8', true], avg: ['↓ 2.1%', false], items: ['↑ 15', true] },
+      deltaNote: 'vs yesterday',
+      bars: [['7a', 62], ['8a', 118], ['9a', 175], ['10a', 210], ['11a', 168], ['12p', 142], ['1p', 196], ['2p', 150], ['3p', 96], ['4p', 74], ['5p', 88], ['6p', 110], ['7p', 64], ['8p', 41]],
+    },
+    week: {
+      date: 'Jul 2 – Jul 8, 2026', chartTitle: 'Sales by day', chartMeta: '684 orders this week',
+      stats: { sales: '$9,142.75', txns: '684', avg: '$13.37', items: '1,508' },
+      deltas: { sales: ['↑ 6.8%', true], txns: ['↑ 41', true], avg: ['↑ 0.4%', true], items: ['↑ 96', true] },
+      deltaNote: 'vs last week',
+      bars: [['Wed', 1180], ['Thu', 1284], ['Fri', 1520], ['Sat', 1740], ['Sun', 1610], ['Mon', 1024], ['Tue', 784]],
+    },
+    month: {
+      date: 'Jun 9 – Jul 8, 2026', chartTitle: 'Sales by day', chartMeta: '2,940 orders in 30 days',
+      stats: { sales: '$38,610.00', txns: '2,940', avg: '$13.13', items: '6,472' },
+      deltas: { sales: ['↑ 9.1%', true], txns: ['↑ 214', true], avg: ['↓ 1.2%', false], items: ['↑ 402', true] },
+      deltaNote: 'vs prev. 30 days',
+      bars: [['W1', 8240], ['W2', 9010], ['W3', 9560], ['W4', 8720], ['W5', 3080]],
+    },
+  };
+
+  setPeriod = (p) => () => this.setState({ period: p });
+  setToday = this.setPeriod('today'); setWeek = this.setPeriod('week'); setMonth = this.setPeriod('month');
+
+  badge(text, up) {
+    const h = React.createElement;
+    return h('span', { style: { display: 'inline-flex', alignItems: 'center', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: up ? '#DCEFE0' : '#F6E1DE', color: up ? '#3A7D4E' : '#A6413A' } }, text);
+  }
+
+  renderVals() {
+    const h = React.createElement;
+    const P = this.PERIODS[this.state.period];
+    const seg = (on) => 'border:none;background:' + (on ? '#fff' : 'transparent') + ';color:' + (on ? '#2B3A4A' : '#6B7280') + ';font:' + (on ? '600' : '500') + ' 13px Inter,sans-serif;padding:6px 14px;border-radius:8px;cursor:pointer;' + (on ? 'box-shadow:0 1px 2px rgba(15,20,24,.08);' : '');
+
+    // stat cards
+    const icons = {
+      sales: '<line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+      txns: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+      avg: '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+      items: '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>',
+    };
+    const labels = { sales: "Total sales", txns: 'Transactions', avg: 'Avg. ticket', items: 'Items sold' };
+    const statCards = ['sales', 'txns', 'avg', 'items'].map(k => h('div', { key: k, style: { background: '#fff', border: '1px solid #E5E7EB', borderRadius: '12px', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' } },
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        h('span', { style: { fontSize: '13px', color: '#6B7280', fontWeight: 500 } }, labels[k]),
+        h('div', { style: { width: '32px', height: '32px', borderRadius: '8px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+          h('svg', { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none', stroke: '#2B3A4A', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: icons[k] } }))),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+        h('span', { className: 'num', style: { fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '28px', color: '#2B3A4A', letterSpacing: '-.01em' } }, P.stats[k]),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '7px' } }, this.badge(P.deltas[k][0], P.deltas[k][1]), h('span', { style: { fontSize: '12px', color: '#9AA1AB' } }, P.deltaNote)))));
+
+    // chart
+    const max = Math.max(...P.bars.map(x => x[1]));
+    const chart = h('div', { style: { display: 'flex', alignItems: 'flex-end', gap: '10px', height: '100%' } },
+      P.bars.map(([lab, v], i) => h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '9px', height: '100%', justifyContent: 'flex-end' } },
+        h('div', { style: { width: '100%', maxWidth: '34px', height: (v / max * 100) + '%', minHeight: '4px', background: v >= max * 0.82 ? '#2B3A4A' : '#9DB4CE', borderRadius: '6px 6px 0 0' }, title: String(v) }),
+        h('span', { className: 'num', style: { fontSize: '11px', color: '#9AA1AB', fontWeight: 500 } }, lab))));
+
+    // best sellers
+    const bs = [
+      ['Caffè Latte', 'Espresso', 42], ['Cappuccino', 'Espresso', 38], ['Butter Croissant', 'Pastry', 31], ['Cold Brew', 'Brewed Coffee', 27], ['Americano', 'Espresso', 24],
+    ];
+    const bsMax = bs[0][2];
+    const bestSellers = h('div', { style: { display: 'flex', flexDirection: 'column' } }, bs.map(([name, cat, qty], i) => h('div', { key: name, style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: i < bs.length - 1 ? '1px solid #F1F0EC' : 'none' } },
+      h('span', { className: 'num', style: { width: '18px', fontWeight: 600, color: '#9AA1AB', fontSize: '13px' } }, i + 1),
+      h('div', { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '5px' } },
+        h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' } },
+          h('span', { style: { fontSize: '13.5px', fontWeight: 500, color: '#1F2933' } }, name),
+          h('span', { className: 'num', style: { fontSize: '13.5px', fontWeight: 600, color: '#2B3A4A' } }, qty)),
+        h('div', { style: { height: '5px', borderRadius: '9999px', background: '#F1EEE8', overflow: 'hidden' } }, h('div', { style: { width: (qty / bsMax * 100) + '%', height: '100%', background: '#4A7DBD', borderRadius: '9999px' } }))))));
+
+    // category bars
+    const cats = [['Espresso', 44, '#2B3A4A'], ['Brewed Coffee', 22, '#4A7DBD'], ['Pastry', 18, '#B08D57'], ['Non-Coffee', 11, '#4C8C5B'], ['Retail Beans', 5, '#9DB4CE']];
+    const categoryBars = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '13px' } }, cats.map(([name, pct, color]) => h('div', { key: name, style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+      h('span', { style: { width: '110px', fontSize: '13px', color: '#374151', fontWeight: 500, flex: 'none' } }, name),
+      h('div', { style: { flex: 1, height: '10px', borderRadius: '9999px', background: '#F1EEE8', overflow: 'hidden' } }, h('div', { style: { width: pct + '%', height: '100%', background: color, borderRadius: '9999px' } })),
+      h('span', { className: 'num', style: { width: '38px', textAlign: 'right', fontSize: '13px', fontWeight: 600, color: '#2B3A4A', flex: 'none' } }, pct + '%'))));
+
+    // low stock
+    const low = [['Blueberry Muffin', 0], ['Cold Brew', 0], ['Almond Croissant', 4], ['Cortado', 7], ['Pour Over', 8]];
+    const lowStock = h('div', { style: { display: 'flex', flexDirection: 'column' } }, low.map(([name, s], i) => {
+      const out = s === 0;
+      return h('div', { key: name, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 0', borderBottom: i < low.length - 1 ? '1px solid #F1F0EC' : 'none' } },
+        h('span', { style: { fontSize: '13.5px', fontWeight: 500, color: '#1F2933' } }, name),
+        h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '3px 10px', borderRadius: '9999px', fontSize: '12px', fontWeight: 600, background: out ? '#F6E1DE' : '#FBF0DD', color: out ? '#A6413A' : '#8A5E17' } },
+          h('span', { style: { width: '6px', height: '6px', borderRadius: '9999px', background: out ? '#C0564D' : '#D9A441' } }), out ? 'Out of stock' : s + ' left'));
+    }));
+
+    return {
+      pTodayStyle: seg(this.state.period === 'today'), pWeekStyle: seg(this.state.period === 'week'), pMonthStyle: seg(this.state.period === 'month'),
+      setToday: this.setToday, setWeek: this.setWeek, setMonth: this.setMonth,
+      dateLabel: P.date, chartTitle: P.chartTitle, chartMeta: P.chartMeta,
+      statCards, chart, bestSellers, categoryBars, lowStock,
+      catMeta: 'share of ' + P.stats.sales,
+    };
+  }
+}
+</script>
+</body>
+</html>

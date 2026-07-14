@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#D9D5CD;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;}
+  @keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes cartIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+  @keyframes checkPop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+  ::placeholder{color:#9AA1AB;}
+  .num{font-variant-numeric:tabular-nums;}
+  .pos-scroll::-webkit-scrollbar{width:10px;} .pos-scroll::-webkit-scrollbar-thumb{background:#D8D4CC;border-radius:9999px;border:3px solid #EFEFEF;}
+  .cat-strip::-webkit-scrollbar{height:0;}
+</style>
+</helmet>
+
+<div style="display:flex;width:1440px;height:900px;background:#EFEFEF;overflow:hidden;font-family:Inter,sans-serif;position:relative;">
+
+  <dc-import name="Sidebar" active="register" role="cashier" hint-size="240px,100%"></dc-import>
+
+  <!-- ============ PRODUCT AREA ============ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <!-- top bar -->
+    <div style="padding:18px 24px 12px;display:flex;flex-direction:column;gap:14px;background:#EFEFEF;">
+      <!-- info bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <h1 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:24px;color:#2B3A4A;letter-spacing:-.01em;">Checkout</h1>
+          <span style="font-size:12.5px;color:#8A8577;">New sale · {{ shiftLabel }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="display:inline-flex;align-items:center;gap:9px;height:46px;padding:0 15px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>
+            <div style="display:flex;flex-direction:column;line-height:1.1;">
+              <span style="font-size:9.5px;font-weight:600;letter-spacing:.06em;color:#9AA1AB;">DATE</span>
+              <span class="num" style="font-size:13.5px;font-weight:600;color:#2B3A4A;">{{ dateLabel }}</span>
+            </div>
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:9px;height:46px;padding:0 15px;background:#2B3A4A;border-radius:12px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8DCC5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            <div style="display:flex;flex-direction:column;line-height:1.1;">
+              <span style="font-size:9.5px;font-weight:600;letter-spacing:.06em;color:rgba(232,220,197,.7);">TIME</span>
+              <span class="num" style="font-size:14px;font-weight:600;color:#fff;">{{ timeLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- search + sort -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;position:relative;">
+          <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search products or scan barcode…" style="width:100%;box-sizing:border-box;height:48px;padding:0 14px 0 42px;border:1px solid #E5E7EB;border-radius:12px;font:400 15px Inter,sans-serif;color:#1F2933;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+        </div>
+        <div style="position:relative;flex:none;">
+          <select value="{{ sort }}" onChange="{{ onSort }}" style="height:48px;padding:0 38px 0 16px;border:1px solid #E5E7EB;border-radius:12px;font:500 14px Inter,sans-serif;color:#374151;background:#fff;appearance:none;cursor:pointer;outline:none;">{{ sortOptions }}</select>
+          <svg style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA1AB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4M21 8l-4-4-4 4M17 4v16"/></svg>
+        </div>
+      </div>
+      <!-- category strip -->
+      <div class="cat-strip" style="display:flex;gap:9px;overflow-x:auto;padding-bottom:2px;">{{ catChips }}</div>
+    </div>
+
+    <!-- grid -->
+    <div class="pos-scroll" style="flex:1;overflow:auto;padding:4px 24px 24px;">{{ grid }}</div>
+  </div>
+
+  <!-- ============ CART PANEL ============ -->
+  <aside style="width:400px;flex:none;background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;min-height:0;box-shadow:-4px 0 24px rgba(15,20,24,.04);">
+    <div style="padding:20px 22px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h2 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:18px;color:#2B3A4A;">Current order</h2>
+        <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}"><span class="num" style="min-width:22px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:9999px;background:#2B3A4A;color:#fff;font-size:12px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;">{{ itemCount }}</span></sc-if>
+      </div>
+      <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ clearCart }}" style="display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:none;background:transparent;color:#A6413A;font:500 13px Inter,sans-serif;cursor:pointer;border-radius:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A6413A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Clear
+        </button>
+      </sc-if>
+    </div>
+
+    <div class="pos-scroll" style="flex:1;overflow:auto;min-height:0;">{{ cartBody }}</div>
+
+    <sc-if value="{{ hasItems }}" hint-placeholder-val="{{ false }}">
+      <div style="border-top:1px solid #F1F0EC;padding:18px 22px 22px;display:flex;flex-direction:column;gap:14px;">
+        <sc-if value="{{ stockError }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:9px;padding:11px 13px;background:#F6E1DE;border:1px solid #EBC6C1;border-radius:10px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A6413A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            <span style="font-size:12.5px;font-weight:500;color:#A6413A;">Some items exceed available stock. Adjust the highlighted lines to continue.</span>
+          </div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:13.5px;color:#6B7280;">Subtotal</span><span class="num" style="font-size:14px;font-weight:500;color:#374151;">{{ subtotal }}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;"><span class="num" style="font-size:13.5px;color:#6B7280;">Items</span><span class="num" style="font-size:14px;font-weight:500;color:#374151;">{{ itemCount }}</span></div>
+          <div style="height:1px;background:#F1F0EC;margin:2px 0;"></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;"><span style="font-family:Poppins,sans-serif;font-size:16px;font-weight:600;color:#2B3A4A;">Total</span><span class="num" style="font-family:Inter,sans-serif;font-size:26px;font-weight:600;color:#2B3A4A;letter-spacing:-.01em;">{{ total }}</span></div>
+        </div>
+        <button onClick="{{ startCheckout }}" style="height:56px;background:#2B3A4A;color:#fff;border:none;border-radius:12px;font:600 16px Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;" style-hover="background:#3B4E63">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+          Charge {{ total }}
+        </button>
+      </div>
+    </sc-if>
+  </aside>
+
+  <!-- ============ CHECKOUT OVERLAY ============ -->
+  <sc-if value="{{ checkoutOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCheckout }}" style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:40;">
+      <div onClick="{{ stop }}" style="width:460px;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,20,24,.32);overflow:hidden;animation:popIn .2s ease-out;">
+        <div style="padding:22px 24px;border-bottom:1px solid #F1F0EC;display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;font-family:Poppins,sans-serif;font-weight:600;font-size:19px;color:#2B3A4A;">Take payment</h3>
+          <button onClick="{{ closeCheckout }}" style="width:32px;height:32px;border-radius:8px;border:none;background:#F3F3F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:#F3ECDD;border-radius:12px;">
+            <span style="font-size:14px;color:#8A6D3B;font-weight:500;">Total due</span>
+            <span class="num" style="font-family:Inter,sans-serif;font-size:28px;font-weight:600;color:#2B3A4A;letter-spacing:-.01em;">{{ total }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:7px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+              <span style="font-size:12px;font-weight:600;color:#6B7280;">Cash received</span>
+            </div>
+            <div style="position:relative;">
+              <span class="num" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#2B3A4A;font-size:22px;font-weight:600;">$</span>
+              <input value="{{ received }}" onInput="{{ onReceived }}" placeholder="0.00" class="num" style="width:100%;box-sizing:border-box;height:60px;padding:0 16px 0 36px;border:1px solid #E5E7EB;border-radius:12px;font:600 24px Inter,sans-serif;color:#2B3A4A;background:#fff;outline:none;" style-focus="border-color:#4A7DBD;box-shadow:0 0 0 3px rgba(74,125,189,.16)" />
+            </div>
+            <div style="display:flex;gap:8px;margin-top:2px;">{{ quickCash }}</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border:1px dashed {{ changeBorder }};border-radius:12px;background:{{ changeBg }};">
+            <span style="font-size:14px;color:#6B7280;font-weight:500;">Change due</span>
+            <span class="num" style="font-family:Inter,sans-serif;font-size:22px;font-weight:600;color:{{ changeColor }};">{{ changeLabel }}</span>
+          </div>
+        </div>
+        <div style="padding:18px 24px;border-top:1px solid #F1F0EC;display:flex;gap:12px;">
+          <button onClick="{{ closeCheckout }}" style="height:48px;background:transparent;color:#2B3A4A;border:1px solid #C7CCD1;border-radius:12px;padding:0 20px;font:500 15px Inter,sans-serif;cursor:pointer;">Back</button>
+          <button onClick="{{ completeSale }}" style="{{ completeBtnStyle }}">Complete sale</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ RECEIPT OVERLAY ============ -->
+  <sc-if value="{{ receiptOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(31,41,51,.55);display:flex;align-items:center;justify-content:center;z-index:50;">
+      <div style="width:400px;max-height:840px;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(15,20,24,.32);animation:popIn .22s ease-out;display:flex;flex-direction:column;">
+        <div style="padding:28px 28px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;border-bottom:1px dashed #E5E7EB;">
+          <div style="width:60px;height:60px;border-radius:9999px;background:#DCEFE0;display:flex;align-items:center;justify-content:center;animation:checkPop .4s ease-out;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#3A7D4E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span style="font-family:Poppins,sans-serif;font-weight:600;font-size:20px;color:#2B3A4A;">Payment complete</span>
+            <span class="num" style="font-size:13px;color:#9AA1AB;">{{ receiptRef }} · {{ receiptTime }}</span>
+          </div>
+        </div>
+        <div style="padding:22px 28px;display:flex;flex-direction:column;gap:12px;">
+          <span style="font-size:11.5px;font-weight:600;letter-spacing:.04em;color:#9AA1AB;">MAPLE &amp; VINE COFFEE · SOFIA REYES</span>
+          {{ receiptItems }}
+          <div style="height:1px;background:#F1F0EC;margin:4px 0;"></div>
+          <div style="display:flex;justify-content:space-between;"><span style="font-size:13.5px;color:#6B7280;">Subtotal</span><span class="num" style="font-size:13.5px;font-weight:500;color:#374151;">{{ receiptSubtotal }}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-family:Poppins,sans-serif;font-size:16px;font-weight:600;color:#2B3A4A;">Total</span><span class="num" style="font-size:20px;font-weight:600;color:#2B3A4A;">{{ receiptSubtotal }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px;background:#F7F7F5;border-radius:12px;margin-top:4px;">
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:#6B7280;">Cash received</span><span class="num" style="font-size:13.5px;font-weight:500;color:#374151;">{{ receiptPaid }}</span></div>
+            <div style="display:flex;justify-content:space-between;"><span style="font-size:13px;color:#6B7280;">Change</span><span class="num" style="font-size:13.5px;font-weight:600;color:#3A7D4E;">{{ receiptChange }}</span></div>
+          </div>
+        </div>
+        <div style="padding:16px 28px 24px;display:flex;gap:12px;">
+          <button onClick="{{ printReceipt }}" style="height:48px;flex:none;background:#F3ECDD;color:#2B3A4A;border:none;border-radius:12px;padding:0 18px;font:600 14px Inter,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2B3A4A" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>Print</button>
+          <button onClick="{{ newSale }}" style="flex:1;height:48px;background:#2B3A4A;color:#fff;border:none;border-radius:12px;font:600 15px Inter,sans-serif;cursor:pointer;">New sale</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    search: '', category: 'All', sort: 'popular',
+    cart: {}, order: [],
+    checkout: false, received: '',
+    receipt: null, now: new Date(),
+    products: [
+      { id: 1, name: 'Cappuccino', category: 'Espresso', price: 4.25, stock: 36 },
+      { id: 2, name: 'Caffè Latte', category: 'Espresso', price: 4.75, stock: 41 },
+      { id: 3, name: 'Flat White', category: 'Espresso', price: 4.50, stock: 22 },
+      { id: 4, name: 'Americano', category: 'Espresso', price: 3.50, stock: 58 },
+      { id: 5, name: 'Cortado', category: 'Espresso', price: 4.00, stock: 7 },
+      { id: 6, name: 'Espresso', category: 'Espresso', price: 3.00, stock: 60 },
+      { id: 7, name: 'Cold Brew', category: 'Brewed Coffee', price: 4.95, stock: 3 },
+      { id: 8, name: 'Nitro Cold Brew', category: 'Brewed Coffee', price: 5.75, stock: 14 },
+      { id: 9, name: 'Pour Over', category: 'Brewed Coffee', price: 5.50, stock: 8 },
+      { id: 10, name: 'Drip Coffee', category: 'Brewed Coffee', price: 3.25, stock: 45 },
+      { id: 11, name: 'Matcha Latte', category: 'Non-Coffee', price: 5.25, stock: 28 },
+      { id: 12, name: 'Chai Latte', category: 'Non-Coffee', price: 4.75, stock: 33 },
+      { id: 13, name: 'Hot Chocolate', category: 'Non-Coffee', price: 4.25, stock: 19 },
+      { id: 14, name: 'London Fog', category: 'Non-Coffee', price: 4.50, stock: 21 },
+      { id: 15, name: 'Butter Croissant', category: 'Pastry', price: 3.75, stock: 18 },
+      { id: 16, name: 'Almond Croissant', category: 'Pastry', price: 4.50, stock: 4 },
+      { id: 17, name: 'Blueberry Muffin', category: 'Pastry', price: 3.95, stock: 0 },
+      { id: 18, name: 'Cinnamon Roll', category: 'Pastry', price: 4.25, stock: 11 },
+      { id: 19, name: 'Chocolate Cookie', category: 'Pastry', price: 2.95, stock: 26 },
+      { id: 20, name: 'House Blend 12oz', category: 'Retail Beans', price: 16.00, stock: 24 },
+      { id: 21, name: 'Ethiopia 12oz', category: 'Retail Beans', price: 18.00, stock: 9 },
+      { id: 22, name: 'Decaf 12oz', category: 'Retail Beans', price: 16.00, stock: 6 },
+      { id: 23, name: 'Earl Grey', category: 'Tea', price: 3.50, stock: 30 },
+      { id: 24, name: 'Green Tea', category: 'Tea', price: 3.50, stock: 25 },
+      { id: 25, name: 'English Breakfast', category: 'Tea', price: 3.50, stock: 12 },
+      { id: 26, name: 'Peppermint Tea', category: 'Tea', price: 3.75, stock: 9 },
+      { id: 27, name: 'Pumpkin Spice Latte', category: 'Seasonal', price: 5.75, stock: 16 },
+      { id: 28, name: 'Peppermint Mocha', category: 'Seasonal', price: 5.50, stock: 8 },
+      { id: 29, name: 'Maple Latte', category: 'Seasonal', price: 5.50, stock: 14 },
+      { id: 30, name: 'Ceramic Mug', category: 'Merchandise', price: 14.00, stock: 20 },
+      { id: 31, name: 'Canvas Tote Bag', category: 'Merchandise', price: 18.00, stock: 7 },
+      { id: 32, name: 'Gift Card', category: 'Merchandise', price: 25.00, stock: 50 },
+      { id: 33, name: 'Cold Cup 24oz', category: 'Merchandise', price: 12.00, stock: 4 },
+    ],
+    nextRef: 2042,
+  };
+
+  CATS = ['All', 'Espresso', 'Brewed Coffee', 'Tea', 'Non-Coffee', 'Pastry', 'Seasonal', 'Retail Beans', 'Merchandise'];
+  CAT_ICON = {
+    'All': '<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
+    'Espresso': '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>',
+    'Brewed Coffee': '<path d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8Z"/><path d="M5 8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3"/><path d="M12 5V2"/>',
+    'Tea': '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M8 5s.5-1 2-1 2 1 2 1"/>',
+    'Non-Coffee': '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/>',
+    'Pastry': '<path d="M4.6 13.11l5.79-3.21c1.89-1.05 4.79 1.78 3.71 3.71l-3.22 5.81C8.8 23.16.79 15.23 4.6 13.11Z"/><path d="M10.5 9.5C11 5 15.5 2 20 2c0 4.5-3 9-7.5 9.5"/>',
+    'Seasonal': '<path d="m12 3 2.09 4.26L19 8.27l-3.5 3.35.83 4.88L12 14.5l-4.33 1.99.83-4.88L5 8.27l4.91-1.01Z"/>',
+    'Retail Beans': '<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/>',
+    'Merchandise': '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  };
+  SORTS = [['popular', 'Sort: Popular'], ['name', 'Name A–Z'], ['price-asc', 'Price: Low to high'], ['price-desc', 'Price: High to low']];
+
+  componentDidMount() { this._clock = setInterval(() => this.setState({ now: new Date() }), 1000); }
+  componentWillUnmount() { clearInterval(this._clock); }
+  tileColor(name) {
+    const palette = [['#F3ECDD', '#2B3A4A'], ['#DCE6F2', '#3A6BA8'], ['#E3EEE4', '#3A7D4E'], ['#F3E4E1', '#A6413A'], ['#EFE7F2', '#6C4A8A'], ['#FBEFD6', '#8A5E17']];
+    let x = 0; for (const ch of name) x = (x * 31 + ch.charCodeAt(0)) % palette.length; return palette[x];
+  }
+
+  fmt(n) { return '$' + n.toFixed(2); }
+  qtyIn(id) { return this.state.cart[id] || 0; }
+  cartLines() { return this.state.order.map(id => this.state.products.find(p => p.id === id)).filter(Boolean).map(p => ({ p, qty: this.state.cart[p.id] })); }
+  subtotalNum() { return this.cartLines().reduce((s, { p, qty }) => s + p.price * qty, 0); }
+  itemCountNum() { return this.cartLines().reduce((s, { qty }) => s + qty, 0); }
+  hasStockError() { return this.cartLines().some(({ p, qty }) => qty > p.stock); }
+
+  onSearch = (e) => this.setState({ search: e.target.value });
+  setCat = (c) => () => this.setState({ category: c });
+  onSort = (e) => this.setState({ sort: e.target.value });
+  stop = (e) => e.stopPropagation();
+
+  add = (p) => {
+    if (p.stock === 0) return;
+    const order = this.state.order.includes(p.id) ? this.state.order : [...this.state.order, p.id];
+    this.setState({ cart: { ...this.state.cart, [p.id]: this.qtyIn(p.id) + 1 }, order });
+  };
+  dec = (id) => {
+    const q = this.qtyIn(id) - 1;
+    const cart = { ...this.state.cart };
+    if (q <= 0) { delete cart[id]; this.setState({ cart, order: this.state.order.filter(x => x !== id) }); }
+    else { cart[id] = q; this.setState({ cart }); }
+  };
+  inc = (id) => this.setState({ cart: { ...this.state.cart, [id]: this.qtyIn(id) + 1 } });
+  removeLine = (id) => { const cart = { ...this.state.cart }; delete cart[id]; this.setState({ cart, order: this.state.order.filter(x => x !== id) }); };
+  clearCart = () => this.setState({ cart: {}, order: [] });
+
+  startCheckout = () => { if (this.hasStockError()) { this.forceUpdate(); return; } this.setState({ checkout: true, received: '' }); };
+  closeCheckout = () => this.setState({ checkout: false });
+  onReceived = (e) => this.setState({ received: e.target.value.replace(/[^0-9.]/g, '') });
+  setReceived = (v) => () => this.setState({ received: v.toFixed(2) });
+  completeSale = () => {
+    const total = this.subtotalNum();
+    const recv = parseFloat(this.state.received);
+    if (isNaN(recv) || recv < total) return;
+    const lines = this.cartLines().map(({ p, qty }) => ({ name: p.name, qty, price: p.price }));
+    const ref = 'TX-' + this.state.nextRef;
+    this.setState({
+      products: this.state.products.map(p => this.state.cart[p.id] ? { ...p, stock: Math.max(0, p.stock - this.state.cart[p.id]) } : p),
+      receipt: { ref, time: 'Jul 8, 2026 · ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }), lines, subtotal: total, paid: recv, change: recv - total },
+      nextRef: this.state.nextRef + 1, checkout: false, cart: {}, order: [], received: '',
+    });
+  };
+  newSale = () => this.setState({ receipt: null });
+  printReceipt = () => {};
+
+  visible() {
+    let list = this.state.products.slice();
+    const q = this.state.search.trim().toLowerCase();
+    if (this.state.category !== 'All') list = list.filter(p => p.category === this.state.category);
+    if (q) list = list.filter(p => p.name.toLowerCase().includes(q));
+    const s = this.state.sort;
+    if (s === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (s === 'price-asc') list.sort((a, b) => a.price - b.price);
+    else if (s === 'price-desc') list.sort((a, b) => b.price - a.price);
+    return list;
+  }
+
+  renderVals() {
+    const h = React.createElement;
+
+    // nav rail
+    const navData = [
+      ['register', 'Checkout', '<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>', true],
+      ['products', 'Products', '<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="1" y2="4"/><line x1="10" x2="10" y1="1" y2="4"/><line x1="14" x2="14" y1="1" y2="4"/>', false],
+      ['categories', 'Categories', '<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>', false],
+      ['stock', 'Stock', '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>', false],
+      ['txns', 'My sales', '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>', false],
+    ];
+    const navItems = navData.map(([k, label, icon, active]) => h('a', { key: k, href: '#', title: label, style: { width: '60px', height: '58px', borderRadius: '13px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', textDecoration: 'none', background: active ? 'rgba(232,220,197,.16)' : 'transparent' } },
+      h('svg', { width: 21, height: 21, viewBox: '0 0 24 24', fill: 'none', stroke: active ? '#E8DCC5' : '#8FA0AE', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: icon } }),
+      h('span', { style: { fontSize: '10px', fontWeight: active ? 600 : 500, color: active ? '#E8DCC5' : '#8FA0AE' } }, label)));
+
+    // category chips (scrollable strip, icon + label + count)
+    const catChips = this.CATS.map(c => {
+      const on = this.state.category === c;
+      const count = c === 'All' ? this.state.products.length : this.state.products.filter(p => p.category === c).length;
+      return h('button', { key: c, onClick: this.setCat(c), style: { flex: 'none', display: 'inline-flex', alignItems: 'center', gap: '9px', height: '42px', padding: '0 8px 0 8px', paddingRight: '14px', borderRadius: '9999px', border: '1px solid ' + (on ? '#2B3A4A' : '#E5E7EB'), background: on ? '#2B3A4A' : '#fff', color: on ? '#fff' : '#374151', font: '500 13.5px Inter,sans-serif', cursor: 'pointer', whiteSpace: 'nowrap' } },
+        h('span', { style: { width: '28px', height: '28px', borderRadius: '9999px', flex: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: on ? 'rgba(232,220,197,.2)' : '#F3ECDD' } },
+          h('svg', { width: 15, height: 15, viewBox: '0 0 24 24', fill: 'none', stroke: on ? '#E8DCC5' : '#2B3A4A', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: this.CAT_ICON[c] || this.CAT_ICON['All'] } })),
+        c,
+        h('span', { className: 'num', style: { minWidth: '18px', height: '18px', padding: '0 5px', boxSizing: 'border-box', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, background: on ? 'rgba(255,255,255,.16)' : '#F1F0EC', color: on ? '#fff' : '#9AA1AB' } }, count));
+    });
+
+    const sortOptions = this.SORTS.map(([v, l]) => h('option', { key: v, value: v }, l));
+
+    // grid
+    const vis = this.visible();
+    let grid;
+    if (vis.length === 0) {
+      grid = h('div', { style: { height: '100%', minHeight: '360px', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' } },
+          h('div', { style: { width: '60px', height: '60px', borderRadius: '9999px', background: '#E4E0D8', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: '#9C978C', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>' } })),
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '17px', color: '#2B3A4A' } }, 'No products found'),
+          h('span', { style: { fontSize: '13.5px', color: '#8A8577' } }, 'Try another search term or category.')));
+    } else {
+      const tiles = vis.map(p => {
+        const out = p.stock === 0; const low = p.stock > 0 && p.stock < 10; const inCart = this.qtyIn(p.id);
+        const [bg, fg] = this.tileColor(p.name);
+        const media = p.image
+          ? h('img', { src: p.image, alt: p.name, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: out ? 0.5 : 1 } })
+          : h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '44px', color: fg, opacity: out ? 0.5 : 1 } }, p.name[0]);
+        return h('button', { key: p.id, onClick: () => this.add(p), disabled: out, style: { position: 'relative', textAlign: 'left', background: '#fff', border: '1px solid ' + (inCart ? '#2B3A4A' : '#E5E7EB'), borderRadius: '16px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '11px', cursor: out ? 'not-allowed' : 'pointer', opacity: out ? 0.7 : 1, boxShadow: inCart ? '0 0 0 1px #2B3A4A' : 'none', font: 'inherit' }, onMouseEnter: (e) => { if (!out && !inCart) e.currentTarget.style.borderColor = '#C7CCD1'; }, onMouseLeave: (e) => { if (!out && !inCart) e.currentTarget.style.borderColor = '#E5E7EB'; } },
+          h('div', { style: { position: 'relative', height: '128px', borderRadius: '13px', background: p.image ? '#F1F0EC' : bg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' } },
+            media,
+            inCart ? h('span', { className: 'num', style: { position: 'absolute', top: '9px', right: '9px', minWidth: '26px', height: '26px', padding: '0 7px', boxSizing: 'border-box', borderRadius: '9999px', background: '#2B3A4A', color: '#fff', fontSize: '13.5px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 6px rgba(15,20,24,.25)' } }, inCart) : null),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontSize: '14.5px', fontWeight: 500, color: '#1F2933', lineHeight: 1.25 } }, p.name),
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+              h('span', { className: 'num', style: { fontSize: '17px', fontWeight: 600, color: '#2B3A4A' } }, this.fmt(p.price)),
+              out
+                ? h('span', { style: { padding: '3px 10px', borderRadius: '9999px', background: '#F6E1DE', color: '#A6413A', fontSize: '11.5px', fontWeight: 600 } }, 'Out of stock')
+                : (low ? h('span', { className: 'num', style: { display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '9999px', background: '#FBF0DD', color: '#8A5E17', fontSize: '11.5px', fontWeight: 600 } }, h('span', { style: { width: '5px', height: '5px', borderRadius: '9999px', background: '#D9A441' } }), p.stock + ' left') : null))));
+      });
+      grid = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(196px, 1fr))', gap: '16px' } }, tiles);
+    }
+
+    // cart
+    const lines = this.cartLines();
+    const hasItems = lines.length > 0;
+    let cartBody;
+    if (!hasItems) {
+      cartBody = h('div', { style: { height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '30px' } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '13px', textAlign: 'center' } },
+          h('div', { style: { width: '68px', height: '68px', borderRadius: '9999px', background: '#F3ECDD', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, h('svg', { width: 30, height: 30, viewBox: '0 0 24 24', fill: 'none', stroke: '#B08D57', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>' } })),
+          h('span', { style: { fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '16px', color: '#2B3A4A' } }, 'No items yet'),
+          h('span', { style: { fontSize: '13px', color: '#9AA1AB', maxWidth: '220px', lineHeight: 1.5 } }, 'Tap a product to start building the customer\u2019s order.')));
+    } else {
+      cartBody = h('div', { style: { padding: '10px 14px' } }, lines.map(({ p, qty }) => {
+        const over = qty > p.stock;
+        return h('div', { key: p.id, style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', background: over ? '#FCF3F1' : 'transparent', border: over ? '1px solid #EBC6C1' : '1px solid transparent', marginBottom: '2px', animation: 'cartIn .18s ease-out' } },
+          h('div', { style: { width: '42px', height: '42px', borderRadius: '10px', background: '#F3ECDD', color: '#2B3A4A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Poppins,sans-serif', fontWeight: 600, fontSize: '17px', flex: 'none' } }, p.name[0]),
+          h('div', { style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' } },
+            h('span', { style: { fontSize: '13.5px', fontWeight: 500, color: '#1F2933', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, p.name),
+            over ? h('span', { className: 'num', style: { fontSize: '11.5px', color: '#A6413A', fontWeight: 600 } }, 'Only ' + p.stock + ' in stock') : h('span', { className: 'num', style: { fontSize: '12px', color: '#9AA1AB' } }, this.fmt(p.price) + ' each')),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', background: '#F3F3F1', borderRadius: '9px', padding: '3px' } },
+            h('button', { onClick: () => this.dec(p.id), style: { width: '28px', height: '28px', borderRadius: '7px', border: 'none', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 2px rgba(15,20,24,.08)' } }, h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: '#2B3A4A', strokeWidth: 2.2, strokeLinecap: 'round', dangerouslySetInnerHTML: { __html: '<path d="M5 12h14"/>' } })),
+            h('span', { className: 'num', style: { minWidth: '22px', textAlign: 'center', fontSize: '14px', fontWeight: 600, color: over ? '#A6413A' : '#2B3A4A' } }, qty),
+            h('button', { onClick: () => this.inc(p.id), style: { width: '28px', height: '28px', borderRadius: '7px', border: 'none', background: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 2px rgba(15,20,24,.08)' } }, h('svg', { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', stroke: '#2B3A4A', strokeWidth: 2.2, strokeLinecap: 'round', dangerouslySetInnerHTML: { __html: '<path d="M12 5v14M5 12h14"/>' } }))),
+          h('span', { className: 'num', style: { width: '54px', textAlign: 'right', fontSize: '13.5px', fontWeight: 600, color: '#1F2933' } }, this.fmt(p.price * qty)));
+      }));
+    }
+
+    // checkout math
+    const total = this.subtotalNum();
+    const recv = parseFloat(this.state.received);
+    const validRecv = !isNaN(recv) && recv >= total;
+    const change = validRecv ? recv - total : 0;
+    const quickVals = [total, Math.ceil(total / 5) * 5, Math.ceil(total / 10) * 10, Math.ceil(total / 20) * 20];
+    const quickSet = [...new Set(quickVals)].slice(0, 4);
+    const quickCash = quickSet.map((v, i) => h('button', { key: i, onClick: this.setReceived(v), style: { flex: 1, height: '40px', borderRadius: '10px', border: '1px solid #E5E7EB', background: '#fff', color: '#2B3A4A', font: '600 13.5px Inter,sans-serif', cursor: 'pointer' }, className: 'num' }, i === 0 ? 'Exact' : this.fmt(v)));
+
+    // receipt
+    const rc = this.state.receipt;
+    let receiptItems = null;
+    if (rc) {
+      receiptItems = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '9px' } }, rc.lines.map((l, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+        h('span', { className: 'num', style: { fontSize: '13px', color: '#9AA1AB', width: '26px' } }, l.qty + '×'),
+        h('span', { style: { flex: 1, fontSize: '13.5px', color: '#374151' } }, l.name),
+        h('span', { className: 'num', style: { fontSize: '13.5px', fontWeight: 500, color: '#1F2933' } }, this.fmt(l.price * l.qty)))));
+    }
+
+    return {
+      navItems, shiftLabel: 'Shift 7:00 AM – 3:00 PM',
+      dateLabel: this.state.now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+      timeLabel: this.state.now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      search: this.state.search, onSearch: this.onSearch,
+      sort: this.state.sort, onSort: this.onSort, sortOptions,
+      catChips, grid,
+      cartBody, hasItems, itemCount: this.itemCountNum(), clearCart: this.clearCart,
+      subtotal: this.fmt(total), total: this.fmt(total),
+      stockError: this.hasStockError(), startCheckout: this.startCheckout,
+      // checkout
+      checkoutOpen: this.state.checkout, closeCheckout: this.closeCheckout, stop: this.stop,
+      received: this.state.received, onReceived: this.onReceived, quickCash,
+      changeLabel: validRecv ? this.fmt(change) : '—',
+      changeColor: validRecv ? '#3A7D4E' : '#9AA1AB',
+      changeBg: validRecv ? '#F1F8F2' : '#FAFAF8', changeBorder: validRecv ? '#BCDCC4' : '#E5E7EB',
+      completeSale: this.completeSale,
+      completeBtnStyle: 'flex:1;height:48px;border:none;border-radius:12px;font:600 15px Inter,sans-serif;' + (validRecv ? 'background:#2B3A4A;color:#fff;cursor:pointer;' : 'background:#C7CCD1;color:#fff;cursor:not-allowed;'),
+      // receipt
+      receiptOpen: !!rc, receiptRef: rc ? rc.ref : '', receiptTime: rc ? rc.time : '',
+      receiptItems, receiptSubtotal: rc ? this.fmt(rc.subtotal) : '', receiptPaid: rc ? this.fmt(rc.paid) : '', receiptChange: rc ? this.fmt(rc.change) : '',
+      newSale: this.newSale, printReceipt: this.printReceipt,
+    };
+  }
+}
+</script>
+</body>
+</html>
