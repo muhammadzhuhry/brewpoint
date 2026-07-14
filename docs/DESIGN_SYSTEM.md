@@ -287,7 +287,7 @@ Badges: `caption` typography, `radius-full`, `space-2` horizontal padding, `4px`
 
 ### 6.4 Inputs
 
-- `neutral-0` background, `1px solid var(--input)` border, `radius-md` (10px).
+- `neutral-0` background, `1px solid var(--input)` border, `radius-md` (10px), **height 44px** (sourced from `docs/references/login.html`, not previously specified here), `14px` font-size, `0 12px` padding.
 - Focus state: border becomes `blue-500`, plus a `0 0 0 3px rgba(74, 125, 189, 0.15)` focus ring — never rely on color alone, the ring is what actually signals focus for accessibility.
 - Label uses `caption` weight (500) in `neutral-500`, positioned above the input.
 - Error state: border becomes `danger-500`, helper text below in `danger-500`.
