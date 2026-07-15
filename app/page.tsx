@@ -1,3 +1,11 @@
+import { EmptyState } from "@/components/shared/empty-state";
+import { NumericValue } from "@/components/shared/numeric-value";
+import { PageHeader } from "@/components/shared/page-header";
+import { ProductTile } from "@/components/shared/product-tile";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Package } from "lucide-react";
 import Image from "next/image";
 
 export default function Home() {
@@ -59,6 +67,24 @@ export default function Home() {
             Documentation
           </a>
         </div>
+        <Button variant={"default"}>Default</Button>
+        <Button variant={"secondary"}>Secondary</Button>
+        <Button variant={"outline"}>Outline</Button>
+        <Button variant={"ghost"}>Ghost</Button>
+        <Button variant="destructive">Destructive</Button>
+        <Button variant={"link"}>Link</Button>
+        <StatusBadge status="completed" />
+        <StatusBadge status="voided" />
+        <StatusBadge status="low-stock" />
+        <NumericValue size="md">Rp45.000</NumericValue>
+        <NumericValue>12</NumericValue>
+        <PageHeader title="Products" action={<Button>Add product</Button>} />
+        <EmptyState
+          icon={<Package className="size-[22px]" />}
+          title="No products yet"
+          description="Add your first product to get started."
+        />
+        <ProductTile name="Example Product" price={45.0} stock="in-stock" />
       </main>
     </div>
   );
