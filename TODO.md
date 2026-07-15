@@ -48,19 +48,54 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 ### 1.3 Layout Shell
 
-- [ ] Root layout (`app/layout.tsx`) — fonts, global styles
-- [ ] `(staff)/layout.tsx` — sidebar/nav shell wrapping all logged-in pages
-- [ ] Build nav with role-aware items: mock a `currentUser` object with a hardcoded `role` for now (swap for the real session in Part 3)
-- [ ] Nav items: POS, Products, Categories, Transactions, Dashboard (admin), Users (admin)
+- [x] Root layout (`app/layout.tsx`) — fonts, global styles
+- [x] `(staff)/layout.tsx` — sidebar/nav shell wrapping all logged-in pages
+- [x] Build nav with role-aware items: mock a `currentUser` object with a hardcoded `role` for now (swap for the real session in Part 3)
+- [x] Nav items: POS, Products, Categories, Transactions, Dashboard (admin), Users (admin)
 
 ### 1.4 Screens — build each with hardcoded/mock data, covering all states from `DESIGN_PROMPT.md`
 
+**Order note (2026-07):** re-sequenced easiest → hardest per user preference, instead of the original PRD feature order. Login was already in progress so it stays first; everything after is ordered by build complexity, ending with Sales Dashboard (needs `recharts` + date-range aggregation — the least-familiar territory) and POS/Checkout (most interaction states/Zustand wiring) near the end.
+
 **Login**
 
-- [ ] Build login form UI (username, password, submit)
+- [x] Build login form UI (username, password, submit) — plus bonus: show/hide password toggle
 - [ ] Build inline error state (fake validation trigger)
 
-**POS / Checkout**
+**Category Management** *(simplest — single field, minimal states)*
+
+- [ ] Build category list with mock data
+- [ ] Build add/edit modal
+- [ ] Build blocked-delete state (mock condition: category has products)
+
+**Product Management** *(more fields + search/filter than Category)*
+
+- [ ] Build product list (table/grid) with mock paginated data
+- [ ] Build search + category filter controls
+- [ ] Build add/edit product form (modal), with `zod` validation wired even though submit is fake
+- [ ] Build delete confirmation dialog
+- [ ] Build empty state (no products)
+
+**User Management** *(similar to Product, plus 2 extra confirmation flows)*
+
+- [ ] Build user list table with role/status badges, mock data
+- [ ] Build add/edit user form
+- [ ] Build reset password confirmation dialog
+- [ ] Build deactivate confirmation dialog
+
+**Stock Adjustment** *(small form + history list, naturally follows Product)*
+
+- [ ] Build adjustment form (increase/decrease toggle, quantity, reason) — accessible from product detail
+- [ ] Build adjustment history list, mock data, color-coded increase/decrease
+
+**Transaction History** *(read/filter-heavy, plus a void flow)*
+
+- [ ] Build transaction list with mock data, date range filter UI, cashier filter (admin-only visibility toggle)
+- [ ] Build transaction detail (drawer or page) with mock line items
+- [ ] Build void action + required-reason confirmation dialog
+- [ ] Build voided-state visual treatment on detail view
+
+**POS / Checkout** *(most interaction states — real Zustand cart, live calculation, multiple error/success states)*
 
 - [ ] Build product grid with mock product array (include some out-of-stock items)
 - [ ] Build search bar (client-side filter over mock array)
@@ -71,40 +106,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [ ] Build insufficient-stock error state (trigger manually with a mock condition)
 - [ ] Build on-screen receipt success state
 
-**Product Management**
-
-- [ ] Build product list (table/grid) with mock paginated data
-- [ ] Build search + category filter controls
-- [ ] Build add/edit product form (modal), with `zod` validation wired even though submit is fake
-- [ ] Build delete confirmation dialog
-- [ ] Build empty state (no products)
-
-**Category Management**
-
-- [ ] Build category list with mock data
-- [ ] Build add/edit modal
-- [ ] Build blocked-delete state (mock condition: category has products)
-
-**User Management**
-
-- [ ] Build user list table with role/status badges, mock data
-- [ ] Build add/edit user form
-- [ ] Build reset password confirmation dialog
-- [ ] Build deactivate confirmation dialog
-
-**Transaction History**
-
-- [ ] Build transaction list with mock data, date range filter UI, cashier filter (admin-only visibility toggle)
-- [ ] Build transaction detail (drawer or page) with mock line items
-- [ ] Build void action + required-reason confirmation dialog
-- [ ] Build voided-state visual treatment on detail view
-
-**Stock Adjustment**
-
-- [ ] Build adjustment form (increase/decrease toggle, quantity, reason) — accessible from product detail
-- [ ] Build adjustment history list, mock data, color-coded increase/decrease
-
-**Sales Dashboard**
+**Sales Dashboard** *(hardest — new charting library + date-range aggregation logic)*
 
 - [ ] Build date range selector (default "Today")
 - [ ] Build headline metric cards (total sales, transaction count) with mock numbers, `tabular-nums`
@@ -214,6 +216,7 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 ### 3.2 Real Authentication
 
 - [ ] Wire login form to `POST /api/v1/auth/login`
+- [ ] Add login success/failure transition states (deferred from Part 1.4 — see `docs/references/login.html`): on successful response, briefly show a "Welcome back {name}" confirmation (checkmark icon, "Signing you in…") before redirecting; on failed response, apply the reference's `shake` animation to the error banner. Only makes sense here, not in Part 1.4, since Part 1 has no real success/failure signal to react to — this is real API response handling, not mock UI
 - [ ] Wire `GET /api/v1/auth/me` on app load to populate `currentUser` (replaces the mock object from Part 1)
 - [ ] Wire logout button to `POST /api/v1/auth/logout`
 - [ ] Confirm `middleware.ts` correctly redirects unauthenticated requests to `/login`, and that admin-only pages reject cashier sessions (double-check the actual authorization still happens via `requireAuth` inside each Route Handler, not just the middleware)
