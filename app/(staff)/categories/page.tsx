@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 
 import { PageHeader } from "@/components/shared/page-header";
 
-import { Plus, Pencil, Trash2, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, X, BadgeCheck } from "lucide-react";
 
 type Category = {
   id: number;
@@ -63,6 +63,9 @@ export default function CategoriesPage() {
   const [formName, setFormName] = useState("");
   const [formError, setFormError] = useState("");
 
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const isBlocked = deleteTarget ? deleteTarget.productCount > 0 : false;
+
   const openAdd = () => {
     setModal({ mode: "add" });
     setFormName("");
@@ -107,6 +110,19 @@ export default function CategoriesPage() {
     closeModal();
   };
 
+  const askDelete = (category: Category) => {
+    setDeleteTarget(category);
+  };
+
+  const cancelDelete = () => {
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = () => {
+    setCategories(categories.filter((c) => c.id !== deleteTarget?.id));
+    setDeleteTarget(null);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -142,7 +158,11 @@ export default function CategoriesPage() {
                   >
                     <Pencil className="size-[15px]" />
                   </Button>
-                  <Button variant="ghost" size="icon-sm">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => askDelete(category)}
+                  >
                     <Trash2 className="size-[15px] text-destructive" />
                   </Button>
                 </div>
@@ -185,7 +205,7 @@ export default function CategoriesPage() {
               {modal?.mode === "edit" ? "Rename category" : "New category"}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 px-6 py-6">
             <Label htmlFor="category-name">
               Category name <span className="text-destructive">*</span>
             </Label>
@@ -210,6 +230,66 @@ export default function CategoriesPage() {
               {modal?.mode === "edit" ? "Save changes" : "Create category"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && cancelDelete()}
+      >
+        <DialogContent className="max-w-[440px]" showCloseButton={false}>
+          <div className="flex flex-col gap-4 p-6">
+            <div
+              className={cn(
+                "flex size-[46px] items-center justify-center rounded-[11px]",
+                isBlocked ? "bg-warning-subtle" : "bg-destructive-subtle",
+              )}
+            >
+              {isBlocked ? (
+                <X className="size-[22px] text-destructive" />
+              ) : (
+                <Trash2 className="size-[22px] text-destructive" />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <h3 className="font-display text-lg font-semibold text-primary">
+                {isBlocked
+                  ? `Can't delete "${deleteTarget?.name}"`
+                  : `Delete "${deleteTarget?.name}"?`}
+              </h3>
+              <p className="text-[13.5px] leading-relaxed text-muted-foreground">
+                {isBlocked
+                  ? `This category still has ${deleteTarget?.productCount} ${deleteTarget?.productCount === 1 ? "product" : "products"} assigned to it. Categories with products can't be deleted.`
+                  : "This category has no products assigned, so it can be safely removed. This can't be undone."}
+              </p>
+            </div>
+
+            {isBlocked && (
+              <div className="flex items-start gap-2.5 rounded-[10px] border border-[#F0DFBD] bg-warning-subtle p-3">
+                <BadgeCheck className="mt-0.5 size-4 shrink-0 text-warning-subtle-foreground" />
+                <span className="text-[12.5px] leading-relaxed text-warning-subtle-foreground">
+                  Reassign these products to another category first, then delete
+                  this one.
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2.5">
+              {isBlocked ? (
+                <Button onClick={cancelDelete}>Got it</Button>
+              ) : (
+                <>
+                  <Button variant="outline" onClick={cancelDelete}>
+                    Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDelete}>
+                    Delete category
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
