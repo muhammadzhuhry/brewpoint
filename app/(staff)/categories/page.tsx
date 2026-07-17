@@ -18,6 +18,13 @@ import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/page-header";
 
 import { Plus, Pencil, Trash2, Tag, X, BadgeCheck } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 
 type Category = {
   id: number;
@@ -62,6 +69,8 @@ export default function CategoriesPage() {
   } | null>(null);
   const [formName, setFormName] = useState("");
   const [formError, setFormError] = useState("");
+
+  const [detailTarget, setDetailTarget] = useState<Category | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const isBlocked = deleteTarget ? deleteTarget.productCount > 0 : false;
@@ -144,6 +153,7 @@ export default function CategoriesPage() {
           return (
             <div
               key={category.id}
+              onClick={() => setDetailTarget(category)}
               className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-[18px]"
             >
               <div className="flex items-start justify-between">
@@ -154,14 +164,20 @@ export default function CategoriesPage() {
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => openEdit(category)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(category);
+                    }}
                   >
                     <Pencil className="size-[15px]" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() => askDelete(category)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      askDelete(category);
+                    }}
                   >
                     <Trash2 className="size-[15px] text-destructive" />
                   </Button>
@@ -194,6 +210,88 @@ export default function CategoriesPage() {
           );
         })}
       </div>
+
+      <Sheet
+        open={detailTarget !== null}
+        onOpenChange={(open) => !open && setDetailTarget(null)}
+      >
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Category detail</SheetTitle>
+          </SheetHeader>
+
+          <div className="flex flex-1 flex-col gap-5 overflow-auto px-6 py-6">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-14 items-center justify-center rounded-[13px] bg-icon-chip-background">
+                <Tag className="size-6 text-icon-chip-foreground" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="font-display text-xl font-semibold text-primary">
+                  {detailTarget?.name}
+                </span>
+                <span className="text-[13px] tabular-nums text-muted-foreground">
+                  {detailTarget && detailTarget.productCount === 0
+                    ? "No products assigned"
+                    : `${detailTarget?.productCount} products`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
+                PRODUCTS IN THIS CATEGORY
+              </span>
+              {detailTarget?.sampleProducts.length === 0 ? (
+                <div className="rounded-[10px] border border-dashed border-border p-7 text-center text-[13px] text-muted-foreground">
+                  No products are assigned to this category yet.
+                </div>
+              ) : (
+                <div className="flex flex-col">
+                  {detailTarget?.sampleProducts.map((name, i) => (
+                    <div
+                      key={name}
+                      className={cn(
+                        "flex h-[52px] items-center gap-3",
+                        i < detailTarget.sampleProducts.length - 1 &&
+                          "border-b border-[#F1F0EC]",
+                      )}
+                    >
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-icon-chip-background text-sm font-semibold text-primary">
+                        {name[0]}
+                      </div>
+                      <span className="text-sm font-medium text-foreground">
+                        {name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <SheetFooter>
+            <Button
+              className="flex-1"
+              onClick={() => {
+                if (detailTarget) openEdit(detailTarget);
+                setDetailTarget(null);
+              }}
+            >
+              <Pencil className="size-4" />
+              Rename
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (detailTarget) askDelete(detailTarget);
+                setDetailTarget(null);
+              }}
+            >
+              Delete
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Dialog
         open={modal !== null}
