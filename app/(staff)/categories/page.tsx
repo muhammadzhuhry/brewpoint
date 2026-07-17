@@ -136,6 +136,7 @@ export default function CategoriesPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Categories"
+        count={`${categories.length} ${categories.length === 1 ? "category" : "categories"}`}
         action={
           <Button onClick={() => openAdd()}>
             <Plus className="size-4" /> New category
