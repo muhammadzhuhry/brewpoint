@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 
 import { PageHeader } from "@/components/shared/page-header";
 
-import { Plus, Pencil, Trash2, Tag, X, BadgeCheck } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, X, BadgeCheck, Leaf } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
+import { EmptyState } from "@/components/shared/empty-state";
 
 type Category = {
   id: number;
@@ -144,73 +145,90 @@ export default function CategoriesPage() {
         }
       />
 
-      <div className="grid grid-cols-3 gap-4">
-        {categories.map((category) => {
-          const isEmpty = category.productCount === 0;
-          const sample = isEmpty
-            ? "No products assigned yet"
-            : category.sampleProducts.slice(0, 4).join(" · ");
+      {categories.length === 0 ? (
+        <div className="flex min-h-[440px] items-center justify-center rounded-xl border border-border bg-card p-10">
+          <EmptyState
+            icon={<Leaf className="size-7" />}
+            title="No categories yet"
+            description="Create your first category to start organizing the menu — products get assigned to one."
+            action={
+              <Button onClick={openAdd}>
+                <Plus className="size-4" /> Create your first category
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          {categories.map((category) => {
+            const isEmpty = category.productCount === 0;
+            const sample = isEmpty
+              ? "No products assigned yet"
+              : category.sampleProducts.slice(0, 4).join(" · ");
 
-          return (
-            <div
-              key={category.id}
-              onClick={() => setDetailTarget(category)}
-              className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-[18px]"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex size-11 items-center justify-center rounded-[11px] bg-icon-chip-background">
-                  <Tag className="size-5 text-icon-chip-foreground" />
+            return (
+              <div
+                key={category.id}
+                onClick={() => setDetailTarget(category)}
+                className="flex flex-col gap-3.5 rounded-xl border border-border bg-card p-[18px]"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex size-11 items-center justify-center rounded-[11px] bg-icon-chip-background">
+                    <Tag className="size-5 text-icon-chip-foreground" />
+                  </div>
+                  <div className="flex gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(category);
+                      }}
+                    >
+                      <Pencil className="size-[15px]" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        askDelete(category);
+                      }}
+                    >
+                      <Trash2 className="size-[15px] text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEdit(category);
-                    }}
-                  >
-                    <Pencil className="size-[15px]" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      askDelete(category);
-                    }}
-                  >
-                    <Trash2 className="size-[15px] text-destructive" />
-                  </Button>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-base font-semibold text-primary">
-                    {category.name}
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-base font-semibold text-primary">
+                      {category.name}
+                    </span>
+                    {isEmpty && <Badge variant="neutral">Empty</Badge>}
+                  </div>
+                  <span
+                    className={cn(
+                      "text-[12.5px] tabular-nums",
+                      isEmpty
+                        ? "text-muted-foreground"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {isEmpty
+                      ? "No products"
+                      : `${category.productCount} products`}
                   </span>
-                  {isEmpty && <Badge variant="neutral">Empty</Badge>}
                 </div>
-                <span
-                  className={cn(
-                    "text-[12.5px] tabular-nums",
-                    isEmpty ? "text-muted-foreground" : "text-muted-foreground",
-                  )}
-                >
-                  {isEmpty
-                    ? "No products"
-                    : `${category.productCount} products`}
+
+                <span className="min-h-[38px] text-[12.5px] leading-relaxed text-muted-foreground">
+                  {sample}
                 </span>
               </div>
-
-              <span className="min-h-[38px] text-[12.5px] leading-relaxed text-muted-foreground">
-                {sample}
-              </span>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <Sheet
         open={detailTarget !== null}
