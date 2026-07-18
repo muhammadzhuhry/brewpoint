@@ -15,6 +15,7 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  AlertCircle,
   Coffee,
 } from "lucide-react";
 
@@ -47,8 +48,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
 
 import { mockCurrentUser } from "@/lib/mock-current-user";
+import { getTileColor } from "@/lib/avatar-color";
 
 type Product = {
   id: number;
@@ -180,8 +189,6 @@ const MOCK_PRODUCTS: Product[] = [
   },
 ];
 
-// const MOCK_PRODUCTS: Product[] = [];
-
 const productSchema = z.object({
   name: z.string().trim().min(1, "Product name is required."),
   category: z.string().min(1, "Choose a category."),
@@ -308,6 +315,11 @@ export default function ProductsPage() {
     setDeleteTarget(null);
   };
 
+  const [detailTarget, setDetailTarget] = useState<Product | null>(null);
+  const [tileBg, tileFg] = detailTarget
+    ? getTileColor(detailTarget.name)
+    : ["#EFEFEF", "#6B7280"];
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -419,14 +431,30 @@ export default function ProductsPage() {
                 {pageItems.map((product) => (
                   <TableRow
                     key={product.id}
-                    className="h-[62px] hover:bg-[#FAFAF8]"
+                    onClick={() => setDetailTarget(product)}
+                    className="h-[62px] cursor-pointer hover:bg-[#FAFAF8]"
                   >
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{product.name}</span>
-                        <span className="text-xs tabular-nums text-muted-foreground">
-                          {product.barcode}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex size-10 shrink-0 items-center justify-center rounded-[9px] font-display text-[15px] font-semibold"
+                          style={{
+                            backgroundColor: getTileColor(product.name)[0],
+                            color: getTileColor(product.name)[1],
+                            opacity:
+                              getStockStatus(product.stock) === "out-of-stock"
+                                ? 0.55
+                                : 1,
+                          }}
+                        >
+                          {product.name[0]}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{product.name}</span>
+                          <span className="text-xs tabular-nums text-muted-foreground">
+                            {product.barcode}
+                          </span>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{product.category}</TableCell>
@@ -530,7 +558,7 @@ export default function ProductsPage() {
 
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-[18px] px-6 py-6"
+            className="flex flex-col gap-4.5 px-6 py-6"
           >
             <Controller
               name="name"
@@ -760,6 +788,103 @@ export default function ProductsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Sheet
+        open={detailTarget !== null}
+        onOpenChange={(open) => !open && setDetailTarget(null)}
+      >
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Product detail</SheetTitle>
+          </SheetHeader>
+
+          {detailTarget && (
+            <div className="flex flex-1 flex-col gap-4.5 overflow-auto px-6 py-6">
+              <div className="flex items-center gap-4">
+                <div
+                  className="flex size-18 shrink-0 items-center justify-center rounded-2xl font-display text-[30px] font-semibold"
+                  style={{
+                    backgroundColor: tileBg,
+                    color: tileFg,
+                    opacity:
+                      getStockStatus(detailTarget.stock) === "out-of-stock"
+                        ? 0.6
+                        : 1,
+                  }}
+                >
+                  {detailTarget.name[0]}
+                </div>
+                <div className="flex flex-col gap-1.75">
+                  <span className="font-display text-xl font-semibold text-primary">
+                    {detailTarget.name}
+                  </span>
+                  <StatusBadge status={getStockStatus(detailTarget.stock)} />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3.5">
+                {[
+                  ["CATEGORY", detailTarget.category],
+                  ["PRICE", `$${detailTarget.price.toFixed(2)}`],
+                  [
+                    "STOCK QUANTITY",
+                    detailTarget.stock === 0
+                      ? "0 — out of stock"
+                      : `${detailTarget.stock} units`,
+                  ],
+                  ["BARCODE", detailTarget.barcode],
+                  ["SOLD IN", `${detailTarget.txnCount} transactions`],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex flex-col gap-1 border-b border-[#F1F0EC] pb-3.5"
+                  >
+                    <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
+                      {label}
+                    </span>
+                    <span className="text-[15px] font-medium tabular-nums text-foreground">
+                      {value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {getStockStatus(detailTarget.stock) === "out-of-stock" && (
+                <div className="flex items-center gap-2.5 rounded-[10px] border border-[#EBC6C1] bg-destructive-subtle px-3.5 py-2.5">
+                  <AlertCircle className="size-4 shrink-0 text-destructive-subtle-foreground" />
+                  <span className="text-[12.5px] font-medium text-destructive-subtle-foreground">
+                    Out of stock — not sellable on the POS until restocked.
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {isAdmin && (
+            <SheetFooter>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  if (detailTarget) openEditModal(detailTarget);
+                  setDetailTarget(null);
+                }}
+              >
+                <Pencil className="size-4" />
+                Edit
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (detailTarget) askDelete(detailTarget);
+                  setDetailTarget(null);
+                }}
+              >
+                Delete
+              </Button>
+            </SheetFooter>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
