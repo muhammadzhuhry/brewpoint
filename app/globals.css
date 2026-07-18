@@ -58,6 +58,8 @@
   --color-icon-chip-background: var(--icon-chip-background);
   --color-icon-chip-foreground: var(--icon-chip-foreground);
 
+  --color-table-header-background: var(--table-header-background);
+
   /* Charts (recharts) — not yet themed, see DESIGN_SYSTEM.md 2.5 note */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -132,6 +134,8 @@
   /* Icon chips (empty states, etc.) */
   --icon-chip-background: #f3ecdd;
   --icon-chip-foreground: #b08d57;
+
+  --table-header-background: #f7f7f5;
 
   /* Charts (recharts) — shadcn defaults, not yet themed */
   --chart-1: oklch(0.87 0 0);
