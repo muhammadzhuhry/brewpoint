@@ -458,7 +458,12 @@ export default function ProductsPage() {
                   <TableRow
                     key={product.id}
                     onClick={() => setDetailTarget(product)}
-                    className="h-15.5 cursor-pointer hover:bg-[#FAFAF8]"
+                    className={cn(
+                      "h-15.5 cursor-pointer",
+                      getStockStatus(product.stock) === "out-of-stock"
+                        ? "bg-[#FCF7F6] hover:bg-[#FBF1EF]"
+                        : "hover:bg-[#FAFAF8]",
+                    )}
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
