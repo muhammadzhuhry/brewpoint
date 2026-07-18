@@ -15,6 +15,7 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
+  Coffee,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 
 import { mockCurrentUser } from "@/lib/mock-current-user";
 
@@ -177,6 +179,8 @@ const MOCK_PRODUCTS: Product[] = [
     txnCount: 39,
   },
 ];
+
+// const MOCK_PRODUCTS: Product[] = [];
 
 const productSchema = z.object({
   name: z.string().trim().min(1, "Product name is required."),
@@ -369,113 +373,148 @@ export default function ProductsPage() {
       </div>
 
       <div className="flex-1 overflow-auto rounded-xl border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Product</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Price</TableHead>
-              <TableHead className="text-right">Stock</TableHead>
-              <TableHead>Status</TableHead>
-              {isAdmin && <TableHead className="text-right">Actions</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pageItems.map((product) => (
-              <TableRow
-                key={product.id}
-                className="h-[62px] hover:bg-[#FAFAF8]"
-              >
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{product.name}</span>
-                    <span className="text-xs tabular-nums text-muted-foreground">
-                      {product.barcode}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell className="text-right tabular-nums">
-                  ${product.price.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {product.stock}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge status={getStockStatus(product.stock)} />
-                </TableCell>
-                {isAdmin && (
-                  <TableCell className="text-right">
-                    <div className="inline-flex gap-1.5">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(product);
-                        }}
-                        className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
-                      >
-                        <Pencil className="size-[15px] text-muted-foreground" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          askDelete(product);
-                        }}
-                        className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
-                      >
-                        <Trash2 className="size-[15px] text-destructive" />
-                      </button>
-                    </div>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <div className="flex items-center justify-between border-t border-border px-4 py-3">
-          <span className="text-[13px] tabular-nums text-muted-foreground">
-            Showing {startIndex + 1}–
-            {Math.min(startIndex + PAGE_SIZE, filtered.length)} of{" "}
-            {filtered.length} products
-          </span>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => setPage(currentPage - 1)}
-              className="flex h-[34px] min-w-[34px] items-center justify-center rounded-md border border-border bg-card px-1.5 text-[13px] font-medium text-foreground disabled:cursor-not-allowed disabled:text-[#C7CCD1]"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPage(p)}
-                className={cn(
-                  "flex h-[34px] min-w-[34px] items-center justify-center rounded-md px-1.5 text-[13px]",
-                  p === currentPage
-                    ? "bg-primary font-semibold text-primary-foreground"
-                    : "border border-border bg-card font-medium text-foreground",
-                )}
-              >
-                {p}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage(currentPage + 1)}
-              className="flex h-[34px] min-w-[34px] items-center justify-center rounded-md border border-border bg-card px-1.5 text-[13px] font-medium text-foreground disabled:cursor-not-allowed disabled:text-[#C7CCD1]"
-            >
-              <ChevronRight className="size-4" />
-            </button>
+        {products.length === 0 ? (
+          <div className="flex min-h-[420px] items-center justify-center p-10">
+            <EmptyState
+              icon={<Coffee className="size-7" />}
+              title="No products yet"
+              description={
+                isAdmin
+                  ? "Add your first product to start selling it on the POS screen."
+                  : "No products have been added yet. Ask an admin to add the first one."
+              }
+              action={
+                isAdmin && (
+                  <Button onClick={openAddModal}>
+                    <Plus className="size-4" /> Add your first product
+                  </Button>
+                )
+              }
+            />
           </div>
-        </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex min-h-[420px] items-center justify-center p-10">
+            <EmptyState
+              icon={<Search className="size-7" />}
+              title="No matching products"
+              description="No products match your search or filter. Try a different term or clear the category filter."
+            />
+          </div>
+        ) : (
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">Stock</TableHead>
+                  <TableHead>Status</TableHead>
+                  {isAdmin && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageItems.map((product) => (
+                  <TableRow
+                    key={product.id}
+                    className="h-[62px] hover:bg-[#FAFAF8]"
+                  >
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{product.name}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          {product.barcode}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      ${product.price.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {product.stock}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={getStockStatus(product.stock)} />
+                    </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        <div className="inline-flex gap-1.5">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(product);
+                            }}
+                            className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
+                          >
+                            <Pencil className="size-[15px] text-muted-foreground" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              askDelete(product);
+                            }}
+                            className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
+                          >
+                            <Trash2 className="size-[15px] text-destructive" />
+                          </button>
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <span className="text-[13px] tabular-nums text-muted-foreground">
+                Showing {startIndex + 1}–
+                {Math.min(startIndex + PAGE_SIZE, filtered.length)} of{" "}
+                {filtered.length} products
+              </span>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setPage(currentPage - 1)}
+                  className="flex h-[34px] min-w-[34px] items-center justify-center rounded-md border border-border bg-card px-1.5 text-[13px] font-medium text-foreground disabled:cursor-not-allowed disabled:text-[#C7CCD1]"
+                >
+                  <ChevronLeft className="size-4" />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPage(p)}
+                      className={cn(
+                        "flex h-[34px] min-w-[34px] items-center justify-center rounded-md px-1.5 text-[13px]",
+                        p === currentPage
+                          ? "bg-primary font-semibold text-primary-foreground"
+                          : "border border-border bg-card font-medium text-foreground",
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ),
+                )}
+
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setPage(currentPage + 1)}
+                  className="flex h-[34px] min-w-[34px] items-center justify-center rounded-md border border-border bg-card px-1.5 text-[13px] font-medium text-foreground disabled:cursor-not-allowed disabled:text-[#C7CCD1]"
+                >
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <Dialog
