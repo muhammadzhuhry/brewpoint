@@ -48,6 +48,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
@@ -315,6 +316,13 @@ export default function ProductsPage() {
     setDeleteTarget(null);
   };
 
+  const [loading, setLoading] = useState(false);
+
+  const reload = () => {
+    setLoading(true);
+    setTimeout(() => setLoading(false), 1100);
+  };
+
   const [detailTarget, setDetailTarget] = useState<Product | null>(null);
   const [tileBg, tileFg] = detailTarget
     ? getTileColor(detailTarget.name)
@@ -379,13 +387,31 @@ export default function ProductsPage() {
 
         <div className="flex-1" />
 
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" onClick={reload}>
           <RefreshCw className="size-4" />
         </Button>
       </div>
 
       <div className="flex-1 overflow-auto rounded-xl border border-border bg-card">
-        {products.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col">
+            {Array.from({ length: 8 }, (_, i) => (
+              <div
+                key={i}
+                className="flex h-15.5 items-center gap-3.5 border-b border-[#F1F0EC] px-4.5"
+              >
+                <Skeleton className="size-10 shrink-0 rounded-[9px]" />
+                <div className="flex flex-1 flex-col gap-1.75">
+                  <Skeleton className="h-3 w-[42%]" />
+                  <Skeleton className="h-3 w-[22%]" />
+                </div>
+                <Skeleton className="h-3 w-13.5" />
+                <Skeleton className="h-3 w-10" />
+                <Skeleton className="h-5.5 w-21 rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : products.length === 0 ? (
           <div className="flex min-h-[420px] items-center justify-center p-10">
             <EmptyState
               icon={<Coffee className="size-7" />}
@@ -432,7 +458,7 @@ export default function ProductsPage() {
                   <TableRow
                     key={product.id}
                     onClick={() => setDetailTarget(product)}
-                    className="h-[62px] cursor-pointer hover:bg-[#FAFAF8]"
+                    className="h-15.5 cursor-pointer hover:bg-[#FAFAF8]"
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
