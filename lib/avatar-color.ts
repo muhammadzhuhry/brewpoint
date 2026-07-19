@@ -13,3 +13,12 @@ export function getTileColor(name: string): [string, string] {
   }
   return AVATAR_PALETTE[hash];
 }
+
+export function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
