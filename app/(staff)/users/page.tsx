@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 import { Plus, Search, Pencil, Power } from "lucide-react";
 
+import type { User } from "@/lib/types";
 import { MOCK_USERS } from "@/lib/mock-users";
+import type { UserFormValues } from "@/lib/validators/user";
+import { getTileColor, getInitials } from "@/lib/avatar-color";
+import { cn } from "@/lib/utils";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,22 +28,34 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { getTileColor } from "@/lib/avatar-color";
 import { PageHeader } from "@/components/shared/page-header";
+import { UserFormDialog } from "@/components/users/user-form-dialog";
+import { DeactivateUserDialog } from "@/components/users/deactivate-user-dialog";
+import { ResetPasswordDialog } from "@/components/users/reset-password-dialog";
+import { UserDetailSheet } from "@/components/users/user-detail-sheet";
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+function getTodayLabel() {
+  return new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
 }
 
 export default function UsersPage() {
-  const [users] = useState(MOCK_USERS);
+  const [users, setUsers] = useState(MOCK_USERS);
+  const [nextId, setNextId] = useState(users.length + 1);
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string | null>("All roles");
+
+  const [modal, setModal] = useState<{
+    mode: "add" | "edit";
+    user: User | null;
+  } | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<User | null>(null);
+  const [resetTarget, setResetTarget] = useState<User | null>(null);
+  const [detailTarget, setDetailTarget] = useState<User | null>(null);
 
   const filtered = users.filter((u) => {
     const matchesRole = roleFilter === "All roles" || u.role === roleFilter;
@@ -52,13 +67,56 @@ export default function UsersPage() {
     return matchesRole && matchesSearch;
   });
 
+  const openAddModal = () => setModal({ mode: "add", user: null });
+  const openEditModal = (user: User) => setModal({ mode: "edit", user });
+  const closeModal = () => setModal(null);
+
+  const handleFormSubmit = (values: UserFormValues) => {
+    if (modal?.mode === "edit" && modal.user) {
+      const id = modal.user.id;
+      setUsers(
+        users.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                name: values.name.trim(),
+                username: values.username.trim(),
+                role: values.role,
+              }
+            : u,
+        ),
+      );
+    } else {
+      setUsers([
+        {
+          id: nextId,
+          name: values.name.trim(),
+          username: values.username.trim(),
+          role: values.role,
+          active: true,
+          joined: getTodayLabel(),
+          last: "—",
+        },
+        ...users,
+      ]);
+      setNextId(nextId + 1);
+    }
+    closeModal();
+  };
+
+  const confirmDeactivate = () => {
+    const id = deactivateTarget?.id;
+    setUsers(users.map((u) => (u.id === id ? { ...u, active: !u.active } : u)));
+    setDeactivateTarget(null);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Staff"
         count={`${users.length} ${users.length === 1 ? "member" : "members"}`}
         action={
-          <Button>
+          <Button onClick={openAddModal}>
             <Plus className="size-4" /> Add staff
           </Button>
         }
@@ -87,7 +145,6 @@ export default function UsersPage() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="flex-1 overflow-auto rounded-xl border border-border bg-card">
         <Table>
           <TableHeader>
@@ -104,7 +161,11 @@ export default function UsersPage() {
             {filtered.map((user) => (
               <TableRow
                 key={user.id}
-                className={cn("h-16", !user.active && "opacity-70")}
+                onClick={() => setDetailTarget(user)}
+                className={cn(
+                  "h-16 cursor-pointer",
+                  !user.active && "opacity-70",
+                )}
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -136,10 +197,24 @@ export default function UsersPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-1.5">
-                    <button className="flex size-8 items-center justify-center rounded-lg border border-border bg-card">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(user);
+                      }}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
+                    >
                       <Pencil className="size-[15px] text-muted-foreground" />
                     </button>
-                    <button className="flex size-8 items-center justify-center rounded-lg border border-border bg-card">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeactivateTarget(user);
+                      }}
+                      className="flex size-8 items-center justify-center rounded-lg border border-border bg-card"
+                    >
                       <Power className="size-[15px] text-destructive" />
                     </button>
                   </div>
@@ -149,6 +224,41 @@ export default function UsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      <UserFormDialog
+        open={modal !== null}
+        onOpenChange={(open) => !open && closeModal()}
+        mode={modal?.mode ?? "add"}
+        user={modal?.user ?? null}
+        existingUsernames={users
+          .filter((u) => u.id !== modal?.user?.id)
+          .map((u) => u.username)}
+        onSubmit={handleFormSubmit}
+      />
+
+      <DeactivateUserDialog
+        user={deactivateTarget}
+        onOpenChange={(open) => !open && setDeactivateTarget(null)}
+        onConfirm={confirmDeactivate}
+      />
+
+      <ResetPasswordDialog
+        user={resetTarget}
+        onOpenChange={(open) => !open && setResetTarget(null)}
+      />
+
+      <UserDetailSheet
+        user={detailTarget}
+        onOpenChange={(open) => !open && setDetailTarget(null)}
+        onEdit={(user) => {
+          setDetailTarget(null);
+          openEditModal(user);
+        }}
+        onResetPassword={(user) => {
+          setDetailTarget(null);
+          setResetTarget(user);
+        }}
+      />
     </div>
   );
 }
