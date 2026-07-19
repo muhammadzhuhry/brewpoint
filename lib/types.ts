@@ -17,3 +17,13 @@ export type Product = {
 };
 
 export type ProductStockStatus = "out-of-stock" | "low-stock" | "in-stock";
+
+export type User = {
+  id: number;
+  name: string;
+  username: string;
+  role: "Admin" | "Cashier";
+  active: boolean;
+  joined: string;
+  last: string;
+};

@@ -1,0 +1,58 @@
+import type { User } from "@/lib/types";
+
+export const MOCK_USERS: User[] = [
+  {
+    id: 1,
+    name: "Marcus Bell",
+    username: "marcus",
+    role: "Admin",
+    active: true,
+    joined: "Jan 12, 2024",
+    last: "Today, 8:04 AM",
+  },
+  {
+    id: 2,
+    name: "Sofia Reyes",
+    username: "sofia",
+    role: "Cashier",
+    active: true,
+    joined: "Mar 03, 2024",
+    last: "Today, 7:41 AM",
+  },
+  {
+    id: 3,
+    name: "Daniel Okafor",
+    username: "daniel",
+    role: "Cashier",
+    active: true,
+    joined: "Jun 21, 2024",
+    last: "Yesterday, 6:12 PM",
+  },
+  {
+    id: 4,
+    name: "Jenna Lowe",
+    username: "jenna",
+    role: "Cashier",
+    active: true,
+    joined: "Sep 15, 2024",
+    last: "Jun 30, 2026",
+  },
+  {
+    id: 5,
+    name: "Priya Nair",
+    username: "priya",
+    role: "Cashier",
+    active: false,
+    joined: "Nov 02, 2024",
+    last: "May 18, 2026",
+  },
+  {
+    id: 6,
+    name: "Tomás Vidal",
+    username: "tomas",
+    role: "Cashier",
+    active: false,
+    joined: "Feb 08, 2025",
+    last: "Apr 02, 2026",
+  },
+];
