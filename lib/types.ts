@@ -1,3 +1,10 @@
+export type Category = {
+  id: number;
+  name: string;
+  productCount: number;
+  sampleProducts: string[];
+};
+
 export type Product = {
   id: number;
   name: string;
