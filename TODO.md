@@ -57,45 +57,57 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **Order note (2026-07):** re-sequenced easiest → hardest per user preference, instead of the original PRD feature order. Login was already in progress so it stays first; everything after is ordered by build complexity, ending with Sales Dashboard (needs `recharts` + date-range aggregation — the least-familiar territory) and POS/Checkout (most interaction states/Zustand wiring) near the end.
 
+**Refactor convention (2026-07):** each screen starts as one working `page.tsx` file (fastest way to get the logic right), but must be split before moving to the next screen — otherwise `page.tsx` balloons into a god file. Standard split, established on Products: `lib/types.ts` (shared types), `lib/validators/{module}.ts` (zod schema), `lib/mock-{module}.ts` (mock data), `components/{module}/*.tsx` (each dialog/sheet/table as its own component, receiving data + callbacks as props). `page.tsx` should end up as a thin orchestrator — state + wiring only, no large inline JSX blocks. Apply this same split to every screen below after its features are working, not just Products.
+
 **Login**
 
 - [x] Build login form UI (username, password, submit) — plus bonus: show/hide password toggle
 - [ ] Build inline error state (fake validation trigger)
 
-**Category Management** *(simplest — single field, minimal states)*
+**Category Management** _(simplest — single field, minimal states)_
 
-- [ ] Build category list with mock data
-- [ ] Build add/edit modal
-- [ ] Build blocked-delete state (mock condition: category has products)
+- [x] Build category list with mock data
+- [x] Build add/edit modal
+- [x] Build blocked-delete state (mock condition: category has products)
+- [x] Build category detail drawer (click a category card → side panel listing its assigned products, with rename/delete actions) — added 2026-07 per `docs/references/category_management.html`, not in the original PRD-derived checklist
+- [x] Build empty state (no categories) — missing from the original checklist (found 2026-07 while building Products' empty state); `category_management.html` already defines it (`if (total === 0)`), just never implemented
+- [x] Refactor into `lib/types.ts` + `lib/validators/category.ts` + `lib/mock-categories.ts` + `components/categories/*.tsx` split (avoid god file) — see "Refactor convention" note above; pattern already applied to Products as the reference
 
-**Product Management** *(more fields + search/filter than Category)*
+**Product Management** _(more fields + search/filter than Category)_
 
-- [ ] Build product list (table/grid) with mock paginated data
-- [ ] Build search + category filter controls
-- [ ] Build add/edit product form (modal), with `zod` validation wired even though submit is fake
-- [ ] Build delete confirmation dialog
-- [ ] Build empty state (no products)
+- [x] Build product list (table/grid) with mock paginated data
+- [x] Build search + category filter controls
+- [x] Build add/edit product form (modal), with `zod` validation wired even though submit is fake
+- [x] Build delete confirmation dialog
+- [x] Build empty state (no products) — plus a separate "no results" state when search/filter matches nothing (different icon/message, no CTA)
+- [x] Build product detail drawer (click a row → side panel: image/avatar, category, price, stock, barcode, sold-in-transactions count, edit/delete actions for admin) — added 2026-07 per `docs/references/product_management.html`, not in the original PRD-derived checklist
+- [x] Build "Reload" button that triggers the loading-skeleton state (fake/manual for now) — added 2026-07 per `docs/references/product_management.html`. **Not building:** the reference's "View as Admin/Cashier" toggle switch — that's a demo-only affordance for previewing both roles in the static mockup; our real app already derives role from `currentUser` (mocked in `(staff)/layout.tsx` since Part 1.3), so admin/cashier visibility should read from that, never a manual switch
+- [x] Refactor into `lib/types.ts` + `lib/validators/product.ts` + `lib/mock-products.ts` + `components/products/*.tsx` split (avoid god file) — `page.tsx` reduced from ~920 to ~210 lines; this is the reference pattern for the "Refactor convention" noted above
 
-**User Management** *(similar to Product, plus 2 extra confirmation flows)*
+**User Management** _(similar to Product, plus 2 extra confirmation flows)_
 
-- [ ] Build user list table with role/status badges, mock data
-- [ ] Build add/edit user form
-- [ ] Build reset password confirmation dialog
-- [ ] Build deactivate confirmation dialog
+- [x] Build user list table with role/status badges, mock data
+- [x] Build search + role filter controls — missing from the original checklist (found 2026-07, same gap pattern as Product/Category's search+filter); added for consistency with the other two list screens
+- [x] Build add/edit user form (name, username, temporary password + "Generate password" button in add mode only, role toggle) — **no active/inactive toggle in the form** (decided 2026-07); activation state is only changed via the separate Deactivate/Reactivate dialog, not editable inline in the form — uses `zod` validation (decided 2026-07, for consistency with Products) via a mode-aware schema factory (`lib/validators/user.ts`)
+- [x] Build reset password confirmation dialog — full 2-stage flow (decided 2026-07): confirm → generate + display the new temporary password with a "Copied" indicator, not a single-step confirmation
+- [x] Build deactivate/reactivate confirmation dialog (bidirectional — same dialog, content flips based on current `active` state)
+- [x] Build user detail drawer (click a row → side panel: avatar/initials, role + status pills, username, role description, joined date, last active; Edit + Reset password actions) — added 2026-07 per `docs/references/user_management.html`, not in the original PRD-derived checklist
+- [x] Row-level quick actions: 2 icon buttons (Edit, Deactivate) matching Product/Category's inline-icon-button pattern — **not** the reference's ⋮ dropdown menu (decided 2026-07 for consistency across list screens); Reset password is only reachable via the detail drawer, not a row-level action
+- [x] Built directly as a split structure from the start (`lib/types.ts`, `lib/validators/user.ts`, `lib/mock-users.ts`, `components/users/*.tsx`, thin `page.tsx`) — no separate refactor pass needed, unlike Product/Category which were refactored after the fact
 
-**Stock Adjustment** *(small form + history list, naturally follows Product)*
+**Stock Adjustment** _(small form + history list, naturally follows Product)_
 
 - [ ] Build adjustment form (increase/decrease toggle, quantity, reason) — accessible from product detail
 - [ ] Build adjustment history list, mock data, color-coded increase/decrease
 
-**Transaction History** *(read/filter-heavy, plus a void flow)*
+**Transaction History** _(read/filter-heavy, plus a void flow)_
 
 - [ ] Build transaction list with mock data, date range filter UI, cashier filter (admin-only visibility toggle)
 - [ ] Build transaction detail (drawer or page) with mock line items
 - [ ] Build void action + required-reason confirmation dialog
 - [ ] Build voided-state visual treatment on detail view
 
-**POS / Checkout** *(most interaction states — real Zustand cart, live calculation, multiple error/success states)*
+**POS / Checkout** _(most interaction states — real Zustand cart, live calculation, multiple error/success states)_
 
 - [ ] Build product grid with mock product array (include some out-of-stock items)
 - [ ] Build search bar (client-side filter over mock array)
@@ -106,7 +118,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [ ] Build insufficient-stock error state (trigger manually with a mock condition)
 - [ ] Build on-screen receipt success state
 
-**Sales Dashboard** *(hardest — new charting library + date-range aggregation logic)*
+**Sales Dashboard** _(hardest — new charting library + date-range aggregation logic)_
 
 - [ ] Build date range selector (default "Today")
 - [ ] Build headline metric cards (total sales, transaction count) with mock numbers, `tabular-nums`
@@ -226,7 +238,7 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 
 For each module below: replace the mock hook body with a real `useQuery`/`useMutation` call against `lib/api-client.ts`, remove the fake delay, and confirm the UI states (loading/error/empty) still behave correctly with real network conditions.
 
-- [ ] **Products** — list, search, detail, create, update, delete (`use-products.ts`)
+- [ ] **Products** — list, search, detail, create, update, delete (`use-products.ts`); wire the "Reload" button (built in Part 1.4) to a real TanStack Query `refetch()` instead of the fake loading-skeleton timer
 - [ ] **Categories** — list, create, update, delete
 - [ ] **Users** — list, create, update, reset password, deactivate
 - [ ] **POS/Checkout** — cart stays Zustand (unchanged), but checkout submit now calls `POST /api/v1/transactions` for real; wire the real `INSUFFICIENT_STOCK` error response into the existing error state UI
