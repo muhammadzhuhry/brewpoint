@@ -37,7 +37,7 @@ export default function StockPage() {
   const selected = products.find((p) => p.id === selectedId) ?? null;
 
   return (
-    <div className="flex h-full flex-col gap-6">
+    <div className="flex h-full flex-col">
       <PageHeader
         title="Stock"
         count={`${products.length} products tracked`}
@@ -52,8 +52,8 @@ export default function StockPage() {
         }
       />
 
-      <div className="flex flex-1 gap-4 overflow-hidden">
-        <div className="flex w-[340px] shrink-0 flex-col rounded-xl border border-border bg-card">
+      <div className="-mx-6 -mb-6 flex flex-1 overflow-hidden">
+        <div className="flex w-[340px] shrink-0 flex-col border-r border-border bg-card">
           <div className="flex flex-col gap-3 border-b border-[#F1F0EC] p-4">
             <div className="relative">
               <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -150,7 +150,7 @@ export default function StockPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto p-6">
           {/* panel kanan (adjust form + history) nanti di sini */}
         </div>
       </div>
