@@ -27,3 +27,12 @@ export type User = {
   joined: string;
   last: string;
 };
+
+export type StockAdjustment = {
+  type: "increase" | "decrease";
+  qty: number;
+  reason: string;
+  by: string;
+  when: string;
+  result: number;
+};

@@ -10,9 +10,17 @@ import {
   Receipt,
   LayoutDashboard,
   Users,
+  Boxes,
+  Coffee,
 } from "lucide-react";
 
 const NAV_ITEMS = [
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    roles: ["admin"],
+  },
   {
     href: "/pos",
     label: "POS",
@@ -22,7 +30,7 @@ const NAV_ITEMS = [
   {
     href: "/products",
     label: "Products",
-    icon: Package,
+    icon: Coffee,
     roles: ["admin", "cashier"],
   },
   {
@@ -31,19 +39,19 @@ const NAV_ITEMS = [
     icon: Tag,
     roles: ["admin", "cashier"],
   },
+  { href: "/users", label: "Users", icon: Users, roles: ["admin"] },
+  {
+    href: "/stock",
+    label: "Stock",
+    icon: Package,
+    roles: ["admin"],
+  },
   {
     href: "/transactions",
     label: "Transactions",
     icon: Receipt,
     roles: ["admin", "cashier"],
   },
-  {
-    href: "/dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    roles: ["admin"],
-  },
-  { href: "/users", label: "Users", icon: Users, roles: ["admin"] },
 ];
 
 export function SidebarNav({ role }: { role: "admin" | "cashier" }) {
