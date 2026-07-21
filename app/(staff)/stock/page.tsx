@@ -1,18 +1,35 @@
 "use client";
 
-import { useState } from "react";
-import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check } from "lucide-react";
 
-import type { Product } from "@/lib/types";
+import type { StockAdjustment } from "@/lib/types";
 import { MOCK_PRODUCTS } from "@/lib/mock-products";
+import { MOCK_STOCK_HISTORY } from "@/lib/mock-stock-history";
 import { getStockStatus } from "@/lib/product-status";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
+import { mockCurrentUser } from "@/lib/mock-current-user";
+
 import { PageHeader } from "@/components/shared/page-header";
-import { getTileColor } from "@/lib/avatar-color";
+import { ProductPickerList } from "@/components/stock/product-picker-list";
+import { ProductHeaderCard } from "@/components/stock/product-header-card";
+import { AdjustmentForm } from "@/components/stock/adjustment-form";
+import { AdjustmentHistory } from "@/components/stock/adjustment-history";
+import { ConfirmAdjustmentDialog } from "@/components/stock/confirm-adjustment-dialog";
+
+function getAdjustmentTimeLabel() {
+  return (
+    "Today · " +
+    new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    })
+  );
+}
 
 export default function StockPage() {
-  const [products] = useState(MOCK_PRODUCTS);
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const [stockHistory, setStockHistory] = useState(MOCK_STOCK_HISTORY);
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "low" | "out">(
     "all",
@@ -20,6 +37,19 @@ export default function StockPage() {
   const [selectedId, setSelectedId] = useState<number | null>(
     products[0]?.id ?? null,
   );
+
+  const [adjType, setAdjType] = useState<"increase" | "decrease">("increase");
+  const [qty, setQty] = useState("");
+  const [reason, setReason] = useState("");
+  const [errors, setErrors] = useState<{ qty?: string; reason?: string }>({});
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const lowCount = products.filter(
     (p) => getStockStatus(p.stock) !== "in-stock",
@@ -35,6 +65,79 @@ export default function StockPage() {
   });
 
   const selected = products.find((p) => p.id === selectedId) ?? null;
+  const historyForSelected = selected ? (stockHistory[selected.id] ?? []) : [];
+
+  const selectProduct = (id: number) => {
+    setSelectedId(id);
+    setAdjType("increase");
+    setQty("");
+    setReason("");
+    setErrors({});
+  };
+
+  const delta = () => {
+    const q = parseInt(qty, 10);
+    return isNaN(q) ? 0 : q;
+  };
+
+  const newLevel = () => {
+    if (!selected) return 0;
+    const d = delta();
+    return adjType === "increase"
+      ? selected.stock + d
+      : Math.max(0, selected.stock - d);
+  };
+
+  const handleOpenConfirm = () => {
+    if (!selected) return;
+    const q = parseInt(qty, 10);
+    const newErrors: { qty?: string; reason?: string } = {};
+    if (!qty || isNaN(q) || q <= 0) {
+      newErrors.qty = "Enter a quantity greater than 0.";
+    }
+    if (!reason.trim()) {
+      newErrors.reason = "A reason is required for every adjustment.";
+    }
+    if (adjType === "decrease" && q > selected.stock) {
+      newErrors.qty = `Can't remove more than current stock (${selected.stock}).`;
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmAdjustment = () => {
+    if (!selected) return;
+    const q = delta();
+    const result = newLevel();
+    const entry: StockAdjustment = {
+      type: adjType,
+      qty: q,
+      reason: reason.trim(),
+      by: mockCurrentUser.name,
+      when: getAdjustmentTimeLabel(),
+      result,
+    };
+
+    setProducts(
+      products.map((p) => (p.id === selected.id ? { ...p, stock: result } : p)),
+    );
+    setStockHistory({
+      ...stockHistory,
+      [selected.id]: [entry, ...historyForSelected],
+    });
+    setConfirmOpen(false);
+    setQty("");
+    setReason("");
+    setAdjType("increase");
+    setErrors({});
+    setToast(
+      `${adjType === "increase" ? "Added" : "Removed"} ${q} — ${selected.name} now at ${result}`,
+    );
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -53,107 +156,67 @@ export default function StockPage() {
       />
 
       <div className="-mx-6 -mb-6 flex flex-1 overflow-hidden">
-        <div className="flex w-[340px] shrink-0 flex-col border-r border-border bg-card">
-          <div className="flex flex-col gap-3 border-b border-[#F1F0EC] p-4">
-            <div className="relative">
-              <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search products…"
-                className="pl-9"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+        <ProductPickerList
+          products={filtered}
+          search={search}
+          onSearchChange={setSearch}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          selectedId={selectedId}
+          onSelect={selectProduct}
+        />
+
+        <div className="flex flex-1 flex-col gap-4 overflow-auto p-6">
+          {!selected ? (
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              Select a product to adjust its stock.
+            </div>
+          ) : (
+            <>
+              <ProductHeaderCard product={selected} />
+
+              <AdjustmentForm
+                adjType={adjType}
+                onAdjTypeChange={setAdjType}
+                qty={qty}
+                onQtyChange={(value) => {
+                  setQty(value);
+                  setErrors({ ...errors, qty: undefined });
+                }}
+                reason={reason}
+                onReasonChange={(value) => {
+                  setReason(value);
+                  setErrors({ ...errors, reason: undefined });
+                }}
+                errors={errors}
+                currentStock={selected.stock}
+                newLevel={newLevel()}
+                onSubmit={handleOpenConfirm}
               />
-            </div>
-            <div className="flex gap-0.5 rounded-[9px] border border-border bg-background p-[3px]">
-              {(["all", "low", "out"] as const).map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => setStatusFilter(f)}
-                  className={cn(
-                    "flex-1 rounded-lg py-1.5 text-[13px] capitalize",
-                    statusFilter === f
-                      ? "bg-card font-semibold text-primary shadow-sm"
-                      : "font-medium text-muted-foreground",
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <div className="flex-1 overflow-auto">
-            {filtered.length === 0 ? (
-              <div className="p-10 text-center text-[13px] text-muted-foreground">
-                No products match.
-              </div>
-            ) : (
-              filtered.map((product) => {
-                const isSelected = product.id === selectedId;
-                return (
-                  <button
-                    key={product.id}
-                    type="button"
-                    onClick={() => setSelectedId(product.id)}
-                    className={cn(
-                      "flex h-[62px] w-full items-center gap-3 border-b border-[#F1F0EC] border-l-[3px] px-4 text-left",
-                      isSelected
-                        ? "border-l-primary bg-icon-chip-background"
-                        : "border-l-transparent hover:bg-[#FAFAF8]",
-                    )}
-                  >
-                    <div
-                      className="flex size-9.5 shrink-0 items-center justify-center rounded-[9px] font-display text-[15px] font-semibold"
-                      style={{
-                        backgroundColor: getTileColor(product.name)[0],
-                        color: getTileColor(product.name)[1],
-                      }}
-                    >
-                      {product.name[0]}
-                    </div>
+              <AdjustmentHistory entries={historyForSelected} />
 
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <span className="truncate text-sm font-medium text-foreground">
-                        {product.name}
-                      </span>
-                      <span className="text-[11.5px] text-[#9AA1AB]">
-                        {product.category}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span
-                        className={cn(
-                          "tabular-nums text-[15px] font-semibold",
-                          product.stock === 0
-                            ? "text-destructive"
-                            : "text-primary",
-                        )}
-                      >
-                        {product.stock}
-                      </span>
-                      <span
-                        className={cn(
-                          "size-[7px] rounded-full",
-                          getStockStatus(product.stock) === "out-of-stock"
-                            ? "bg-destructive"
-                            : getStockStatus(product.stock) === "low-stock"
-                              ? "bg-warning"
-                              : "bg-success",
-                        )}
-                      />
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto p-6">
-          {/* panel kanan (adjust form + history) nanti di sini */}
+              {toast && (
+                <div className="sticky bottom-0 flex items-center gap-2.5 self-center rounded-[10px] bg-primary px-4 py-2.5 text-primary-foreground shadow-lg">
+                  <Check className="size-4 text-[#8FE0A6]" />
+                  <span className="text-[13.5px] font-medium">{toast}</span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
+
+      <ConfirmAdjustmentDialog
+        open={confirmOpen}
+        product={selected}
+        type={adjType}
+        qty={delta()}
+        reason={reason}
+        newLevel={newLevel()}
+        onOpenChange={setConfirmOpen}
+        onConfirm={handleConfirmAdjustment}
+      />
     </div>
   );
 }
