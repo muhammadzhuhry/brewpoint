@@ -52,6 +52,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [x] `(staff)/layout.tsx` — sidebar/nav shell wrapping all logged-in pages
 - [x] Build nav with role-aware items: mock a `currentUser` object with a hardcoded `role` for now (swap for the real session in Part 3)
 - [x] Nav items: POS, Products, Categories, Transactions, Dashboard (admin), Users (admin)
+- [x] Build sidebar brand header (logo tile + shop name) and account widget footer (avatar/initials, name, role, logout button) — added 2026-07 per `docs/references/sidebar.html`, not in the original PRD-derived checklist; logout button is UI-only for now, wired to a real `POST /api/v1/auth/logout` call in Part 3.2
 
 ### 1.4 Screens — build each with hardcoded/mock data, covering all states from `DESIGN_PROMPT.md`
 
@@ -97,8 +98,13 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **Stock Adjustment** _(small form + history list, naturally follows Product)_
 
-- [ ] Build adjustment form (increase/decrease toggle, quantity, reason) — accessible from product detail
-- [ ] Build adjustment history list, mock data, color-coded increase/decrease
+- [x] Build as a standalone dedicated page (`/stock`, own sidebar nav item) — corrected 2026-07: originally worded as "accessible from product detail," but `docs/references/stock_management.html` is a full master-detail page layout, not a modal/tab off the product screen
+- [x] Build product list/picker panel (search + All/Low-stock/Out-of-stock filter, clickable rows with avatar, category, stock count, color-coded status dot) — left panel of the master-detail layout, laid out flush against the page header/sidebar per the reference (2026-07)
+- [ ] Build selected-product header card in the right panel (avatar, name, category, current stock)
+- [ ] Build adjustment form (Increase/Decrease toggle, quantity input, preset reason chips + free-text reason, live "current → new stock" preview, submit button)
+- [ ] Build confirm-adjustment dialog (icon/color/title/message vary by increase vs decrease, shows current → new stock level preview)
+- [ ] Build adjustment history list, mock data, color-coded increase/decrease entries
+- [ ] Build success toast notification after an adjustment is recorded
 
 **Transaction History** _(read/filter-heavy, plus a void flow)_
 
