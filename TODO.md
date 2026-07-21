@@ -100,11 +100,12 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 - [x] Build as a standalone dedicated page (`/stock`, own sidebar nav item) — corrected 2026-07: originally worded as "accessible from product detail," but `docs/references/stock_management.html` is a full master-detail page layout, not a modal/tab off the product screen
 - [x] Build product list/picker panel (search + All/Low-stock/Out-of-stock filter, clickable rows with avatar, category, stock count, color-coded status dot) — left panel of the master-detail layout, laid out flush against the page header/sidebar per the reference (2026-07)
-- [ ] Build selected-product header card in the right panel (avatar, name, category, current stock)
-- [ ] Build adjustment form (Increase/Decrease toggle, quantity input, preset reason chips + free-text reason, live "current → new stock" preview, submit button)
-- [ ] Build confirm-adjustment dialog (icon/color/title/message vary by increase vs decrease, shows current → new stock level preview)
-- [ ] Build adjustment history list, mock data, color-coded increase/decrease entries
-- [ ] Build success toast notification after an adjustment is recorded
+- [x] Build selected-product header card in the right panel (avatar, name, category, current stock)
+- [x] Build adjustment form (Increase/Decrease toggle, quantity input, preset reason chips + free-text reason, live "current → new stock" preview, submit button)
+- [x] Build confirm-adjustment dialog (icon/color/title/message vary by increase vs decrease, shows current → new stock level preview)
+- [x] Build adjustment history list, mock data, color-coded increase/decrease entries
+- [x] Build success toast notification after an adjustment is recorded
+- [x] Refactor into `lib/types.ts` (already has `StockAdjustment`) + `components/stock/*.tsx` split (avoid god file) — see "Refactor convention" note above; `page.tsx` now a thin orchestrator wiring `ProductPickerList`, `ProductHeaderCard`, `AdjustmentForm`, `AdjustmentHistory`, `ConfirmAdjustmentDialog`
 
 **Transaction History** _(read/filter-heavy, plus a void flow)_
 
