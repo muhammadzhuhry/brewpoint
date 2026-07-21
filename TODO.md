@@ -109,10 +109,15 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **Transaction History** _(read/filter-heavy, plus a void flow)_
 
-- [ ] Build transaction list with mock data, date range filter UI, cashier filter (admin-only visibility toggle)
-- [ ] Build transaction detail (drawer or page) with mock line items
-- [ ] Build void action + required-reason confirmation dialog
-- [ ] Build voided-state visual treatment on detail view
+- [x] Build summary stat cards (Gross sales, Transactions, Avg. ticket, Voided count) — added 2026-07 per `docs/references/transaction_history.html`, not in the original PRD-derived checklist
+- [x] Build transaction list with mock data: search by receipt no., status filter (All/Completed/Voided), cashier filter (admin-only visibility), date range shown as a **static label for now** — decided 2026-07: the reference itself never wires the date picker to real filtering (it's a fixed "Jul 7 – Jul 8, 2026" display), so a working calendar/date-range picker is deferred until it's actually needed, not built here
+- [x] Build empty state (no transactions match filters) — same omission-fix pattern as Category/Product
+- [x] Build pagination footer — same pattern as Products
+- [x] Build transaction detail drawer with mock line items (receipt id, time, cashier, items with qty/price, subtotal/payment/change/total)
+- [x] Build void action + required-reason confirmation dialog — preset reason chips + free-text textarea, same pattern as Stock Adjustment's reason field
+- [x] Build voided-state visual treatment: banner (voided-by + reason) on the detail drawer, strikethrough total + voided status pill on the list row
+- [ ] Refactor stat cards + filter row + table + pagination out of `page.tsx` into `components/transactions/*.tsx` (avoid god file) — see "Refactor convention" note above; detail sheet and void dialog are already separate components
+- **Not building:** the reference's "View as Admin/Cashier" toggle — same reasoning as Product Management (2026-07): role comes from `currentUser` (mocked in `(staff)/layout.tsx`), never a manual switch
 
 **POS / Checkout** _(most interaction states — real Zustand cart, live calculation, multiple error/success states)_
 
