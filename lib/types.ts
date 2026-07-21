@@ -36,3 +36,21 @@ export type StockAdjustment = {
   when: string;
   result: number;
 };
+
+export type TransactionItem = {
+  name: string;
+  qty: number;
+  price: number;
+};
+
+export type Transaction = {
+  id: string;
+  time: string;
+  cashier: string;
+  status: "completed" | "voided";
+  method: string;
+  received: number;
+  items: TransactionItem[];
+  voidReason?: string;
+  voidBy?: string;
+};
