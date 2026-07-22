@@ -63,7 +63,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 **Login**
 
 - [x] Build login form UI (username, password, submit) — plus bonus: show/hide password toggle
-- [ ] Build inline error state (fake validation trigger)
+- [x] Build inline error state (fake validation trigger) — checked against a small `MOCK_ACCOUNTS` map (client-side only), with shake animation + red borders; the reference's "Welcome back" success animation + real redirect stays deferred to Part 3.2 (needs a real API response, not mock)
 
 **Category Management** _(simplest — single field, minimal states)_
 
@@ -116,7 +116,7 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [x] Build transaction detail drawer with mock line items (receipt id, time, cashier, items with qty/price, subtotal/payment/change/total)
 - [x] Build void action + required-reason confirmation dialog — preset reason chips + free-text textarea, same pattern as Stock Adjustment's reason field
 - [x] Build voided-state visual treatment: banner (voided-by + reason) on the detail drawer, strikethrough total + voided status pill on the list row
-- [ ] Refactor stat cards + filter row + table + pagination out of `page.tsx` into `components/transactions/*.tsx` (avoid god file) — see "Refactor convention" note above; detail sheet and void dialog are already separate components
+- [x] Refactor stat cards + filter row + table + pagination out of `page.tsx` into `components/transactions/*.tsx` (avoid god file) — see "Refactor convention" note above; split into `TransactionStats`, `TransactionFilters`, `TransactionsTable`, alongside the already-separate `TransactionDetailSheet`/`VoidTransactionDialog`
 - **Not building:** the reference's "View as Admin/Cashier" toggle — same reasoning as Product Management (2026-07): role comes from `currentUser` (mocked in `(staff)/layout.tsx`), never a manual switch
 
 **POS / Checkout** _(most interaction states — real Zustand cart, live calculation, multiple error/success states)_
