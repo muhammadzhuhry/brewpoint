@@ -1,16 +1,32 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Coffee, Eye, EyeOff } from "lucide-react";
+import { Coffee, Eye, EyeOff, AlertCircle } from "lucide-react";
+
+const MOCK_ACCOUNTS: Record<string, string> = {
+  marcus: "admin123",
+  sofia: "password",
+};
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleLogin = () => {
+    const key = username.trim().toLowerCase();
+    if (MOCK_ACCOUNTS[key] === password) {
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#D9D5CD] p-6">
@@ -60,15 +76,26 @@ export default function LoginPage() {
               </span>
             </div>
 
+            {error && (
+              <div className="flex items-center gap-2.5 rounded-[10px] border border-[#EBC6C1] bg-destructive-subtle px-3.5 py-2.5 animate-shake">
+                <AlertCircle className="size-[17px] shrink-0 text-destructive" />
+                <span className="text-[13px] font-medium text-destructive-subtle-foreground">
+                  Incorrect username or password.
+                </span>
+              </div>
+            )}
             <div className="flex flex-col gap-4">
               <div>
                 <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
                   placeholder="e.g. sofia"
-                  className="mt-1.5"
+                  className={cn("mt-1.5", error && "border-destructive")}
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setError(false);
+                  }}
                 />
               </div>
               <div>
@@ -78,9 +105,12 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Your password"
-                    className="mt-1.5"
+                    className={cn("mt-1.5", error && "border-destructive")}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError(false);
+                    }}
                   />
                   <button
                     type="button"
@@ -97,7 +127,9 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button className="w-full">Log in</Button>
+            <Button className="w-full" onClick={handleLogin}>
+              Log in
+            </Button>
 
             <span className="text-center text-[12.5px] text-muted-foreground">
               Forgot your password? Ask your store admin to reset it.
