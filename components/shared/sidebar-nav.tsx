@@ -22,8 +22,8 @@ const NAV_ITEMS = [
     roles: ["admin"],
   },
   {
-    href: "/pos",
-    label: "POS",
+    href: "/checkout",
+    label: "Checkout",
     icon: ShoppingCart,
     roles: ["admin", "cashier"],
   },
