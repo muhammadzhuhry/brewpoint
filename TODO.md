@@ -121,14 +121,19 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **POS / Checkout** _(most interaction states — real Zustand cart, live calculation, multiple error/success states)_
 
-- [ ] Build product grid with mock product array (include some out-of-stock items)
+- [ ] Build product grid using the existing `lib/mock-products.ts` (shared with Products/Stock, not a separate POS-only list) — decided 2026-07: keeps stock/price consistent across every screen instead of duplicating mock data, even though `docs/references/checkout.html`'s own demo data has more products/categories
+- [ ] Build top info bar: live date + ticking clock (updates every second via `setInterval`), shift label — added 2026-07 per `docs/references/checkout.html`, not in the original PRD-derived checklist
 - [ ] Build search bar (client-side filter over mock array)
-- [ ] Build category filter tabs (mock categories)
+- [ ] Build sort dropdown (Popular / Name A–Z / Price low→high / Price high→low) — added 2026-07, not in the original checklist
+- [ ] Build category filter chips (icon + label + product count per category, scrollable strip) — original checklist just said "tabs"; the reference is richer than a plain tab row
+- [ ] Build product tile states: in-cart quantity badge, low-stock badge ("X left"), out-of-stock disabled tile, hover/selected border
+- [ ] Build empty state (no products match search/category) — same omission-fix pattern as other list screens
 - [ ] Build cart panel (Zustand store — this is real, not mocked, since it's pure client state)
+- [ ] Build cart empty state ("No items yet") — same omission-fix pattern
 - [ ] Build quantity stepper, remove item, clear cart actions
-- [ ] Build checkout modal: amount received input, live change calculation (pure frontend math for now)
-- [ ] Build insufficient-stock error state (trigger manually with a mock condition)
-- [ ] Build on-screen receipt success state
+- [ ] Build insufficient-stock error state — corrected 2026-07: this is **derived automatically** from `cart qty > product.stock` (highlighted cart line + banner + blocked checkout button), not a manually-triggered toggle as originally worded
+- [ ] Build checkout modal: amount received input, quick-cash suggestion buttons (Exact / round up to 5/10/20), live change calculation (pure frontend math for now), "Complete sale" disabled until received ≥ total
+- [ ] Build on-screen receipt success state: line items, subtotal/paid/change, Print button (decorative, no real print logic), New sale button (resets cart + closes receipt)
 
 **Sales Dashboard** _(hardest — new charting library + date-range aggregation logic)_
 
