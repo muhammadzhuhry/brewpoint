@@ -88,6 +88,7 @@
 
   /* Animations */
   --animate-shimmer: shimmer 1.4s infinite linear;
+  --animate-shake: shake 0.4s ease;
 }
 
 @keyframes shimmer {
