@@ -67,7 +67,7 @@ function StatCard({
             "flex size-[30px] items-center justify-center rounded-lg",
             iconDanger
               ? "bg-destructive-subtle text-destructive"
-              : "bg-icon-chip-background text-icon-chip-foreground",
+              : "bg-icon-chip-background text-primary",
           )}
         >
           {icon}
@@ -111,7 +111,11 @@ export default function TransactionsPage() {
 
   const filtered = transactions.filter((t) => {
     if (statusFilter !== "all" && t.status !== statusFilter) return false;
-    if (isAdmin && cashierFilter !== "All cashiers" && t.cashier !== cashierFilter)
+    if (
+      isAdmin &&
+      cashierFilter !== "All cashiers" &&
+      t.cashier !== cashierFilter
+    )
       return false;
     const q = search.trim().toLowerCase();
     return q === "" || t.id.toLowerCase().includes(q);
@@ -279,7 +283,7 @@ export default function TransactionsPage() {
                               "flex size-[34px] shrink-0 items-center justify-center rounded-[9px]",
                               isVoided
                                 ? "bg-destructive-subtle text-destructive"
-                                : "bg-icon-chip-background text-icon-chip-foreground",
+                                : "bg-icon-chip-background text-primary",
                             )}
                           >
                             <Receipt className="size-4" />
