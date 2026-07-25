@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import {
   AlertCircle,
+  Check,
+  CreditCard,
   Minus,
   Plus,
-  ShoppingCart,
+  Printer,
   ShoppingBag,
+  ShoppingCart,
   Trash2,
 } from "lucide-react";
 
@@ -14,17 +18,53 @@ import { MOCK_PRODUCTS } from "@/lib/mock-products";
 import { getStockStatus } from "@/lib/product-status";
 import { getTileColor } from "@/lib/avatar-color";
 import { formatUSD } from "@/lib/format-currency";
+import { mockCurrentUser } from "@/lib/mock-current-user";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+type Receipt = {
+  ref: string;
+  time: string;
+  lines: { name: string; qty: number; price: number }[];
+  subtotal: number;
+  paid: number;
+  change: number;
+};
+
+function getReceiptTimeLabel() {
+  const now = new Date();
+  return (
+    now.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }) +
+    " · " +
+    now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+  );
+}
 
 export default function CheckoutPage() {
+  const [products, setProducts] = useState(MOCK_PRODUCTS);
   const { quantities, order, addItem, increment, decrement, clearCart } =
     useCartStore();
 
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [received, setReceived] = useState("");
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [nextRef, setNextRef] = useState(2042);
+
   const cartLines = order
-    .map((id) => MOCK_PRODUCTS.find((p) => p.id === id))
+    .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => p !== undefined)
     .map((product) => ({ product, qty: quantities[product.id] }));
 
@@ -37,11 +77,55 @@ export default function CheckoutPage() {
     ({ product, qty }) => qty > product.stock,
   );
 
+  const receivedNum = parseFloat(received);
+  const isValidReceived = !isNaN(receivedNum) && receivedNum >= subtotal;
+  const change = isValidReceived ? receivedNum - subtotal : 0;
+  const quickCashValues = Array.from(
+    new Set([
+      subtotal,
+      Math.ceil(subtotal / 5) * 5,
+      Math.ceil(subtotal / 10) * 10,
+      Math.ceil(subtotal / 20) * 20,
+    ]),
+  ).slice(0, 4);
+
+  const openCheckout = () => {
+    setReceived("");
+    setCheckoutOpen(true);
+  };
+
+  const handleCompleteSale = () => {
+    if (!isValidReceived) return;
+    setProducts(
+      products.map((p) =>
+        quantities[p.id]
+          ? { ...p, stock: Math.max(0, p.stock - quantities[p.id]) }
+          : p,
+      ),
+    );
+    setReceipt({
+      ref: `TX-${nextRef}`,
+      time: getReceiptTimeLabel(),
+      lines: cartLines.map(({ product, qty }) => ({
+        name: product.name,
+        qty,
+        price: product.price,
+      })),
+      subtotal,
+      paid: receivedNum,
+      change,
+    });
+    setNextRef(nextRef + 1);
+    clearCart();
+    setCheckoutOpen(false);
+    setReceived("");
+  };
+
   return (
     <div className="-m-6 flex h-[calc(100%+3rem)]">
       <div className="flex min-w-0 flex-1 flex-col overflow-auto p-6">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(196px,1fr))] gap-4">
-          {MOCK_PRODUCTS.map((product) => {
+          {products.map((product) => {
             const status = getStockStatus(product.stock);
             const [bg, fg] = getTileColor(product.name);
             const isOut = status === "out-of-stock";
@@ -234,13 +318,190 @@ export default function CheckoutPage() {
                 </span>
               </div>
             </div>
-            <Button className="h-14 text-base" disabled={hasStockError}>
+            <Button
+              className="h-14 text-base"
+              disabled={hasStockError}
+              onClick={openCheckout}
+            >
               <ShoppingCart className="size-[19px]" />
               Charge {formatUSD(subtotal)}
             </Button>
           </div>
         )}
       </aside>
+
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle>Take payment</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-5 p-6">
+            <div className="flex items-center justify-between rounded-xl bg-icon-chip-background px-[18px] py-4">
+              <span className="text-sm font-medium text-icon-chip-foreground">
+                Total due
+              </span>
+              <span className="font-display text-[28px] font-semibold tracking-tight text-primary">
+                {formatUSD(subtotal)}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-1.5">
+                <CreditCard className="size-[15px] text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Cash received
+                </span>
+              </div>
+              <div className="relative">
+                <span className="absolute top-1/2 left-4 -translate-y-1/2 text-xl font-semibold text-primary">
+                  $
+                </span>
+                <input
+                  value={received}
+                  onChange={(e) =>
+                    setReceived(e.target.value.replace(/[^0-9.]/g, ""))
+                  }
+                  placeholder="0.00"
+                  className="h-[60px] w-full rounded-xl border border-border bg-card pr-4 pl-9 text-2xl font-semibold text-primary outline-none"
+                />
+              </div>
+              <div className="mt-0.5 flex gap-2">
+                {quickCashValues.map((value, i) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setReceived(value.toFixed(2))}
+                    className="flex h-10 flex-1 items-center justify-center rounded-[10px] border border-border bg-card text-[13.5px] font-semibold text-primary"
+                  >
+                    {i === 0 ? "Exact" : formatUSD(value)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-xl border border-dashed px-[18px] py-3.5",
+                isValidReceived
+                  ? "border-[#BCDCC4] bg-[#F1F8F2]"
+                  : "border-border bg-[#FAFAF8]",
+              )}
+            >
+              <span className="text-sm font-medium text-muted-foreground">
+                Change due
+              </span>
+              <span
+                className={cn(
+                  "text-xl font-semibold tabular-nums",
+                  isValidReceived ? "text-success" : "text-muted-foreground",
+                )}
+              >
+                {isValidReceived ? formatUSD(change) : "—"}
+              </span>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCheckoutOpen(false)}>
+              Back
+            </Button>
+            <Button disabled={!isValidReceived} onClick={handleCompleteSale}>
+              Complete sale
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {receipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/55">
+          <div className="flex max-h-210 w-100 flex-col overflow-auto rounded-2xl bg-card shadow-[0_20px_60px_rgba(15,20,24,0.32)]">
+            <div className="flex flex-col items-center gap-3.5 border-b border-dashed border-border px-7 pt-7 pb-5 text-center">
+              <div className="flex size-15 items-center justify-center rounded-full bg-success-subtle">
+                <Check className="size-7.5 text-success" strokeWidth={2.2} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="font-display text-xl font-semibold text-primary">
+                  Payment complete
+                </span>
+                <span className="text-[13px] tabular-nums text-muted-foreground">
+                  {receipt.ref} · {receipt.time}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 px-7 py-5.5">
+              <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
+                MAPLE &amp; VINE COFFEE · {mockCurrentUser.name.toUpperCase()}
+              </span>
+
+              <div className="flex flex-col gap-2">
+                {receipt.lines.map((line, i) => (
+                  <div key={i} className="flex items-center gap-2.5">
+                    <span className="w-6.5 text-[13px] tabular-nums text-muted-foreground">
+                      {line.qty}×
+                    </span>
+                    <span className="flex-1 text-[13.5px] text-foreground">
+                      {line.name}
+                    </span>
+                    <span className="text-[13.5px] font-medium tabular-nums text-foreground">
+                      {formatUSD(line.price * line.qty)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="h-px bg-[#F1F0EC]" />
+
+              <div className="flex justify-between">
+                <span className="text-[13.5px] text-muted-foreground">
+                  Subtotal
+                </span>
+                <span className="text-[13.5px] font-medium tabular-nums text-foreground">
+                  {formatUSD(receipt.subtotal)}
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="font-display text-base font-semibold text-primary">
+                  Total
+                </span>
+                <span className="text-xl font-semibold tabular-nums text-primary">
+                  {formatUSD(receipt.subtotal)}
+                </span>
+              </div>
+
+              <div className="mt-1 flex flex-col gap-2 rounded-xl bg-table-header-background p-3.5">
+                <div className="flex justify-between">
+                  <span className="text-[13px] text-muted-foreground">
+                    Cash received
+                  </span>
+                  <span className="text-[13.5px] font-medium tabular-nums text-foreground">
+                    {formatUSD(receipt.paid)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[13px] text-muted-foreground">
+                    Change
+                  </span>
+                  <span className="text-[13.5px] font-semibold tabular-nums text-success">
+                    {formatUSD(receipt.change)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 px-7 pt-4 pb-6">
+              <Button variant="secondary" className="shrink-0">
+                <Printer className="size-4" />
+                Print
+              </Button>
+              <Button className="flex-1" onClick={() => setReceipt(null)}>
+                New sale
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
