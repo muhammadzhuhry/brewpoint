@@ -7,8 +7,8 @@ import { mockCurrentUser } from "@/lib/mock-current-user";
 
 export default function StaffLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-60 flex-col border-r border-border bg-card">
+    <div className="flex h-screen">
+      <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-card">
         <div className="flex items-center gap-[11px] px-[18px] pt-5 pb-4">
           <div className="flex size-[34px] shrink-0 items-center justify-center rounded-[9px] bg-primary">
             <Coffee className="size-[19px] text-secondary" strokeWidth={1.6} />
@@ -45,7 +45,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6">{children}</main>
     </div>
   );
 }
