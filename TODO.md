@@ -121,19 +121,19 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **POS / Checkout** _(most interaction states — real Zustand cart, live calculation, multiple error/success states)_
 
-- [ ] Build product grid using the existing `lib/mock-products.ts` (shared with Products/Stock, not a separate POS-only list) — decided 2026-07: keeps stock/price consistent across every screen instead of duplicating mock data, even though `docs/references/checkout.html`'s own demo data has more products/categories
-- [ ] Build top info bar: live date + ticking clock (updates every second via `setInterval`), shift label — added 2026-07 per `docs/references/checkout.html`, not in the original PRD-derived checklist
-- [ ] Build search bar (client-side filter over mock array)
-- [ ] Build sort dropdown (Popular / Name A–Z / Price low→high / Price high→low) — added 2026-07, not in the original checklist
-- [ ] Build category filter chips (icon + label + product count per category, scrollable strip) — original checklist just said "tabs"; the reference is richer than a plain tab row
-- [ ] Build product tile states: in-cart quantity badge, low-stock badge ("X left"), out-of-stock disabled tile, hover/selected border
-- [ ] Build empty state (no products match search/category) — same omission-fix pattern as other list screens
-- [ ] Build cart panel (Zustand store — this is real, not mocked, since it's pure client state)
-- [ ] Build cart empty state ("No items yet") — same omission-fix pattern
-- [ ] Build quantity stepper, remove item, clear cart actions
-- [ ] Build insufficient-stock error state — corrected 2026-07: this is **derived automatically** from `cart qty > product.stock` (highlighted cart line + banner + blocked checkout button), not a manually-triggered toggle as originally worded
-- [ ] Build checkout modal: amount received input, quick-cash suggestion buttons (Exact / round up to 5/10/20), live change calculation (pure frontend math for now), "Complete sale" disabled until received ≥ total
-- [ ] Build on-screen receipt success state: line items, subtotal/paid/change, Print button (decorative, no real print logic), New sale button (resets cart + closes receipt)
+- [x] Build product grid using the existing `lib/mock-products.ts` (shared with Products/Stock, not a separate POS-only list) — decided 2026-07: keeps stock/price consistent across every screen instead of duplicating mock data, even though `docs/references/checkout.html`'s own demo data has more products/categories
+- [x] Build top info bar: live date + ticking clock (updates every second via `setInterval`), shift label — added 2026-07 per `docs/references/checkout.html`, not in the original PRD-derived checklist; also restructured the left column into a fixed top zone (title/date-time/search/sort/chips) + separately-scrolling grid below, matching the reference's layout instead of scrolling everything together. **Hydration lesson (2026-07):** the clock's `now` state must start as `null` (same on server and client) and only get a real `new Date()` inside `useEffect` — initializing it eagerly via `useState(() => new Date())` causes a server/client text mismatch (Next.js hydration error), a different problem from the `Date.now()`-in-render **lint** rule we hit earlier on Stock/Transactions
+- [x] Build search bar (client-side filter over mock array) — filters by product name only for now; barcode-scan matching can be added once barcode input is wired
+- [x] Build sort dropdown (Popular / Name A–Z / Price low→high / Price high→low) — added 2026-07, not in the original checklist; "Popular" sorts by `product.txnCount` (real mock field, already used on the Product detail drawer), not a fake/decorative order like the reference's own demo data
+- [x] Build category filter chips (icon + label + product count per category, scrollable strip) — original checklist just said "tabs"; the reference is richer than a plain tab row; categories derived from `products` (same pattern as Products page filter), not from `lib/mock-categories.ts`, so an empty category never shows as a selectable-but-empty option
+- [x] Build product tile states: in-cart quantity badge, low-stock badge ("X left"), out-of-stock disabled tile, hover/selected border
+- [x] Build empty state (no products match search/category) — built alongside search, now also covers the category filter via the same `filteredProducts` array
+- [x] Build cart panel (Zustand store — this is real, not mocked, since it's pure client state) — `stores/cart-store.ts`, tracks `quantities`/`order` by product id (not a copy of product data)
+- [x] Build cart empty state ("No items yet") — reuses the shared `EmptyState` component
+- [x] Build quantity stepper, remove item, clear cart actions — removing is implicit (decrement to 0), matching the reference (no separate per-line delete button)
+- [x] Build insufficient-stock error state — corrected 2026-07: this is **derived automatically** from `cart qty > product.stock` (highlighted cart line + banner + blocked checkout button), not a manually-triggered toggle as originally worded
+- [x] Build checkout modal: amount received input, quick-cash suggestion buttons (Exact / round up to 5/10/20), live change calculation (pure frontend math for now), "Complete sale" disabled until received ≥ total — also switched `products` from a direct `MOCK_PRODUCTS` read to local `useState` here, since completing a sale needs to actually decrement stock
+- [x] Build on-screen receipt success state: line items, subtotal/paid/change, Print button (decorative, no real print logic), New sale button (resets cart + closes receipt) — receipt ref counter (`TX-2042`, `TX-2043`, ...) is a plain `useState` counter, not `Date.now()`/`Math.random()`, matching the impure-function lint rule we hit earlier
 
 **Sales Dashboard** _(hardest — new charting library + date-range aggregation logic)_
 
