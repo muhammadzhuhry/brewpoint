@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertCircle,
+  Calendar,
   Check,
+  Clock,
   Coffee,
   Cookie,
   CreditCard,
@@ -63,6 +65,10 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "Seasonal Drinks": Sparkles,
 };
 
+function getNow() {
+  return new Date();
+}
+
 function getReceiptTimeLabel() {
   const now = new Date();
   return (
@@ -81,13 +87,34 @@ export default function CheckoutPage() {
   const { quantities, order, addItem, increment, decrement, clearCart } =
     useCartStore();
 
+  const [now, setNow] = useState<Date | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [sort, setSort] = useState<string | null>("popular");
+  const [sort, setSort] = useState<string | null>("Sort: Popular");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [received, setReceived] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [nextRef, setNextRef] = useState(2042);
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(getNow()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dateLabel = now
+    ? now.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      })
+    : "—";
+  const timeLabel = now
+    ? now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : "--:--:--";
 
   const categories = Array.from(new Set(products.map((p) => p.category)));
 
@@ -101,9 +128,9 @@ export default function CheckoutPage() {
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sort === "name") return a.name.localeCompare(b.name);
-    if (sort === "price-asc") return a.price - b.price;
-    if (sort === "price-desc") return b.price - a.price;
+    if (sort === "Name A–Z") return a.name.localeCompare(b.name);
+    if (sort === "Price: Low to high") return a.price - b.price;
+    if (sort === "Price: High to low") return b.price - a.price;
     return b.txnCount - a.txnCount;
   });
 
@@ -167,148 +194,191 @@ export default function CheckoutPage() {
 
   return (
     <div className="-m-6 flex h-[calc(100%+3rem)]">
-      <div className="flex min-w-0 flex-1 flex-col overflow-auto p-6">
-        <div className="mb-4 flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products or scan barcode…"
-              className="h-12 w-full rounded-xl border border-border bg-card pr-3.5 pl-10 text-[15px] text-foreground outline-none"
-            />
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex flex-col gap-3.5 px-6 pt-5 pb-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-0.5">
+              <h1 className="font-display text-2xl font-semibold tracking-tight text-primary">
+                Checkout
+              </h1>
+              <span className="text-[12.5px] text-[#8A8577]">
+                New sale · Shift 7:00 AM – 3:00 PM
+              </span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card px-4 py-2.5">
+                <Calendar className="size-[17px] text-muted-foreground" />
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[9.5px] font-semibold tracking-wide text-muted-foreground">
+                    DATE
+                  </span>
+                  <span className="text-[13.5px] font-semibold tabular-nums text-primary">
+                    {dateLabel}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 rounded-xl bg-primary px-4 py-2.5">
+                <Clock className="size-[17px] text-secondary" />
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[9.5px] font-semibold tracking-wide text-secondary/70">
+                    TIME
+                  </span>
+                  <span className="text-sm font-semibold tabular-nums text-primary-foreground">
+                    {timeLabel}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <Select value={sort} onValueChange={setSort}>
-            <SelectTrigger className="h-12 w-52">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="popular">Sort: Popular</SelectItem>
-              <SelectItem value="name">Name A–Z</SelectItem>
-              <SelectItem value="price-asc">Price: Low to high</SelectItem>
-              <SelectItem value="price-desc">Price: High to low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products or scan barcode…"
+                className="h-12 w-full rounded-xl border border-border bg-card pr-3.5 pl-10 text-[15px] text-foreground outline-none"
+              />
+            </div>
 
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-0.5">
-          {["All", ...categories].map((c) => {
-            const isOn = categoryFilter === c;
-            const count =
-              c === "All"
-                ? products.length
-                : products.filter((p) => p.category === c).length;
-            const Icon = CATEGORY_ICONS[c] ?? Coffee;
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategoryFilter(c)}
-                className={cn(
-                  "flex shrink-0 items-center gap-2 rounded-full border py-1.5 pr-3.5 pl-1.5 text-[13.5px] font-medium whitespace-nowrap",
-                  isOn
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-foreground",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-7 items-center justify-center rounded-full",
-                    isOn ? "bg-white/20" : "bg-icon-chip-background",
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "size-3.5",
-                      isOn ? "text-secondary" : "text-primary",
-                    )}
-                  />
-                </span>
-                {c}
-                <span
-                  className={cn(
-                    "flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
-                    isOn
-                      ? "bg-white/15 text-primary-foreground"
-                      : "bg-[#F1F0EC] text-muted-foreground",
-                  )}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {filteredProducts.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center p-10">
-            <EmptyState
-              icon={<Search className="size-7" />}
-              title="No products found"
-              description="Try another search term or category."
-            />
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="h-12 w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sort: Popular">Sort: Popular</SelectItem>
+                <SelectItem value="Name A–Z">Name A–Z</SelectItem>
+                <SelectItem value="Price: Low to high">
+                  Price: Low to high
+                </SelectItem>
+                <SelectItem value="Price: High to low">
+                  Price: High to low
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(196px,1fr))] gap-4">
-            {sortedProducts.map((product) => {
-              const status = getStockStatus(product.stock);
-              const [bg, fg] = getTileColor(product.name);
-              const isOut = status === "out-of-stock";
-              const qtyInCart = quantities[product.id] ?? 0;
+
+          <div className="mb-4 flex gap-2 overflow-x-auto pb-0.5">
+            {["All", ...categories].map((c) => {
+              const isOn = categoryFilter === c;
+              const count =
+                c === "All"
+                  ? products.length
+                  : products.filter((p) => p.category === c).length;
+              const Icon = CATEGORY_ICONS[c] ?? Coffee;
               return (
                 <button
-                  key={product.id}
+                  key={c}
                   type="button"
-                  disabled={isOut}
-                  onClick={() => addItem(product.id)}
+                  onClick={() => setCategoryFilter(c)}
                   className={cn(
-                    "flex flex-col gap-2.5 rounded-2xl border bg-card p-3 text-left",
-                    qtyInCart > 0 ? "border-primary" : "border-border",
-                    isOut && "cursor-not-allowed opacity-70",
+                    "flex shrink-0 items-center gap-2 rounded-full border py-1.5 pr-3.5 pl-1.5 text-[13.5px] font-medium whitespace-nowrap",
+                    isOn
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-foreground",
                   )}
                 >
-                  <div
-                    className="relative flex h-32 items-center justify-center rounded-[13px]"
-                    style={{ backgroundColor: bg }}
-                  >
-                    <span
-                      className="font-display text-5xl font-semibold"
-                      style={{ color: fg }}
-                    >
-                      {product.name[0]}
-                    </span>
-                    {qtyInCart > 0 && (
-                      <span className="absolute top-2 right-2 flex min-w-[26px] items-center justify-center rounded-full bg-primary px-1.5 py-1 text-[13.5px] font-semibold tabular-nums text-primary-foreground shadow">
-                        {qtyInCart}
-                      </span>
+                  <span
+                    className={cn(
+                      "flex size-7 items-center justify-center rounded-full",
+                      isOn ? "bg-white/20" : "bg-icon-chip-background",
                     )}
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-sm font-medium text-foreground">
-                      {product.name}
-                    </span>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[17px] font-semibold tabular-nums text-primary">
-                        {formatUSD(product.price)}
-                      </span>
-                      {isOut && (
-                        <span className="rounded-full bg-destructive-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-destructive-subtle-foreground">
-                          Out of stock
-                        </span>
+                  >
+                    <Icon
+                      className={cn(
+                        "size-3.5",
+                        isOn ? "text-secondary" : "text-primary",
                       )}
-                      {status === "low-stock" && (
-                        <span className="rounded-full bg-warning-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-warning-subtle-foreground">
-                          {product.stock} left
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    />
+                  </span>
+                  {c}
+                  <span
+                    className={cn(
+                      "flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
+                      isOn
+                        ? "bg-white/15 text-primary-foreground"
+                        : "bg-[#F1F0EC] text-muted-foreground",
+                    )}
+                  >
+                    {count}
+                  </span>
                 </button>
               );
             })}
           </div>
-        )}
+        </div>
+
+        <div className="flex-1 overflow-auto px-6 pb-6">
+          {filteredProducts.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center p-10">
+              <EmptyState
+                icon={<Search className="size-7" />}
+                title="No products found"
+                description="Try another search term or category."
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(196px,1fr))] gap-4">
+              {sortedProducts.map((product) => {
+                const status = getStockStatus(product.stock);
+                const [bg, fg] = getTileColor(product.name);
+                const isOut = status === "out-of-stock";
+                const qtyInCart = quantities[product.id] ?? 0;
+                return (
+                  <button
+                    key={product.id}
+                    type="button"
+                    disabled={isOut}
+                    onClick={() => addItem(product.id)}
+                    className={cn(
+                      "flex flex-col gap-2.5 rounded-2xl border bg-card p-3 text-left",
+                      qtyInCart > 0 ? "border-primary" : "border-border",
+                      isOut && "cursor-not-allowed opacity-70",
+                    )}
+                  >
+                    <div
+                      className="relative flex h-32 items-center justify-center rounded-[13px]"
+                      style={{ backgroundColor: bg }}
+                    >
+                      <span
+                        className="font-display text-5xl font-semibold"
+                        style={{ color: fg }}
+                      >
+                        {product.name[0]}
+                      </span>
+                      {qtyInCart > 0 && (
+                        <span className="absolute top-2 right-2 flex min-w-[26px] items-center justify-center rounded-full bg-primary px-1.5 py-1 text-[13.5px] font-semibold tabular-nums text-primary-foreground shadow">
+                          {qtyInCart}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-sm font-medium text-foreground">
+                        {product.name}
+                      </span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[17px] font-semibold tabular-nums text-primary">
+                          {formatUSD(product.price)}
+                        </span>
+                        {isOut && (
+                          <span className="rounded-full bg-destructive-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-destructive-subtle-foreground">
+                            Out of stock
+                          </span>
+                        )}
+                        {status === "low-stock" && (
+                          <span className="rounded-full bg-warning-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-warning-subtle-foreground">
+                            {product.stock} left
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       <aside className="flex w-[400px] shrink-0 flex-col border-l border-border bg-card">
