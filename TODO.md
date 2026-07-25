@@ -137,10 +137,16 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 **Sales Dashboard** _(hardest — new charting library + date-range aggregation logic)_
 
-- [ ] Build date range selector (default "Today")
-- [ ] Build headline metric cards (total sales, transaction count) with mock numbers, `tabular-nums`
-- [ ] Build best-sellers list/chart (`recharts`), mock data
-- [ ] Build empty state (zeroed totals)
+**Data approach (2026-07):** everything on this page except Low Stock uses a small set of hardcoded mock "snapshots," one per date-range period (Today / 7 days / 30 days) — including the delta badges — matching `docs/references/dashboard.html`'s own approach (`lib/mock-dashboard.ts`, one object per period). `MOCK_TRANSACTIONS` only spans 2 days, so computing a real "last 30 days" trend from it would be dishonest, not just simplified. Low Stock is the one exception: it reads real numbers from `lib/mock-products.ts` (same `getStockStatus` already used on Stock/Products), so it never disagrees with what those pages show.
+
+- [ ] Install `recharts`
+- [ ] Build date range selector: 3-option segmented toggle (Today / 7 days / 30 days) + read-only resolved date-range chip — corrected 2026-07: not a full calendar/date-range picker, matches the reference's own simpler control (same pattern as the Transaction History date filter)
+- [ ] Build 4 headline stat cards (Total sales, Transactions, Avg. ticket, Items sold) with mock numbers, `tabular-nums`, each with a delta badge (↑/↓ % vs previous period + a "vs yesterday" / "vs last week" / "vs prev. 30 days" note) — corrected 2026-07: original checklist only named 2 of the 4 cards and missed the delta badges entirely
+- [ ] Build main "Sales by hour" (Today) / "Sales by day" (7/30 days) bar chart using `recharts`'s `BarChart` — decided 2026-07: the one real chart on the page (see data-approach note above); bar labels/granularity change per selected period
+- [ ] Build "Best sellers" list (rank, name, qty sold, horizontal progress bar) — added 2026-07 per reference; plain styled bars, **not** a `recharts` component — it's a ranked list, not a chart
+- [ ] Build "Sales by category" horizontal bar breakdown (% share per category) — added 2026-07 per reference, not in the original checklist; also plain styled bars, not `recharts`
+- [ ] Build "Low stock" panel (product name + status badge, "Out of stock" vs "X left") — added 2026-07 per reference; the one section on this page backed by real data (`lib/mock-products.ts`), not a per-period snapshot
+- [ ] Build empty state (zeroed totals) — no reference guidance for this (the reference's own mock data is never empty); follow the same omission-fix empty-state pattern used on every other list screen
 
 ### 1.5 Frontend State Wiring (still mock-backed)
 
