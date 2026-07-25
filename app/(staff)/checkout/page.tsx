@@ -37,6 +37,13 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 type Receipt = {
   ref: string;
@@ -76,6 +83,7 @@ export default function CheckoutPage() {
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [sort, setSort] = useState<string | null>("popular");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [received, setReceived] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
@@ -90,6 +98,13 @@ export default function CheckoutPage() {
       .toLowerCase()
       .includes(search.trim().toLowerCase());
     return matchesCategory && matchesSearch;
+  });
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sort === "name") return a.name.localeCompare(b.name);
+    if (sort === "price-asc") return a.price - b.price;
+    if (sort === "price-desc") return b.price - a.price;
+    return b.txnCount - a.txnCount;
   });
 
   const cartLines = order
@@ -153,14 +168,28 @@ export default function CheckoutPage() {
   return (
     <div className="-m-6 flex h-[calc(100%+3rem)]">
       <div className="flex min-w-0 flex-1 flex-col overflow-auto p-6">
-        <div className="relative mb-4">
-          <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products or scan barcode…"
-            className="h-12 w-full rounded-xl border border-border bg-card pr-3.5 pl-10 text-[15px] text-foreground outline-none"
-          />
+        <div className="mb-4 flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products or scan barcode…"
+              className="h-12 w-full rounded-xl border border-border bg-card pr-3.5 pl-10 text-[15px] text-foreground outline-none"
+            />
+          </div>
+
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger className="h-12 w-52">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="popular">Sort: Popular</SelectItem>
+              <SelectItem value="name">Name A–Z</SelectItem>
+              <SelectItem value="price-asc">Price: Low to high</SelectItem>
+              <SelectItem value="price-desc">Price: High to low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="mb-4 flex gap-2 overflow-x-auto pb-0.5">
@@ -222,7 +251,7 @@ export default function CheckoutPage() {
           </div>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(196px,1fr))] gap-4">
-            {filteredProducts.map((product) => {
+            {sortedProducts.map((product) => {
               const status = getStockStatus(product.stock);
               const [bg, fg] = getTileColor(product.name);
               const isOut = status === "out-of-stock";
