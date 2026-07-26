@@ -54,3 +54,12 @@ export type Transaction = {
   voidReason?: string;
   voidBy?: string;
 };
+
+export type Receipt = {
+  ref: string;
+  time: string;
+  lines: { name: string; qty: number; price: number }[];
+  subtotal: number;
+  paid: number;
+  change: number;
+};
