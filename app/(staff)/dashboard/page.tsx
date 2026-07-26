@@ -61,8 +61,8 @@ export default function DashboardPage() {
   const snapshot = MOCK_DASHBOARD[period];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-6">
+      <div className="-mx-6 -mt-6 flex h-16 items-center justify-between border-b border-border bg-card px-6">
         <div className="flex flex-col gap-0.5">
           <h1 className="font-display text-2xl font-semibold text-primary">
             Dashboard
