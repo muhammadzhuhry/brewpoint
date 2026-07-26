@@ -137,7 +137,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-[1fr_392px] items-stretch gap-4">
+      <div className="grid grid-cols-[1fr_550px] items-stretch gap-4">
         <div className="flex flex-col gap-[18px] rounded-xl border border-border bg-card p-5">
           <div className="flex items-baseline justify-between">
             <h3 className="font-display text-base font-semibold text-primary">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="w-[392px] rounded-xl border border-border bg-card p-5">
+        <div className="w-[550px] rounded-xl border border-border bg-card p-5">
           <div className="mb-1.5 flex items-baseline justify-between">
             <h3 className="font-display text-base font-semibold text-primary">
               Best sellers
@@ -212,6 +212,44 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 items-stretch gap-4">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="mb-2.5 flex items-baseline justify-between">
+            <h3 className="font-display text-base font-semibold text-primary">
+              Sales by category
+            </h3>
+            <span className="text-[12.5px] text-muted-foreground">
+              share of {snapshot.stats.sales}
+            </span>
+          </div>
+          <div className="flex flex-col gap-3.5">
+            {snapshot.categoryBreakdown.map((cat) => (
+              <div key={cat.name} className="flex items-center gap-3">
+                <span className="w-27.5 shrink-0 text-[13px] font-medium text-foreground">
+                  {cat.name}
+                </span>
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#F1EEE8]">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${cat.percent}%`,
+                      backgroundColor: cat.color,
+                    }}
+                  />
+                </div>
+                <span className="w-9.5 shrink-0 text-right text-[13px] font-semibold tabular-nums text-primary">
+                  {cat.percent}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          {/* low stock nanti di sini */}
         </div>
       </div>
     </div>
