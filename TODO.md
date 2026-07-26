@@ -152,9 +152,15 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 
 ### 1.5 Frontend State Wiring (still mock-backed)
 
-- [ ] Set up `stores/cart-store.ts` (Zustand) — this is real, cart logic doesn't need a backend
-- [ ] Set up TanStack Query provider (`lib/query-client.ts`), even though queries return mock data for now
-- [ ] Write `hooks/use-products.ts`, `use-transactions.ts` etc. returning mock arrays wrapped in a fake async delay (simulates loading state honestly)
+**Scope decision (2026-07):** the TanStack Query provider + hooks are set up now as a **pattern**, demonstrated on 2 modules only (Products, Transactions) — existing pages are **not** rewired to consume them yet; every page keeps its current `useState(MOCK_X)` for now. Rewiring each remaining screen (Categories, Users, Stock, Dashboard) to the hook layer is deferred to happen screen-by-screen alongside Part 3.3, where the mock hook body gets swapped for a real API call anyway — folding both changes into one pass avoids touching each page twice.
+
+- [x] Set up `stores/cart-store.ts` (Zustand) — this is real, cart logic doesn't need a backend — already built during POS/Checkout (`quantities`/`order` state + `addItem`/`increment`/`decrement`/`removeItem`/`clearCart` actions)
+- [x] Install `@tanstack/react-query`
+- [x] Set up `lib/query-client.ts` — a shared `QueryClient` instance (sane defaults: e.g. `staleTime` so mock data doesn't needlessly "refetch" on every focus)
+- [x] Wrap the app in a `QueryClientProvider` — needs its own small `"use client"` provider component (`components/providers/query-provider.tsx`), since `app/layout.tsx` is a Server Component and can't hold client-side context directly; `RootLayout` itself stays a Server Component, it just renders the client provider around `children`
+- [ ] Write `hooks/use-products.ts` as the reference pattern: `useQuery({ queryKey: ["products"], queryFn: ... })` wrapping `MOCK_PRODUCTS` in an artificial `setTimeout` delay, so the loading state is genuine rather than instant — **not yet wired into `app/(staff)/products/page.tsx`**, just the hook itself
+- [ ] Write `hooks/use-transactions.ts` following the same pattern, as the second example — also not wired into the page yet
+- [ ] Leave `use-categories.ts`, `use-users.ts`, `use-stock-adjustments.ts`, `use-dashboard.ts` for later — build each one only when its page actually gets rewired during Part 3.3, not now
 
 **Checkpoint:** at the end of Part 1, you should be able to click through the entire app — login (fake), build a cart, "checkout" (fake), browse products, manage categories/users, view fake transaction history and dashboard — with zero database or API routes existing yet. This is your clickable template.
 
