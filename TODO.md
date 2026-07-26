@@ -158,8 +158,8 @@ Install shadcn primitives first, then build BrewPoint-specific compositions on t
 - [x] Install `@tanstack/react-query`
 - [x] Set up `lib/query-client.ts` — a shared `QueryClient` instance (sane defaults: e.g. `staleTime` so mock data doesn't needlessly "refetch" on every focus)
 - [x] Wrap the app in a `QueryClientProvider` — needs its own small `"use client"` provider component (`components/providers/query-provider.tsx`), since `app/layout.tsx` is a Server Component and can't hold client-side context directly; `RootLayout` itself stays a Server Component, it just renders the client provider around `children`
-- [ ] Write `hooks/use-products.ts` as the reference pattern: `useQuery({ queryKey: ["products"], queryFn: ... })` wrapping `MOCK_PRODUCTS` in an artificial `setTimeout` delay, so the loading state is genuine rather than instant — **not yet wired into `app/(staff)/products/page.tsx`**, just the hook itself
-- [ ] Write `hooks/use-transactions.ts` following the same pattern, as the second example — also not wired into the page yet
+- [x] Write `hooks/use-products.ts` as the reference pattern: `useQuery({ queryKey: ["products"], queryFn: ... })` wrapping `MOCK_PRODUCTS` in an artificial `setTimeout` delay, so the loading state is genuine rather than instant — **not yet wired into `app/(staff)/products/page.tsx`**, just the hook itself
+- [x] Write `hooks/use-transactions.ts` following the same pattern, as the second example — also not wired into the page yet
 - [ ] Leave `use-categories.ts`, `use-users.ts`, `use-stock-adjustments.ts`, `use-dashboard.ts` for later — build each one only when its page actually gets rewired during Part 3.3, not now
 
 **Checkpoint:** at the end of Part 1, you should be able to click through the entire app — login (fake), build a cart, "checkout" (fake), browse products, manage categories/users, view fake transaction history and dashboard — with zero database or API routes existing yet. This is your clickable template.
@@ -267,15 +267,17 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 
 ### 3.3 Wire Each Module (real TanStack Query hooks replacing mock ones)
 
-For each module below: replace the mock hook body with a real `useQuery`/`useMutation` call against `lib/api-client.ts`, remove the fake delay, and confirm the UI states (loading/error/empty) still behave correctly with real network conditions.
+**Note (2026-07):** only Products and Transactions have a mock hook already (`hooks/use-products.ts`, `hooks/use-transactions.ts`, built in Part 1.5 as the pattern) — and neither is wired into its page yet, they still read `MOCK_X` via `useState` directly. Categories/Users/Stock Adjustments/Dashboard have **no hook file at all** yet (deferred on purpose, see the 1.5 scope note). So "replace the mock hook body" below means two different amounts of work: for Products/Transactions, swap the `queryFn` to a real `lib/api-client.ts` call *and* rewire the page off `useState(MOCK_X)` onto the hook; for the other four, write the hook from scratch (real API call from day one) *and* wire the page — there's no mock version to delete first.
+
+For each module below: end up with a real `useQuery`/`useMutation` call against `lib/api-client.ts` (no fake delay), the page actually consuming the hook (not `useState(MOCK_X)`), and confirm the UI states (loading/error/empty) still behave correctly with real network conditions.
 
 - [ ] **Products** — list, search, detail, create, update, delete (`use-products.ts`); wire the "Reload" button (built in Part 1.4) to a real TanStack Query `refetch()` instead of the fake loading-skeleton timer
-- [ ] **Categories** — list, create, update, delete
-- [ ] **Users** — list, create, update, reset password, deactivate
+- [ ] **Categories** — list, create, update, delete (`use-categories.ts` doesn't exist yet — create it here)
+- [ ] **Users** — list, create, update, reset password, deactivate (`use-users.ts` doesn't exist yet — create it here)
 - [ ] **POS/Checkout** — cart stays Zustand (unchanged), but checkout submit now calls `POST /api/v1/transactions` for real; wire the real `INSUFFICIENT_STOCK` error response into the existing error state UI
-- [ ] **Transaction History** — list with real filters, detail, void action
-- [ ] **Stock Adjustments** — submit + history, scoped to a real product ID
-- [ ] **Dashboard** — real summary + best-sellers, date range triggers real refetch
+- [ ] **Transaction History** — list with real filters, detail, void action (`use-transactions.ts`)
+- [ ] **Stock Adjustments** — submit + history, scoped to a real product ID (`use-stock-adjustments.ts` doesn't exist yet — create it here)
+- [ ] **Dashboard** — real summary + best-sellers, date range triggers real refetch (`use-dashboard.ts` doesn't exist yet — create it here)
 
 ### 3.4 Cache Invalidation (this is where TanStack Query earns its place)
 
