@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { Calendar, Coffee, DollarSign, Receipt, Tag } from "lucide-react";
+import {
+  Calendar,
+  Coffee,
+  DollarSign,
+  Receipt,
+  Tag,
+  AlertTriangle,
+} from "lucide-react";
 
 import {
   MOCK_DASHBOARD,
@@ -9,6 +16,8 @@ import {
   type StatDelta,
 } from "@/lib/mock-dashboard";
 import { mockCurrentUser } from "@/lib/mock-current-user";
+import { MOCK_PRODUCTS } from "@/lib/mock-products";
+import { getStockStatus } from "@/lib/product-status";
 import { cn } from "@/lib/utils";
 
 import { Bar, BarChart, Cell, ResponsiveContainer, XAxis } from "recharts";
@@ -64,6 +73,10 @@ export default function DashboardPage() {
 
   const maxBarValue = Math.max(...snapshot.bars.map((b) => b.value));
   const maxBestSellerQty = snapshot.bestSellers[0]?.qty ?? 1;
+
+  const lowStockProducts = [...MOCK_PRODUCTS]
+    .filter((p) => getStockStatus(p.stock) !== "in-stock")
+    .sort((a, b) => a.stock - b.stock);
 
   return (
     <div className="flex flex-col gap-6">
@@ -215,7 +228,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 items-stretch gap-4">
+      <div className="grid grid-cols-[1fr_600px] items-stretch gap-4">
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="mb-2.5 flex items-baseline justify-between">
             <h3 className="font-display text-base font-semibold text-primary">
@@ -248,8 +261,48 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
-          {/* low stock nanti di sini */}
+        <div className="w-[600px] rounded-xl border border-border bg-card p-5">
+          <div className="mb-2.5 flex items-center gap-2">
+            <AlertTriangle className="size-4 text-warning" />
+            <h3 className="font-display text-base font-semibold text-primary">
+              Low stock
+            </h3>
+          </div>
+          <div className="flex flex-col">
+            {lowStockProducts.map((product, i) => {
+              const isOut = getStockStatus(product.stock) === "out-of-stock";
+              return (
+                <div
+                  key={product.id}
+                  className={cn(
+                    "flex items-center justify-between py-2.5",
+                    i < lowStockProducts.length - 1 &&
+                      "border-b border-[#F1F0EC]",
+                  )}
+                >
+                  <span className="text-[13.5px] font-medium text-foreground">
+                    {product.name}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                      isOut
+                        ? "bg-destructive-subtle text-destructive-subtle-foreground"
+                        : "bg-warning-subtle text-warning-subtle-foreground",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        isOut ? "bg-destructive" : "bg-warning",
+                      )}
+                    />
+                    {isOut ? "Out of stock" : `${product.stock} left`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
