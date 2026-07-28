@@ -172,7 +172,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.1 Database Setup
 
-- [ ] Set up PostgreSQL locally via Docker Compose
+- [x] Set up PostgreSQL locally via Docker Compose — `docker-compose.yml` (service `db`, Postgres 16, named volume for persistence) + `.env` with `DATABASE_URL`; container running as `brewpoint-db-1`
 - [ ] Install `drizzle-orm`, `drizzle-kit`, `postgres` (postgres.js driver)
 - [ ] Write `lib/db/schema.ts` with all 6 tables from `TECH_SPEC.md` Section 3.3
 - [ ] Write `lib/db/index.ts` — Drizzle client instance
