@@ -174,10 +174,10 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 - [x] Set up PostgreSQL locally via Docker Compose — `docker-compose.yml` (service `db`, Postgres 16, named volume for persistence) + `.env` with `DATABASE_URL`; container running as `brewpoint-db-1`
 - [x] Install `drizzle-orm`, `drizzle-kit`, `postgres` (postgres.js driver)
-- [ ] Write `lib/db/schema.ts` with all 6 tables from `TECH_SPEC.md` Section 3.3
-- [ ] Write `lib/db/index.ts` — Drizzle client instance
-- [ ] Configure `drizzle.config.ts`
-- [ ] Run `CREATE EXTENSION pgcrypto` (or use `defaultRandom()`, which Drizzle handles without the extension via `gen_random_uuid()` — confirm which your Postgres version needs)
+- [x] Write `lib/db/schema.ts` with all 6 tables from `TECH_SPEC.md` Section 3.3
+- [x] Write `lib/db/index.ts` — Drizzle client instance
+- [x] Configure `drizzle.config.ts`
+- [x] Run `CREATE EXTENSION pgcrypto` (or use `defaultRandom()`, which Drizzle handles without the extension via `gen_random_uuid()` — confirm which your Postgres version needs) — confirmed 2026-07: not needed, `gen_random_uuid()` has been built into Postgres core since v13, and `docker-compose.yml` runs `postgres:16`
 - [ ] Run `npx drizzle-kit generate` → review the generated SQL → `npx drizzle-kit migrate`
 - [ ] Add the manual index migration from `TECH_SPEC.md` Section 3.4 (GIN/full-text index isn't native to Drizzle's schema syntax yet)
 - [ ] Write `lib/db/seed.ts` — one admin user, a couple of categories, a handful of products. Run it.
