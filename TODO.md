@@ -180,7 +180,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 - [x] Run `CREATE EXTENSION pgcrypto` (or use `defaultRandom()`, which Drizzle handles without the extension via `gen_random_uuid()` — confirm which your Postgres version needs) — confirmed 2026-07: not needed, `gen_random_uuid()` has been built into Postgres core since v13, and `docker-compose.yml` runs `postgres:16`
 - [x] Run `npx drizzle-kit generate` → review the generated SQL → `npx drizzle-kit migrate` — verified directly against the container (`docker exec brewpoint-db-1 psql ...`): all 6 tables exist in `brewpoint_db`
 - [x] Add the manual index migration from `TECH_SPEC.md` Section 3.4 (GIN/full-text index isn't native to Drizzle's schema syntax yet) — `drizzle/0001_add-indexes.sql` via `drizzle-kit generate --custom`; verified all 9 indexes exist (`docker exec brewpoint-db-1 psql ... -c "\di"`)
-- [ ] Write `lib/db/seed.ts` — one admin user, a couple of categories, a handful of products. Run it.
+- [x] Write `lib/db/seed.ts` — one admin user, a couple of categories, a handful of products. Run it. — `npm run db:seed` (`tsx --env-file=.env lib/db/seed.ts`); the `--env-file` flag was needed since, unlike Next.js, `tsx` doesn't auto-load `.env` — without it, `postgres.js` silently fell back to a default connection using the OS username instead of erroring loudly. Verified via `docker exec brewpoint-db-1 psql ...`: 1 admin (`Marcus Bell`), 2 categories, 3 products
 
 ### 2.2 Helpers / Shared Packages (build these before the feature modules — everything depends on them)
 
