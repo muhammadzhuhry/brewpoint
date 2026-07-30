@@ -191,7 +191,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 - [x] Password hashing helper using `bcryptjs` — built early, ahead of this checklist's order, as `lib/auth/password.ts` (`hashPassword`/`verifyPassword`) — `lib/db/seed.ts` in 2.1 needed it immediately (`password_hash` is `NOT NULL`), so it couldn't wait until this section
 - [x] `lib/auth/session.ts` — `requireAuth(role?)` helper (per `TECH_SPEC.md` Section 7) — dropped the unused `req` param from the spec's example signature, and corrected `cookies()`/`verifyJwt()` to be properly `await`-ed (both are async in our Next.js/jose versions, unlike the spec's illustrative snippet)
 - [x] `middleware.ts` — redirect-level protection for unauthenticated requests — must live at the project root (sibling to `package.json`), not under `lib/`; caught and moved from `lib/auth/middleware.ts` after it was first created in the wrong place
-- [ ] `lib/validators/` — start the shared `zod` schema files (one per module), reused later by both Route Handlers and frontend forms
+- [x] `lib/validators/` — start the shared `zod` schema files (one per module), reused later by both Route Handlers and frontend forms — `product.ts`/`user.ts` already exist from Part 1's frontend forms; decided 2026-07 to defer creating the rest (categories, stock-adjustments, etc.) until each module's Route Handler section (2.4–2.8) actually needs them, same pattern as the 1.5 TanStack Query hooks decision. **Known gap to fix in 2.6:** `productSchema.category` currently stores the category **name** (fine for Part 1's mock data), but `lib/db/schema.ts` needs `categoryId` (a UUID) — this schema must be adjusted when the real Products Route Handler is built, not before
 
 ### 2.3 Auth Routes
 
