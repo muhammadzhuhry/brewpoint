@@ -185,7 +185,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 ### 2.2 Helpers / Shared Packages (build these before the feature modules — everything depends on them)
 
 - [x] `lib/api-response.ts` — standard success/error envelope helpers (`ok()`, `fail()`)
-- [ ] `lib/app-error.ts` — `AppError` class + error code → HTTP status mapping (per `TECH_SPEC.md` Section 8)
+- [x] `lib/app-error.ts` — `AppError` class + error code → HTTP status mapping (per `TECH_SPEC.md` Section 8)
 - [x] A shared wrapper/handler utility that catches `AppError` thrown inside a Route Handler and formats the envelope + status automatically — `lib/api-handler.ts`, `withErrorHandling()`
 - [x] `lib/auth/jwt.ts` — sign/verify JWT using `jose`
 - [x] Password hashing helper using `bcryptjs` — built early, ahead of this checklist's order, as `lib/auth/password.ts` (`hashPassword`/`verifyPassword`) — `lib/db/seed.ts` in 2.1 needed it immediately (`password_hash` is `NOT NULL`), so it couldn't wait until this section
