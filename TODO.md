@@ -195,7 +195,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.3 Auth Routes
 
-- [ ] `app/api/v1/auth/login/route.ts` — verify credentials, issue JWT in httpOnly cookie
+- [x] `app/api/v1/auth/login/route.ts` — verify credentials, issue JWT in httpOnly cookie — same error message ("Invalid username or password") for both "user not found" and "wrong password", so a caller can't enumerate valid usernames; not yet tested with `curl` (see last item below, waiting on logout/me too)
 - [ ] `app/api/v1/auth/logout/route.ts` — clear cookie
 - [ ] `app/api/v1/auth/me/route.ts` — return current user from JWT claims
 - [ ] Test all three with `curl`/Postman before moving on
