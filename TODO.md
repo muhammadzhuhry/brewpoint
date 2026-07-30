@@ -184,7 +184,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.2 Helpers / Shared Packages (build these before the feature modules — everything depends on them)
 
-- [ ] `lib/api-response.ts` — standard success/error envelope helpers (`ok()`, `fail()`)
+- [x] `lib/api-response.ts` — standard success/error envelope helpers (`ok()`, `fail()`)
 - [ ] `lib/app-error.ts` — `AppError` class + error code → HTTP status mapping (per `TECH_SPEC.md` Section 8)
 - [ ] A shared wrapper/handler utility that catches `AppError` thrown inside a Route Handler and formats the envelope + status automatically
 - [ ] `lib/auth/jwt.ts` — sign/verify JWT using `jose`
