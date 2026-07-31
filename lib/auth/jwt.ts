@@ -8,6 +8,7 @@ const expiryHours = Number(process.env.JWT_EXPIRY_HOURS ?? 8);
 export type SessionClaims = {
   userId: string;
   username: string;
+  name: string;
   role: "admin" | "cashier";
 };
 
