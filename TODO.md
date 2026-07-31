@@ -198,7 +198,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 - [x] `app/api/v1/auth/login/route.ts` — verify credentials, issue JWT in httpOnly cookie — same error message ("Invalid username or password") for both "user not found" and "wrong password", so a caller can't enumerate valid usernames; not yet tested with `curl` (see last item below, waiting on logout/me too)
 - [x] `app/api/v1/auth/logout/route.ts` — clear cookie
 - [x] `app/api/v1/auth/me/route.ts` — return current user from JWT claims — added `name` to `SessionClaims`/`signJwt` payload (in `login/route.ts`) so `/me` can answer straight from the decoded token, no extra DB lookup, matching this item's own wording ("from JWT claims")
-- [ ] Test all three with `curl`/Postman before moving on
+- [x] Test all three with `curl`/Postman before moving on — login (correct + wrong password), `/me` with and without cookie (blocked by `middleware.ts` when missing), logout then `/me` again (correctly 401 after cookie cleared)
 
 ### 2.4 User Module (Admin only)
 
