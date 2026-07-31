@@ -33,6 +33,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
   const token = await signJwt({
     userId: user.id,
     username: user.username,
+    name: user.name,
     role: user.role,
   });
 
