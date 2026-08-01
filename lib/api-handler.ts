@@ -1,3 +1,5 @@
+import { ZodError } from "zod";
+
 import { AppError } from "@/lib/app-error";
 import { fail } from "@/lib/api-response";
 
@@ -10,6 +12,9 @@ export function withErrorHandling<Args extends unknown[]>(
     } catch (error) {
       if (error instanceof AppError) {
         return fail(error.code, error.message, error.status);
+      }
+      if (error instanceof ZodError) {
+        return fail("BAD_REQUEST", error.issues[0].message, 400);
       }
       console.error(error);
       return fail("INTERNAL", "Something went wrong.", 500);
