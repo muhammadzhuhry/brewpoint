@@ -202,9 +202,9 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.4 User Module (Admin only)
 
-- [ ] `lib/services/user-service.ts` — create, list, get by ID, update, reset password, deactivate; unique username check, "can't deactivate last active admin" rule
-- [ ] `app/api/v1/users/route.ts`, `app/api/v1/users/[id]/route.ts`, `.../reset-password/route.ts` — wire with `requireAuth(req, "admin")`
-- [ ] Test every endpoint independently
+- [x] `lib/services/user-service.ts` — create, list, get by ID, update, reset password, deactivate; unique username check, "can't deactivate last active admin" rule
+- [x] `app/api/v1/users/route.ts` (GET list / POST create), `app/api/v1/users/[id]/route.ts` (PUT update / PATCH `isActive` toggle), `.../reset-password/route.ts` (POST) — wired with `requireAuth("admin")` in every handler. Added backend-specific `createUserBodySchema`/`updateUserBodySchema`/`resetPasswordBodySchema`/`setActiveBodySchema` to `lib/validators/user.ts` (lowercase `role` to match `roleEnum`, no `existingUsernames` param — the frontend-only `getUserFormSchema` wasn't reusable as-is). Also fixed `lib/api-handler.ts` to catch `ZodError` → `400 BAD_REQUEST` (it was only catching `AppError` before, so a failed `.parse()` would've fallen through to a generic 500) — this fix benefits every future route handler, not just this module
+- [x] Test every endpoint independently
 
 ### 2.5 Category Module
 
@@ -267,7 +267,7 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 
 ### 3.3 Wire Each Module (real TanStack Query hooks replacing mock ones)
 
-**Note (2026-07):** only Products and Transactions have a mock hook already (`hooks/use-products.ts`, `hooks/use-transactions.ts`, built in Part 1.5 as the pattern) — and neither is wired into its page yet, they still read `MOCK_X` via `useState` directly. Categories/Users/Stock Adjustments/Dashboard have **no hook file at all** yet (deferred on purpose, see the 1.5 scope note). So "replace the mock hook body" below means two different amounts of work: for Products/Transactions, swap the `queryFn` to a real `lib/api-client.ts` call *and* rewire the page off `useState(MOCK_X)` onto the hook; for the other four, write the hook from scratch (real API call from day one) *and* wire the page — there's no mock version to delete first.
+**Note (2026-07):** only Products and Transactions have a mock hook already (`hooks/use-products.ts`, `hooks/use-transactions.ts`, built in Part 1.5 as the pattern) — and neither is wired into its page yet, they still read `MOCK_X` via `useState` directly. Categories/Users/Stock Adjustments/Dashboard have **no hook file at all** yet (deferred on purpose, see the 1.5 scope note). So "replace the mock hook body" below means two different amounts of work: for Products/Transactions, swap the `queryFn` to a real `lib/api-client.ts` call _and_ rewire the page off `useState(MOCK_X)` onto the hook; for the other four, write the hook from scratch (real API call from day one) _and_ wire the page — there's no mock version to delete first.
 
 For each module below: end up with a real `useQuery`/`useMutation` call against `lib/api-client.ts` (no fake delay), the page actually consuming the hook (not `useState(MOCK_X)`), and confirm the UI states (loading/error/empty) still behave correctly with real network conditions.
 
