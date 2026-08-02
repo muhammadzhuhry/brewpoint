@@ -204,7 +204,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 - [x] `lib/services/user-service.ts` — create, list, get by ID, update, reset password, deactivate; unique username check, "can't deactivate last active admin" rule
 - [x] `app/api/v1/users/route.ts` (GET list / POST create), `app/api/v1/users/[id]/route.ts` (PUT update / PATCH `isActive` toggle), `.../reset-password/route.ts` (POST) — wired with `requireAuth("admin")` in every handler. Added backend-specific `createUserBodySchema`/`updateUserBodySchema`/`resetPasswordBodySchema`/`setActiveBodySchema` to `lib/validators/user.ts` (lowercase `role` to match `roleEnum`, no `existingUsernames` param — the frontend-only `getUserFormSchema` wasn't reusable as-is). Also fixed `lib/api-handler.ts` to catch `ZodError` → `400 BAD_REQUEST` (it was only catching `AppError` before, so a failed `.parse()` would've fallen through to a generic 500) — this fix benefits every future route handler, not just this module
-- [x] Test every endpoint independently
+- [x] Test every endpoint independently — list, create, duplicate-username (409), update, reset-password, deactivate, deactivate-last-admin (409), and no-session access (401), all via `curl`
 
 ### 2.5 Category Module
 
