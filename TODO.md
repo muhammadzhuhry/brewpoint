@@ -210,9 +210,9 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 - [x] `lib/services/category-service.ts` — `listCategories`, `getCategoryById`, `createCategory` (unique name check, same proactive-`SELECT`-before-write pattern as `user-service.ts`), `updateCategory` (unique name check excluding self), `deleteCategory` (block with `AppError("CONFLICT", ..., 409)` if any product still references this category — the FK has no `ON DELETE CASCADE`, so an unchecked delete would otherwise surface as a raw Postgres constraint error instead of a clean envelope)
 - [x] `lib/validators/category.ts` (new file — Category Management's frontend form used manual `useState` validation, not `zod`, so there's nothing to reuse here) — `createCategoryBodySchema`/`updateCategoryBodySchema`, just a required `name` string
-- [ ] `app/api/v1/categories/route.ts` — GET (list, any authenticated user, no role restriction — `requireAuth()` with no role arg) / POST (create, `requireAuth("admin")`)
-- [ ] `app/api/v1/categories/[id]/route.ts` — PUT (update, admin only) / DELETE (delete, admin only)
-- [ ] Test every endpoint via `curl`: list, create, duplicate-name (409), update, delete blocked by existing products (409), delete succeeds once unblocked, cashier attempting a write (403)
+- [x] `app/api/v1/categories/route.ts` — GET (list, any authenticated user, no role restriction — `requireAuth()` with no role arg) / POST (create, `requireAuth("admin")`)
+- [x] `app/api/v1/categories/[id]/route.ts` — PUT (update, admin only) / DELETE (delete, admin only)
+- [x] Test every endpoint via `curl`: list, create, duplicate-name (409), update, delete blocked by existing products (409), delete succeeds once unblocked, cashier attempting a write (403)
 
 ### 2.6 Product Module
 
