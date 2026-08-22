@@ -224,11 +224,18 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.7 Transaction Module (the critical one)
 
-- [ ] `lib/services/transaction-service.ts` — implement `checkout()` exactly as in `TECH_SPEC.md` Section 5 (`db.transaction()` + `.for("update")`)
-- [ ] Same service — implement `voidTransaction()`: mark voided, restore stock for each line item
-- [ ] `app/api/v1/transactions/route.ts`, `[id]/route.ts`, `[id]/void/route.ts`
-- [ ] **Manual concurrency test:** fire two simultaneous checkout requests for the same low-stock product (two parallel `curl` calls) and confirm only one succeeds — this validates the locking actually works, don't skip this
-- [ ] Test void restores stock correctly
+**New pattern here, different from 2.4–2.6:** every service so far (`user`/`category`/`product`) avoided race conditions with a proactive `SELECT`-before-write check. That doesn't work for stock — two cashiers can pass the "is there enough stock" check at the exact same instant, on the same product, before either one writes. `checkout()` instead uses **row locking** (`SELECT ... FOR UPDATE`, via Drizzle's `.for("update")`) inside `db.transaction()`: the first checkout to reach a given product row locks it, the second one *waits* until the first commits or rolls back, then re-reads the now-updated stock. This is the one place in the whole backend where "check first, then write" isn't safe enough on its own.
+
+- [ ] `lib/validators/transaction.ts` (new file) — `checkoutBodySchema` (`items: { productId: uuid, quantity: positive int }[]`, non-empty array; `amountReceived` as a decimal string, same as `price` elsewhere), `voidBodySchema` (`reason`, required non-empty string — matches the frontend's `VoidTransactionDialog`, which already treats a reason as mandatory)
+- [ ] `lib/services/transaction-service.ts` — `checkout(cashierId, items, amountReceived)` exactly as in `TECH_SPEC.md` Section 5: wrapped in `db.transaction()`, locks each product row with `.for("update")` before checking stock, throws `INSUFFICIENT_STOCK` (409) or `NOT_FOUND` mid-transaction to trigger an automatic rollback (Drizzle rolls back on any thrown error, `AppError` included), snapshots `productNameSnapshot`/`unitPriceSnapshot` onto each `transaction_items` row per the snapshotting rule in `CLAUDE.md`. `cashierId` comes from `requireAuth()`'s decoded session, **never** from the request body — the client must not be able to claim a transaction happened under a different cashier's name
+- [ ] Same service — `listTransactions({ cashierId?, status?, page })`: if the caller is a cashier, force `cashierId` to their own id server-side (ignore any `cashierId` they try to pass) so they can only ever see their own sales; only an admin caller may filter by an arbitrary `cashierId` or see everyone's — matches the frontend's "cashier filter (admin-only visibility)" from Part 1.4
+- [ ] Same service — `getTransactionById(id)`
+- [ ] Same service — `voidTransaction(id, voidedBy, reason)`: reject if already `voided` (can't void twice — `AppError("CONFLICT", ..., 409)`), wrapped in its own `db.transaction()` since it's a multi-step write (mark the transaction voided + restore stock for every line item) that must all succeed or all roll back together; sets `status: "voided"`, `voidedBy`, `voidedReason`, `voidedAt`, and increments `stockQuantity` back up on each referenced product
+- [ ] `app/api/v1/transactions/route.ts` — GET (list, any authenticated user, scoped per the rule above) / POST (checkout, any authenticated user — cashiers check out sales same as admins)
+- [ ] `app/api/v1/transactions/[id]/route.ts` — GET (detail; a cashier should only be able to fetch their own — same scoping as the list)
+- [ ] `app/api/v1/transactions/[id]/void/route.ts` — POST (void, admin only — matches the frontend, which only ever shows the void action to admins)
+- [ ] **Manual concurrency test:** fire two simultaneous checkout `curl` requests for the same low-stock product (e.g. stock = 1, both requests buy 1) and confirm exactly one succeeds with `200` and the other gets `INSUFFICIENT_STOCK` (409) — this is what actually proves the row lock works, reading the code isn't enough, don't skip this
+- [ ] Test the rest via `curl`: successful checkout (confirm stock decremented and change calculated correctly), insufficient stock (409) on a normal single request, checkout with `amountReceived` less than total (400), void a transaction + confirm stock restored on every line item, void without a `reason` (400), void an already-voided transaction (409), void as a cashier (403), a cashier's `GET /transactions` only ever showing their own rows even if they pass someone else's `cashierId`
 
 ### 2.8 Stock Adjustment Module
 
