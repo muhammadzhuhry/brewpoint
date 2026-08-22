@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { products, transactions, transactionItems } from "@/lib/db/schema";
@@ -86,5 +86,101 @@ export async function checkout(
       );
 
     return transaction;
+  });
+}
+
+export async function listTransactions(params: {
+  cashierId?: string;
+  status?: "completed" | "voided";
+  page?: number;
+  pageSize?: number;
+}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 20;
+
+  const conditions = [];
+  if (params.cashierId) {
+    conditions.push(eq(transactions.cashierId, params.cashierId));
+  }
+  if (params.status) {
+    conditions.push(eq(transactions.status, params.status));
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
+
+  const [items, [{ total }]] = await Promise.all([
+    db
+      .select()
+      .from(transactions)
+      .where(where)
+      .orderBy(desc(transactions.createdAt))
+      .limit(pageSize)
+      .offset((page - 1) * pageSize),
+    db.select({ total: count() }).from(transactions).where(where),
+  ]);
+
+  return { items, total: Number(total), page, pageSize };
+}
+
+export async function getTransactionById(id: string) {
+  const [transaction] = await db
+    .select()
+    .from(transactions)
+    .where(eq(transactions.id, id));
+  if (!transaction) {
+    throw new AppError("NOT_FOUND", "Transaction not found.", 404);
+  }
+
+  const items = await db
+    .select()
+    .from(transactionItems)
+    .where(eq(transactionItems.transactionId, id));
+
+  return { ...transaction, items };
+}
+
+export async function voidTransaction(
+  id: string,
+  voidedBy: string,
+  reason: string,
+) {
+  return db.transaction(async (tx) => {
+    const [transaction] = await tx
+      .select()
+      .from(transactions)
+      .where(eq(transactions.id, id));
+
+    if (!transaction) {
+      throw new AppError("NOT_FOUND", "Transaction not found.", 404);
+    }
+    if (transaction.status === "voided") {
+      throw new AppError("CONFLICT", "Transaction is already voided.", 409);
+    }
+
+    const items = await tx
+      .select()
+      .from(transactionItems)
+      .where(eq(transactionItems.transactionId, id));
+
+    for (const item of items) {
+      await tx
+        .update(products)
+        .set({
+          stockQuantity: sql`${products.stockQuantity} + ${item.quantity}`,
+        })
+        .where(eq(products.id, item.productId));
+    }
+
+    const [voided] = await tx
+      .update(transactions)
+      .set({
+        status: "voided",
+        voidedBy,
+        voidedReason: reason,
+        voidedAt: new Date(),
+      })
+      .where(eq(transactions.id, id))
+      .returning();
+
+    return voided;
   });
 }
