@@ -239,9 +239,13 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.8 Stock Adjustment Module
 
-- [ ] `lib/services/stock-adjustment-service.ts` — create adjustment, apply to product stock, enforce stock never goes below 0
-- [ ] `app/api/v1/products/[id]/stock-adjustments/route.ts` — admin only
-- [ ] Test increase and decrease paths
+**Scope note (2026-08):** the whole feature is admin-only — not just the write side, like the pattern used for categories/products (read = anyone logged in, write = admin). The Stock nav item itself is `roles: ["admin"]` in `sidebar-nav.tsx`, so cashiers never see this screen at all; matching that, both `GET` and `POST` below require `requireAuth("admin")`.
+
+- [ ] `lib/validators/stock-adjustment.ts` (new file) — `createAdjustmentBodySchema`: `adjustmentType: z.enum(["increase", "decrease"])`, `quantity: z.number().int().positive()`, `reason` (required non-empty string — matches the frontend's preset-reason-chips + textarea, which already treats a reason as mandatory)
+- [ ] `lib/services/stock-adjustment-service.ts` — `createStockAdjustment(productId, adminId, input)`: wrapped in `db.transaction()`, locks the product row with `.for("update")` (same reasoning as `checkout()` — two admins adjusting the same product's stock at once is the same class of race condition), computes the new stock level, **rejects** (doesn't silently clamp) a `decrease` that would take stock below 0 — matches the frontend's own validation (`"Can't remove more than current stock"`), not the reference mockup's `Math.max(0, ...)` clamp which just hides the mismatch. Inserts one row into `stock_adjustments` (append-only per `CLAUDE.md` — insert + read only, this service never updates or deletes an adjustment row) and updates `products.stockQuantity` in the same transaction
+- [ ] Same service — `listStockAdjustments(productId)`: full history for one product, ordered newest-first, no pagination (per-product history is naturally small — unlike `searchProducts`/`listTransactions`, which are unbounded across the whole catalog/all sales)
+- [ ] `app/api/v1/products/[id]/stock-adjustments/route.ts` — GET (history for this product) / POST (create adjustment) — both admin only, see scope note above
+- [ ] Test via `curl`: increase, decrease within available stock, decrease past available stock (rejected, not clamped — confirm stock is unchanged after the rejection), view history for a product, cashier attempting either verb (403), adjusting a nonexistent product (404)
 
 ### 2.9 Dashboard Module
 
