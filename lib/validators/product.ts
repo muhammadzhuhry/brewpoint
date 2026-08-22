@@ -21,3 +21,20 @@ export const productSchema = z.object({
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
+
+// Backend request-body schemas — `categoryId` (a UUID) is what the database
+// actually needs, not the category `name` the frontend form above uses.
+// `price` stays a decimal string (matches the `numeric` column / CLAUDE.md's
+// money rule); `stockQuantity` is a real integer, not a string.
+export const createProductBodySchema = z.object({
+  name: z.string().trim().min(1, "Product name is required."),
+  categoryId: z.string().uuid("Invalid category id."),
+  price: z
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g. 4.25)."),
+  stockQuantity: z.number().int().min(0, "Stock cannot be negative."),
+  barcode: z.string().trim().min(1).optional(),
+  imageUrl: z.string().url().optional(),
+});
+
+export const updateProductBodySchema = createProductBodySchema;
