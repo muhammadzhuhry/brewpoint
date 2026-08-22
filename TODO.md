@@ -216,9 +216,11 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 
 ### 2.6 Product Module
 
-- [ ] `lib/services/product-service.ts` — CRUD + `searchProducts()` (name/barcode search, category filter, pagination)
-- [ ] `app/api/v1/products/route.ts`, `[id]/route.ts` — validation (non-negative price/stock), soft delete logic
-- [ ] Test every endpoint, including search and out-of-stock filtering
+- [ ] `lib/services/product-service.ts` — `searchProducts({ search?, categoryId?, page, pageSize })` returning `{ items, total }` (name/barcode match — reuse the `idx_products_name` GIN index from 2.1 §3.4 via `to_tsvector`/`plainto_tsquery`, not a plain `ILIKE` scan — plus category filter and pagination), `getProductById`, `createProduct` (barcode uniqueness check only when a barcode is provided — it's optional/nullable in the schema; validates `categoryId` actually exists by calling `getCategoryById` from `category-service.ts`, turning a bad id into a clean `NOT_FOUND` instead of a raw FK-violation error), `updateProduct` (same 2 checks, barcode check excludes self), `deleteProduct` (**soft vs. hard delete** — check `transaction_items` for any row referencing this product first: if none exist, hard-delete the row for real; if it's been sold at least once, soft-delete via `is_active = false` instead, to keep historical `transaction_items` pointing at a valid row. This matches what the frontend's `delete-product-dialog.tsx` already promised — soft-delete isn't the *only* path like the original wording of this item implied)
+- [ ] `lib/validators/product.ts` — add backend-specific `createProductBodySchema`/`updateProductBodySchema` alongside the existing frontend-only `productSchema` (same reasoning as 2.4/2.5: the frontend schema's `category` field stores the category **name**, not `categoryId`, so it isn't directly reusable as the API body shape). `price` stays a decimal **string** in the request body — Postgres `numeric` columns are strings on the Drizzle/JS side too, per `CLAUDE.md`'s money rule, never a JS float — while `stockQuantity` is a real integer this time, not a string like the frontend form's HTML-input-driven `stock` field
+- [ ] `app/api/v1/products/route.ts` — GET (list/search, any authenticated user — `search`/`categoryId`/`page` as query params) / POST (create, admin only)
+- [ ] `app/api/v1/products/[id]/route.ts` — PUT (update, admin only) / DELETE (soft-or-hard per the rule above, admin only)
+- [ ] Test every endpoint via `curl`: list, search by name, search by barcode, filter by category, pagination, create, duplicate-barcode (409), nonexistent `categoryId` (404, not a raw FK error), update, hard-delete a never-sold product (confirm the row is actually gone), soft-delete a product with transaction history (confirm the row survives with `is_active: false`), cashier attempting a write (403)
 
 ### 2.7 Transaction Module (the critical one)
 
