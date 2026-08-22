@@ -28,7 +28,7 @@ export type ProductFormValues = z.infer<typeof productSchema>;
 // money rule); `stockQuantity` is a real integer, not a string.
 export const createProductBodySchema = z.object({
   name: z.string().trim().min(1, "Product name is required."),
-  categoryId: z.string().uuid("Invalid category id."),
+  categoryId: z.uuid("Invalid category id."),
   price: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid price (e.g. 4.25)."),
