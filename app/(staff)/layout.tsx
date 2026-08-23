@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
-import { LogOut, Coffee } from "lucide-react";
-import { SidebarNav } from "@/components/shared/sidebar-nav";
-import { getInitials } from "@/lib/avatar-color";
-
-import { mockCurrentUser } from "@/lib/mock-current-user";
+import { Coffee } from "lucide-react";
+import { StaffUserPanel } from "@/components/shared/staff-user-panel";
 
 export default function StaffLayout({ children }: { children: ReactNode }) {
   return (
@@ -23,27 +20,7 @@ export default function StaffLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <SidebarNav role={mockCurrentUser.role} />
-
-        <div className="flex items-center gap-2.5 border-t border-border p-3">
-          <div className="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-secondary font-display text-[13px] font-semibold text-secondary-foreground">
-            {getInitials(mockCurrentUser.name)}
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate text-[13px] font-semibold text-foreground">
-              {mockCurrentUser.name}
-            </span>
-            <span className="text-[11px] text-muted-foreground capitalize">
-              {mockCurrentUser.role}
-            </span>
-          </div>
-          <button
-            type="button"
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground"
-          >
-            <LogOut className="size-[17px]" />
-          </button>
-        </div>
+        <StaffUserPanel />
       </aside>
       <main className="flex-1 overflow-y-auto p-6">{children}</main>
     </div>
