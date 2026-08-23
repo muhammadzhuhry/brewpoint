@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
@@ -9,11 +9,13 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { apiPost } from "@/lib/api-client";
 import { getInitials } from "@/lib/avatar-color";
 import { SidebarNav } from "@/components/shared/sidebar-nav";
+import { LogoutConfirmDialog } from "@/components/shared/logout-confirm-dialog";
 
 export function StaffUserPanel() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: user, isLoading, isError } = useCurrentUser();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (isError) {
@@ -49,12 +51,21 @@ export function StaffUserPanel() {
         </div>
         <button
           type="button"
-          onClick={handleLogout}
+          onClick={() => setConfirmOpen(true)}
           className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground"
         >
           <LogOut className="size-[17px]" />
         </button>
       </div>
+
+      <LogoutConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          handleLogout();
+        }}
+      />
     </>
   );
 }
