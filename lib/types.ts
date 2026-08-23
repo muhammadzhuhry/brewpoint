@@ -7,7 +7,7 @@ import type {
   stockAdjustments,
 } from "@/lib/db/schema";
 
-export type User = typeof users.$inferSelect;
+export type User = Omit<typeof users.$inferSelect, "passwordHash">;
 export type Category = typeof categories.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;

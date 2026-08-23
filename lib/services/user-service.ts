@@ -5,12 +5,24 @@ import { users } from "@/lib/db/schema";
 import { AppError } from "@/lib/app-error";
 import { hashPassword } from "@/lib/auth/password";
 
+const safeUserColumns = {
+  id: users.id,
+  username: users.username,
+  name: users.name,
+  role: users.role,
+  isActive: users.isActive,
+  createdAt: users.createdAt,
+};
+
 export async function listUsers() {
-  return db.select().from(users).orderBy(users.createdAt);
+  return db.select(safeUserColumns).from(users).orderBy(users.createdAt);
 }
 
 export async function getUserById(id: string) {
-  const [user] = await db.select().from(users).where(eq(users.id, id));
+  const [user] = await db
+    .select(safeUserColumns)
+    .from(users)
+    .where(eq(users.id, id));
   if (!user) throw new AppError("NOT_FOUND", "User not found.", 404);
   return user;
 }
@@ -38,7 +50,7 @@ export async function createUser(input: {
       name: input.name,
       role: input.role,
     })
-    .returning();
+    .returning(safeUserColumns);
   return user;
 }
 
@@ -58,7 +70,7 @@ export async function updateUser(
     .update(users)
     .set({ username: input.username, name: input.name, role: input.role })
     .where(eq(users.id, id))
-    .returning();
+    .returning(safeUserColumns);
   if (!user) throw new AppError("NOT_FOUND", "User not found.", 404);
   return user;
 }
@@ -69,7 +81,7 @@ export async function resetPassword(id: string, newPassword: string) {
     .update(users)
     .set({ passwordHash })
     .where(eq(users.id, id))
-    .returning();
+    .returning(safeUserColumns);
   if (!user) throw new AppError("NOT_FOUND", "User not found.", 404);
   return user;
 }
@@ -95,6 +107,6 @@ export async function setUserActive(id: string, isActive: boolean) {
     .update(users)
     .set({ isActive })
     .where(eq(users.id, id))
-    .returning();
+    .returning(safeUserColumns);
   return user;
 }
