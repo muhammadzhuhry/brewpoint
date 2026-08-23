@@ -288,12 +288,15 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 
 ### 3.2 Real Authentication
 
-- [ ] Wire login form to `POST /api/v1/auth/login`
-- [ ] Add login success/failure transition states (deferred from Part 1.4 — see `docs/references/login.html`): on successful response, briefly show a "Welcome back {name}" confirmation (checkmark icon, "Signing you in…") before redirecting; on failed response, apply the reference's `shake` animation to the error banner. Only makes sense here, not in Part 1.4, since Part 1 has no real success/failure signal to react to — this is real API response handling, not mock UI
-- [ ] Wire `GET /api/v1/auth/me` on app load to populate `currentUser` (replaces the mock object from Part 1)
-- [ ] Wire logout button to `POST /api/v1/auth/logout`
+**Scope note (2026-08):** checked how Part 1 actually wired "current user" — turns out there's no `useAuth`/context at all yet. `app/(staff)/layout.tsx` (a Server Component, wraps every staff page) directly imports a static `lib/mock-current-user.ts` (`{ name: "Jon Doe", role: "admin" }`) and passes `mockCurrentUser.role` straight into `<SidebarNav role={...} />`, plus renders the name/role in the sidebar footer. The logout button there has no `onClick` at all yet either. So this section is a bigger structural change than "wire a couple of handlers" — it's introducing the app's first real client-side session state.
+
+- [ ] **Architecture decision:** current-user data is server-derived (comes from `GET /api/v1/auth/me`), and `CLAUDE.md`'s state-split rule says server-derived data goes through TanStack Query — not baked into a Server Component. `StaffLayout` itself can stay a Server Component (no reason to convert the whole shell to `"use client"`), but the parts that depend on the logged-in user (`SidebarNav` + the footer avatar/name/role/logout button) need to move into a new small Client Component, e.g. `components/shared/staff-user-panel.tsx`, that calls `useQuery` against `GET /api/v1/auth/me` and renders a loading state (skeleton or nothing) until it resolves. `StaffLayout` renders that new component instead of the raw `SidebarNav` + footer markup it has now
+- [ ] `hooks/use-current-user.ts` (new file) — the first hook actually wired to `lib/api-client.ts` (`apiGet<User>("/auth/me")`) instead of a mock `setTimeout`; this is the reference pattern the rest of 3.3's real hooks will follow
+- [ ] Wire the login form (`app/login/page.tsx`) to `POST /api/v1/auth/login` via `apiPost`: delete `MOCK_ACCOUNTS` and the local `handleLogin` username/password check entirely
+- [ ] Add login success/failure transition states, matching `docs/references/login.html` exactly (checked the reference — it toggles between two whole panel states, `showForm` vs `loggedIn`, not just an inline banner): on success, swap the form out for the reference's checkmark-circle + "Welcome back {name}" + "Signing you in…" panel, then redirect after a brief pause to the role's landing page per `PRD.md` Flow 1 (`admin` → `/dashboard`, `cashier` → `/checkout`); on failure, catch the thrown `ApiError` and re-apply the existing `error` state (the `animate-shake` class is already built in Part 1.4 — it just needs a real trigger instead of the mock username/password check)
+- [ ] Wire the logout button's `onClick` in the new `staff-user-panel.tsx` to `POST /api/v1/auth/logout` via `apiPost`, then invalidate/remove the `use-current-user` query and redirect to `/login`
 - [ ] Confirm `middleware.ts` correctly redirects unauthenticated requests to `/login`, and that admin-only pages reject cashier sessions (double-check the actual authorization still happens via `requireAuth` inside each Route Handler, not just the middleware)
-- [ ] Remove the hardcoded mock role from Part 1.3 nav — nav now reads the real session
+- [ ] Delete `lib/mock-current-user.ts` once `staff-user-panel.tsx` no longer references it — don't leave an unused mock file behind
 
 ### 3.3 Wire Each Module (real TanStack Query hooks replacing mock ones)
 
