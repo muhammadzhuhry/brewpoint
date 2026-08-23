@@ -10,47 +10,48 @@ import {
   Receipt,
   LayoutDashboard,
   Users,
-  Boxes,
   Coffee,
 } from "lucide-react";
+
+import { ROUTE_ROLES } from "@/lib/route-roles";
 
 const NAV_ITEMS = [
   {
     href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
-    roles: ["admin"],
+    roles: ROUTE_ROLES["/dashboard"],
   },
   {
     href: "/checkout",
     label: "Checkout",
     icon: ShoppingCart,
-    roles: ["admin", "cashier"],
+    roles: ROUTE_ROLES["/checkout"],
   },
   {
     href: "/products",
     label: "Products",
     icon: Coffee,
-    roles: ["admin", "cashier"],
+    roles: ROUTE_ROLES["/products"],
   },
   {
     href: "/categories",
     label: "Categories",
     icon: Tag,
-    roles: ["admin", "cashier"],
+    roles: ROUTE_ROLES["/categories"],
   },
-  { href: "/users", label: "Users", icon: Users, roles: ["admin"] },
+  { href: "/users", label: "Users", icon: Users, roles: ROUTE_ROLES["/users"] },
   {
     href: "/stock",
     label: "Stock",
     icon: Package,
-    roles: ["admin"],
+    roles: ROUTE_ROLES["/stock"],
   },
   {
     href: "/transactions",
     label: "Transactions",
     icon: Receipt,
-    roles: ["admin", "cashier"],
+    roles: ROUTE_ROLES["/transactions"],
   },
 ];
 
