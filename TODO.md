@@ -264,7 +264,7 @@ Goal of this part: fill in `app/api/v1/**`, `lib/db/`, and `lib/services/` insid
 **Tooling note (2026-08):** testing is done in Postman, not raw terminal `curl` — Postman manages the session cookie automatically per domain once you're logged in within the collection, so no manual cookie-jar juggling needed.
 
 - [x] `docs/api-curl-reference.md` (new file) — one `curl` command per endpoint across every module (Auth, Users, Categories, Products, Transactions, Stock Adjustments, Dashboard), happy-path plus the key error cases from `TECH_SPEC.md` Section 8 (wrong password, wrong role, not found, insufficient stock, duplicate, etc.), each with its expected status/error code noted. Paste each into Postman ("Import" → raw text, or paste into a new request's address bar) to build the collection
-- [ ] Run every request in the built Postman collection and confirm the actual result (status + `code`) matches what's noted in the reference file — this is the user's own manual pass, not something to skip
+- [x] Ran every request in the built Postman collection (2026-08-23) — actual results matched what's noted in the reference file
 
 **Checkpoint:** at the end of Part 2, the entire API works correctly on its own — provable via Postman/curl — even though the frontend built in Part 1 still shows mock data. The two halves haven't been connected yet.
 
@@ -276,8 +276,13 @@ Goal: replace every mock in Part 1 with real calls to the Route Handlers built i
 
 ### 3.1 API Client Setup
 
-- [ ] `lib/api-client.ts` — fetch wrapper: relative base path (`/api/v1`), standard error unwrapping from the response envelope
-- [ ] `lib/types.ts` — TS types mirroring every API response shape (can often be inferred directly from `lib/db/schema.ts` via Drizzle's `$inferSelect`, reducing duplication)
+**Scope note (2026-08):** the current `lib/types.ts` (Part 1 mock era) doesn't just need new entries — it diverges from the real API in ways that matter, not just naming: numeric `id` (real ids are UUID strings), `price: number` / `received: number` (real `NUMERIC` columns are strings — `CLAUDE.md`'s money rule is "never JS floats", so a translation layer that turns the real string back into a number would directly violate that), capitalized `role: "Admin" | "Cashier"` (real enum is lowercase), `category: string` holding a category *name* (real product rows hold `categoryId`, a UUID, not a name). Given the money rule specifically rules out a shape-preserving adapter, the right move is to **rebuild `lib/types.ts` to mirror the real API**, not bend the real data back into the old mock shape. That means several Part 1 components will need small adjustments once their module is wired in 3.3 (e.g. anywhere doing `.price.toFixed(2)` on what's now a string, or checking `role === "Admin"`) — not now, but flagging it here so it isn't a surprise later.
+
+- [x] `lib/api-error.ts` (new file) — `ApiError extends Error` (`code`, `message`, `status`), mirroring `lib/app-error.ts`'s own separate-file convention on the backend, rather than folding it into `api-client.ts`
+- [x] `lib/api-client.ts` — `apiFetch<T>(path, options?)`: prepends `/api/v1` to `path`, sets `Content-Type: application/json` only when a body is present, calls `fetch`. No `credentials: "include"` needed — frontend and API share the same origin, and fetch's default credentials mode (`"same-origin"`) already sends the `session` cookie automatically
+- [x] Same file — unwraps the `{ success, data }` / `{ success: false, error: { code, message } }` envelope from `lib/api-response.ts`: on `success: true`, returns `data` (typed `T`); on `success: false`, throws `ApiError` (carrying the HTTP status too) so callers can distinguish e.g. `error.code === "INSUFFICIENT_STOCK"` in the checkout flow (3.3)
+- [x] Same file — thin convenience wrappers on top (`apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete`), same "one core mechanism, thin named wrappers" shape as `lib/api-handler.ts` on the backend
+- [ ] `lib/types.ts` — rebuild using Drizzle's `$inferSelect` off `lib/db/schema.ts` (e.g. `export type Product = typeof products.$inferSelect`) for anything that's a raw table row. Some endpoints don't return a raw row, though, and need their own explicit type instead: `searchProducts`'s `{ items, total, page, pageSize }` envelope, `getTransactionById`'s `{ ...transaction, items }` composite, `getBestSellers`'s `{ productId, productName, totalQuantity }` (not a real table shape). Keep `ProductStockStatus` as-is — that one's a derived UI concept (`getStockStatus`'s output), not an API shape, so it's unaffected by any of this
 
 ### 3.2 Real Authentication
 
