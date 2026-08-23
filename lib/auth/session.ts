@@ -6,11 +6,11 @@ import { verifyJwt } from "@/lib/auth/jwt";
 export async function requireAuth(role?: "admin" | "cashier") {
   const cookieStore = await cookies();
   const token = cookieStore.get("session")?.value;
-  if (!token) throw new AppError("UNAUTHORIZED", "Not authenticated");
+  if (!token) throw new AppError("UNAUTHORIZED", "Not authenticated", 401);
 
   const claims = await verifyJwt(token);
   if (role && claims.role !== role) {
-    throw new AppError("FORBIDDEN", "Insufficient permissions");
+    throw new AppError("FORBIDDEN", "Insufficient permissions", 403);
   }
   return claims;
 }
