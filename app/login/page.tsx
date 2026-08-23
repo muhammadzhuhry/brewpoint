@@ -37,7 +37,7 @@ export default function LoginPage() {
       setLoggedInUser(user);
       setTimeout(() => {
         router.push(user.role === "admin" ? "/dashboard" : "/checkout");
-      }, 900);
+      }, 1600);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(true);
