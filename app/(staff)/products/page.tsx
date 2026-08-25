@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Plus, Search, RefreshCw } from "lucide-react";
 
 import type { Product } from "@/lib/types";
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
-import { mockCurrentUser } from "@/lib/mock-current-user";
 import type { ProductFormValues } from "@/lib/validators/product";
+
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useProducts } from "@/hooks/use-products";
+import { useCategories } from "@/hooks/use-categories";
+import { apiPost, apiPut, apiDelete } from "@/lib/api-client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,45 +30,76 @@ import { ProductDetailSheet } from "@/components/products/product-detail-sheet";
 const PAGE_SIZE = 8;
 
 export default function ProductsPage() {
-  const isAdmin = mockCurrentUser.role === "admin";
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
 
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [nextId, setNextId] = useState(products.length + 1);
+  const { data: categoriesData } = useCategories();
+  const categories = categoriesData ?? [];
+  const categoryNameById = Object.fromEntries(
+    categories.map((cat) => [cat.id, cat.name]),
+  );
 
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(
-    "All categories",
-  );
+  const [categoryFilter, setCategoryFilter] =
+    useState<string>("All categories");
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
 
   const [modal, setModal] = useState<{
     mode: "add" | "edit";
     product: Product | null;
   } | null>(null);
+
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [detailTarget, setDetailTarget] = useState<Product | null>(null);
 
-  const categories = Array.from(new Set(products.map((p) => p.category)));
-
-  const filtered = products.filter((p) => {
-    const matchesCategory =
-      categoryFilter === "All categories" || p.category === categoryFilter;
-    const q = search.trim().toLowerCase();
-    const matchesSearch =
-      q === "" || p.name.toLowerCase().includes(q) || p.barcode.includes(q);
-    return matchesCategory && matchesSearch;
+  const { data, isLoading, isFetching, refetch } = useProducts({
+    search: search || undefined,
+    categoryId:
+      categoryFilter === "All categories" ? undefined : categoryFilter,
+    page,
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = filtered.slice(startIndex, startIndex + PAGE_SIZE);
+  const products = data?.items ?? [];
+  const totalPages = data
+    ? Math.max(1, Math.ceil(data.total / data.pageSize))
+    : 1;
+  const currentPage = data?.page ?? page;
+  const startIndex = data ? (data.page - 1) * data.pageSize : 0;
 
-  const reload = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1100);
-  };
+  const createMutation = useMutation({
+    mutationFn: (body: {
+      name: string;
+      categoryId: string;
+      price: string;
+      stockQuantity: number;
+      barcode?: string;
+      imageUrl?: string;
+    }) => apiPost<Product>("/products", body),
+    onSuccess: () => closeModal(),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: {
+        name: string;
+        categoryId: string;
+        price: string;
+        stockQuantity: number;
+        barcode?: string;
+        imageUrl?: string;
+      };
+    }) => apiPut<Product>(`/products/${id}`, body),
+    onSuccess: () => closeModal(),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiDelete<Product>(`/products/${id}`),
+    onSuccess: () => setDeleteTarget(null),
+  });
 
   const openAddModal = () => setModal({ mode: "add", product: null });
   const openEditModal = (product: Product) =>
@@ -72,34 +107,36 @@ export default function ProductsPage() {
   const closeModal = () => setModal(null);
 
   const handleFormSubmit = (values: ProductFormValues, imageUrl?: string) => {
-    const rec = {
+    const body = {
       name: values.name.trim(),
-      category: values.category,
-      price: Number(values.price),
-      stock: Number(values.stock),
-      barcode: values.barcode?.trim() || "—",
+      categoryId: values.categoryId,
+      price: values.price,
+      stockQuantity: Number(values.stock),
+      barcode: values.barcode?.trim() || undefined,
       imageUrl,
     };
     if (modal?.mode === "edit" && modal.product) {
-      const id = modal.product.id;
-      setProducts(products.map((p) => (p.id === id ? { ...p, ...rec } : p)));
+      updateMutation.mutate({ id: modal.product.id, body });
     } else {
-      setProducts([{ id: nextId, txnCount: 0, ...rec }, ...products]);
-      setNextId(nextId + 1);
+      createMutation.mutate(body);
     }
-    closeModal();
   };
 
   const confirmDelete = () => {
-    setProducts(products.filter((p) => p.id !== deleteTarget?.id));
-    setDeleteTarget(null);
+    if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
   };
+
+  const hasActiveFilter =
+    search.trim() !== "" || categoryFilter !== "All categories";
+  const totalCount = data?.total ?? 0;
+  const isEmpty = !hasActiveFilter && totalCount === 0;
+  const hasNoResults = hasActiveFilter && totalCount === 0;
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Products"
-        count={`${products.length} ${products.length === 1 ? "product" : "products"}`}
+        count={`${data?.total ?? 0} ${data?.total === 1 ? "product" : "products"}`}
         action={
           isAdmin && (
             <Button onClick={openAddModal}>
@@ -112,8 +149,8 @@ export default function ProductsPage() {
       {!isAdmin && (
         <div className="flex items-center gap-2.5 rounded-[10px] border border-[#CFE0F0] bg-[#E7EFF7] px-3.5 py-2.5">
           <span className="text-sm font-medium text-[#3A6BA8]">
-            Cashier view — you can browse and search products, but only an
-            admin can add, edit, or remove them.
+            Cashier view — you can browse and search products, but only an admin
+            can add, edit, or remove them.
           </span>
         </div>
       )}
@@ -135,8 +172,10 @@ export default function ProductsPage() {
         <Select
           value={categoryFilter}
           onValueChange={(value) => {
-            setCategoryFilter(value);
-            setPage(1);
+            if (value) {
+              setCategoryFilter(value);
+              setPage(1);
+            }
           }}
         >
           <SelectTrigger className="w-48">
@@ -144,9 +183,9 @@ export default function ProductsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All categories">All categories</SelectItem>
-            {categories.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -154,22 +193,23 @@ export default function ProductsPage() {
 
         <div className="flex-1" />
 
-        <Button variant="outline" size="icon" onClick={reload}>
+        <Button variant="outline" size="icon" onClick={() => refetch()}>
           <RefreshCw className="size-4" />
         </Button>
       </div>
 
       <ProductsTable
-        loading={loading}
-        isEmpty={products.length === 0}
-        hasNoResults={products.length > 0 && filtered.length === 0}
+        loading={isLoading || isFetching}
+        isEmpty={isEmpty}
+        hasNoResults={hasNoResults}
         isAdmin={isAdmin}
-        pageItems={pageItems}
+        pageItems={products}
+        categoryNameById={categoryNameById}
         currentPage={currentPage}
         totalPages={totalPages}
         startIndex={startIndex}
-        pageSize={PAGE_SIZE}
-        filteredCount={filtered.length}
+        pageSize={data?.pageSize ?? PAGE_SIZE}
+        filteredCount={totalCount}
         onPageChange={setPage}
         onRowClick={setDetailTarget}
         onEdit={openEditModal}
@@ -194,6 +234,7 @@ export default function ProductsPage() {
 
       <ProductDetailSheet
         product={detailTarget}
+        categoryNameById={categoryNameById}
         onOpenChange={(open) => !open && setDetailTarget(null)}
         isAdmin={isAdmin}
         onEdit={(product) => {
