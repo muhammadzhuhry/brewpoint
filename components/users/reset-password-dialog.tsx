@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Check, KeyRound } from "lucide-react";
+import { Check, KeyRound, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 import type { User } from "@/lib/types";
 import { apiPost } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-error";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 function generatePassword() {
@@ -25,13 +26,13 @@ function ResetPasswordContent({
   user: User;
   onClose: () => void;
 }) {
-  const [tempPassword, setTempPassword] = useState("");
+  const [password, setPassword] = useState("");
 
   const resetMutation = useMutation({
     mutationFn: (password: string) =>
       apiPost<User>(`/users/${user.id}/reset-password`, { password }),
     onSuccess: () => {
-      navigator.clipboard.writeText(tempPassword).catch(() => {});
+      navigator.clipboard.writeText(password).catch(() => {});
       toast.success("Password reset");
     },
     onError: (error) => {
@@ -43,13 +44,8 @@ function ResetPasswordContent({
     },
   });
 
-  const handleGenerate = () => {
-    const pw = generatePassword();
-    setTempPassword(pw);
-    resetMutation.mutate(pw);
-  };
-
   const done = resetMutation.isSuccess;
+  const isTooShort = password.trim().length > 0 && password.trim().length < 6;
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -65,19 +61,19 @@ function ResetPasswordContent({
         </h3>
         <p className="text-[13.5px] leading-relaxed text-muted-foreground">
           {done
-            ? "A temporary password has been generated. Their old password no longer works."
-            : "This generates a new temporary password and invalidates the current one. The staff member will need the new password to log in."}
+            ? "Their old password no longer works."
+            : "Set a new password yourself, or generate one. This invalidates the current password immediately."}
         </p>
       </div>
 
-      {done && (
+      {done ? (
         <div className="flex flex-col gap-2">
           <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
-            TEMPORARY PASSWORD
+            NEW PASSWORD
           </span>
           <div className="flex items-center justify-between rounded-[10px] border border-border bg-[#F7F7F5] px-3.5 py-3">
             <span className="font-mono text-base font-semibold tracking-wide text-primary">
-              {tempPassword}
+              {password}
             </span>
             <span className="flex items-center gap-1.5 text-xs font-semibold text-success">
               <Check className="size-3.5" />
@@ -89,6 +85,33 @@ function ResetPasswordContent({
             password on next login.
           </span>
         </div>
+      ) : (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
+            NEW PASSWORD
+          </span>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Set or generate"
+              className="flex-1 tabular-nums"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setPassword(generatePassword())}
+            >
+              <RefreshCw className="size-4" />
+              Generate
+            </Button>
+          </div>
+          {isTooShort && (
+            <span className="text-xs text-destructive">
+              Password must be at least 6 characters.
+            </span>
+          )}
+        </div>
       )}
 
       <div className="flex justify-end gap-2.5">
@@ -99,7 +122,12 @@ function ResetPasswordContent({
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={handleGenerate}>Generate password</Button>
+            <Button
+              onClick={() => resetMutation.mutate(password.trim())}
+              disabled={password.trim().length < 6}
+            >
+              Reset password
+            </Button>
           </>
         )}
       </div>
