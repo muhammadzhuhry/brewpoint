@@ -6,6 +6,7 @@ import { Plus, Tag, Pencil, Trash2, Leaf } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Category } from "@/lib/types";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { useCategories } from "@/hooks/use-categories";
 import { apiPost, apiPut, apiDelete } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-error";
@@ -18,6 +19,9 @@ import { DeleteCategoryDialog } from "@/components/categories/delete-category-di
 import { CategoryDetailSheet } from "@/components/categories/category-detail-sheet";
 
 export default function CategoriesPage() {
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
+
   const { data } = useCategories();
   const categories = data ?? [];
 
@@ -99,9 +103,11 @@ export default function CategoriesPage() {
         title="Categories"
         count={`${categories.length} ${categories.length === 1 ? "category" : "categories"}`}
         action={
-          <Button onClick={openAdd}>
-            <Plus className="size-4" /> New category
-          </Button>
+          isAdmin && (
+            <Button onClick={openAdd}>
+              <Plus className="size-4" /> New category
+            </Button>
+          )
         }
       />
 
@@ -112,9 +118,11 @@ export default function CategoriesPage() {
             title="No categories yet"
             description="Create your first category to start organizing the menu — products get assigned to one."
             action={
-              <Button onClick={openAdd}>
-                <Plus className="size-4" /> Create your first category
-              </Button>
+              isAdmin && (
+                <Button onClick={openAdd}>
+                  <Plus className="size-4" /> Create your first category
+                </Button>
+              )
             }
           />
         </div>
@@ -130,28 +138,30 @@ export default function CategoriesPage() {
                 <div className="flex size-11 items-center justify-center rounded-[11px] bg-icon-chip-background">
                   <Tag className="size-5 text-icon-chip-foreground" />
                 </div>
-                <div className="flex gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEdit(category);
-                    }}
-                  >
-                    <Pencil className="size-[15px]" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteTarget(category);
-                    }}
-                  >
-                    <Trash2 className="size-[15px] text-destructive" />
-                  </Button>
-                </div>
+                {isAdmin && (
+                  <div className="flex gap-0.5">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(category);
+                      }}
+                    >
+                      <Pencil className="size-[15px]" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(category);
+                      }}
+                    >
+                      <Trash2 className="size-[15px] text-destructive" />
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <span className="font-display text-base font-semibold text-primary">
@@ -187,6 +197,7 @@ export default function CategoriesPage() {
 
       <CategoryDetailSheet
         category={detailTarget}
+        isAdmin={isAdmin}
         onOpenChange={(open) => !open && setDetailTarget(null)}
         onEdit={(category) => {
           setDetailTarget(null);

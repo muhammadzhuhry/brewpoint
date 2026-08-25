@@ -16,11 +16,13 @@ import {
 
 export function CategoryDetailSheet({
   category,
+  isAdmin,
   onOpenChange,
   onEdit,
   onDelete,
 }: {
   category: Category | null;
+  isAdmin: boolean;
   onOpenChange: (open: boolean) => void;
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
@@ -86,21 +88,23 @@ export function CategoryDetailSheet({
           </div>
         )}
 
-        <SheetFooter>
-          <Button
-            className="flex-1"
-            onClick={() => category && onEdit(category)}
-          >
-            <Pencil className="size-4" />
-            Rename
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => category && onDelete(category)}
-          >
-            Delete
-          </Button>
-        </SheetFooter>
+        {isAdmin && category && (
+          <SheetFooter>
+            <Button
+              className="flex-1"
+              onClick={() => onEdit(category)}
+            >
+              <Pencil className="size-4" />
+              Rename
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => onDelete(category)}
+            >
+              Delete
+            </Button>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );
