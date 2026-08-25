@@ -59,6 +59,10 @@ function ProductForm({
       : { name: "", categoryId: "", price: "", stock: "", barcode: "" },
   });
 
+  const categoryNameById = Object.fromEntries(
+    categories.map((cat) => [cat.id, cat.name]),
+  );
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -110,7 +114,11 @@ function ProductForm({
                 <FieldLabel htmlFor="product-category">
                   Category <span className="text-destructive">*</span>
                 </FieldLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  items={categoryNameById}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
                   <SelectTrigger
                     id="product-category"
                     className="w-full"

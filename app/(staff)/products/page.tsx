@@ -170,6 +170,7 @@ export default function ProductsPage() {
         </div>
 
         <Select
+          items={{ "All categories": "All categories", ...categoryNameById }}
           value={categoryFilter}
           onValueChange={(value) => {
             if (value) {
