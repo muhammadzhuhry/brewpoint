@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload } from "lucide-react";
 
-import type { Product } from "@/lib/types";
+import type { Category, Product } from "@/lib/types";
 import {
   productSchema,
   type ProductFormValues,
@@ -37,7 +37,7 @@ function ProductForm({
 }: {
   mode: "add" | "edit";
   product: Product | null;
-  categories: string[];
+  categories: Category[];
   onSubmit: (values: ProductFormValues, imageUrl?: string) => void;
   onCancel: () => void;
 }) {
@@ -51,12 +51,12 @@ function ProductForm({
     defaultValues: product
       ? {
           name: product.name,
-          category: product.category,
+          categoryId: product.categoryId,
           price: String(product.price),
-          stock: String(product.stock),
-          barcode: product.barcode,
+          stock: String(product.stockQuantity),
+          barcode: product.barcode ?? "",
         }
-      : { name: "", category: "", price: "", stock: "", barcode: "" },
+      : { name: "", categoryId: "", price: "", stock: "", barcode: "" },
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +103,7 @@ function ProductForm({
 
         <div className="grid grid-cols-2 gap-4">
           <Controller
-            name="category"
+            name="categoryId"
             control={form.control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
@@ -119,9 +119,9 @@ function ProductForm({
                     <SelectValue placeholder="Select a category…" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -280,7 +280,7 @@ export function ProductFormDialog({
   onOpenChange: (open: boolean) => void;
   mode: "add" | "edit";
   product: Product | null;
-  categories: string[];
+  categories: Category[];
   onSubmit: (values: ProductFormValues, imageUrl?: string) => void;
 }) {
   return (
