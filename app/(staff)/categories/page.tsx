@@ -5,13 +5,14 @@ import { useMutation } from "@tanstack/react-query";
 import { Plus, Tag, Pencil, Trash2, Leaf } from "lucide-react";
 import { toast } from "sonner";
 
-import type { Category } from "@/lib/types";
+import type { Category, CategoryWithProductCount } from "@/lib/types";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { useCategories } from "@/hooks/use-categories";
 import { apiPost, apiPut, apiDelete } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-error";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CategoryFormDialog } from "@/components/categories/category-form-dialog";
@@ -164,9 +165,21 @@ export default function CategoriesPage() {
                 )}
               </div>
 
-              <span className="font-display text-base font-semibold text-primary">
-                {category.name}
-              </span>
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-base font-semibold text-primary">
+                    {category.name}
+                  </span>
+                  {category.productCount === 0 && (
+                    <Badge variant="neutral">Empty</Badge>
+                  )}
+                </div>
+                <span className="text-[12.5px] tabular-nums text-muted-foreground">
+                  {category.productCount === 0
+                    ? "No products"
+                    : `${category.productCount} products`}
+                </span>
+              </div>
             </div>
           ))}
         </div>

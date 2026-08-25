@@ -25,6 +25,10 @@ export type TransactionDetail = Transaction & {
   items: TransactionItem[];
 };
 
+export type CategoryWithProductCount = Category & {
+  productCount: number;
+};
+
 export type BestSeller = {
   productId: string;
   productName: string;

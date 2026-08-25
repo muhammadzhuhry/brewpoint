@@ -1,11 +1,29 @@
-import { and, eq, ne } from "drizzle-orm";
+import { and, count, eq, ne } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { categories, products } from "@/lib/db/schema";
 import { AppError } from "@/lib/app-error";
 
 export async function listCategories() {
-  return db.select().from(categories).orderBy(categories.name);
+  const rows = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+      createdAt: categories.createdAt,
+      productCount: count(products.id),
+    })
+    .from(categories)
+    .leftJoin(
+      products,
+      and(
+        eq(products.categoryId, categories.id),
+        eq(products.isActive, true),
+      ),
+    )
+    .groupBy(categories.id, categories.name, categories.createdAt)
+    .orderBy(categories.name);
+
+  return rows.map((row) => ({ ...row, productCount: Number(row.productCount) }));
 }
 
 export async function getCategoryById(id: string) {
