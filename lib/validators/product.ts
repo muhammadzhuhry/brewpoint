@@ -1,8 +1,9 @@
 import { z } from "zod";
 
+// productSchema = frontend form validation schema;
 export const productSchema = z.object({
   name: z.string().trim().min(1, "Product name is required."),
-  category: z.string().min(1, "Choose a category."),
+  categoryId: z.string().min(1, "Choose a category."),
   price: z
     .string()
     .min(1, "Price is required.")
@@ -22,10 +23,7 @@ export const productSchema = z.object({
 
 export type ProductFormValues = z.infer<typeof productSchema>;
 
-// Backend request-body schemas — `categoryId` (a UUID) is what the database
-// actually needs, not the category `name` the frontend form above uses.
-// `price` stays a decimal string (matches the `numeric` column / CLAUDE.md's
-// money rule); `stockQuantity` is a real integer, not a string.
+// createProductBodySchema & updateProductBodySchema = backend request-body validation schema
 export const createProductBodySchema = z.object({
   name: z.string().trim().min(1, "Product name is required."),
   categoryId: z.uuid("Invalid category id."),
