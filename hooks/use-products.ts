@@ -1,16 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
+import { apiGet } from "@/lib/api-client";
+import type { ProductSearchResult } from "@/lib/types";
 
-function fetchProducts() {
-  return new Promise<typeof MOCK_PRODUCTS>((resolve) => {
-    setTimeout(() => resolve(MOCK_PRODUCTS), 500);
-  });
-}
+export function useProducts(params: {
+  search?: string;
+  categoryId?: string;
+  page?: number;
+}) {
+  const searchParams = new URLSearchParams();
+  if (params.search) searchParams.set("search", params.search);
+  if (params.categoryId) searchParams.set("categoryId", params.categoryId);
+  if (params.page) searchParams.set("page", String(params.page));
 
-export function useProducts() {
   return useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
+    queryKey: ["products", params],
+    queryFn: () =>
+      apiGet<ProductSearchResult>(`/products?${searchParams.toString()}`),
   });
 }
