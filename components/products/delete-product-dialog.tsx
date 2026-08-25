@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,6 @@ export function DeleteProductDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }) {
-  const hasHistory = product ? product.txnCount > 0 : false;
-
   return (
     <Dialog open={product !== null} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[420px]" showCloseButton={false}>
@@ -30,22 +28,11 @@ export function DeleteProductDialog({
               Delete &quot;{product?.name}&quot;?
             </h3>
             <p className="text-[13.5px] leading-relaxed text-muted-foreground">
-              {hasHistory
-                ? "This product has sales history, so it will be soft-deleted — removed from the catalog but retained for reporting."
-                : "This product has no sales history and will be permanently removed from the catalog."}
+              If this product has sales history, it will be soft-deleted —
+              hidden from the catalog but kept for reporting. Otherwise it
+              will be permanently removed.
             </p>
           </div>
-
-          {hasHistory && (
-            <div className="flex items-start gap-2.5 rounded-[10px] border border-[#F0DFBD] bg-warning-subtle p-3">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-subtle-foreground" />
-              <span className="text-[12.5px] leading-relaxed text-warning-subtle-foreground">
-                This product appears in <strong>{product?.txnCount}</strong>{" "}
-                past transactions. It will be hidden from the catalog but
-                kept for reporting (soft delete).
-              </span>
-            </div>
-          )}
 
           <div className="flex justify-end gap-2.5">
             <Button variant="outline" onClick={() => onOpenChange(false)}>

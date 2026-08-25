@@ -25,6 +25,7 @@ export function ProductsTable({
   hasNoResults,
   isAdmin,
   pageItems,
+  categoryNameById,
   currentPage,
   totalPages,
   startIndex,
@@ -41,6 +42,7 @@ export function ProductsTable({
   hasNoResults: boolean;
   isAdmin: boolean;
   pageItems: Product[];
+  categoryNameById: Record<string, string>;
   currentPage: number;
   totalPages: number;
   startIndex: number;
@@ -121,7 +123,7 @@ export function ProductsTable({
                   onClick={() => onRowClick(product)}
                   className={cn(
                     "h-15.5 cursor-pointer",
-                    getStockStatus(product.stock) === "out-of-stock"
+                    getStockStatus(product.stockQuantity) === "out-of-stock"
                       ? "bg-[#FCF7F6] hover:bg-[#FBF1EF]"
                       : "hover:bg-[#FAFAF8]",
                   )}
@@ -134,7 +136,7 @@ export function ProductsTable({
                           backgroundColor: getTileColor(product.name)[0],
                           color: getTileColor(product.name)[1],
                           opacity:
-                            getStockStatus(product.stock) === "out-of-stock"
+                            getStockStatus(product.stockQuantity) === "out-of-stock"
                               ? 0.55
                               : 1,
                         }}
@@ -149,15 +151,19 @@ export function ProductsTable({
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell className="text-right tabular-nums">
-                    ${product.price.toFixed(2)}
+                  <TableCell>
+                    {categoryNameById[product.categoryId] ?? "—"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {product.stock}
+                    ${Number(product.price).toFixed(2)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {product.stockQuantity}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={getStockStatus(product.stock)} />
+                    <StatusBadge
+                      status={getStockStatus(product.stockQuantity)}
+                    />
                   </TableCell>
                   {isAdmin && (
                     <TableCell className="text-right">

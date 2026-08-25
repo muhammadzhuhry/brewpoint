@@ -17,12 +17,14 @@ import {
 
 export function ProductDetailSheet({
   product,
+  categoryNameById,
   onOpenChange,
   isAdmin,
   onEdit,
   onDelete,
 }: {
   product: Product | null;
+  categoryNameById: Record<string, string>;
   onOpenChange: (open: boolean) => void;
   isAdmin: boolean;
   onEdit: (product: Product) => void;
@@ -48,7 +50,7 @@ export function ProductDetailSheet({
                   backgroundColor: tileBg,
                   color: tileFg,
                   opacity:
-                    getStockStatus(product.stock) === "out-of-stock"
+                    getStockStatus(product.stockQuantity) === "out-of-stock"
                       ? 0.6
                       : 1,
                 }}
@@ -59,22 +61,24 @@ export function ProductDetailSheet({
                 <span className="font-display text-xl font-semibold text-primary">
                   {product.name}
                 </span>
-                <StatusBadge status={getStockStatus(product.stock)} />
+                <StatusBadge status={getStockStatus(product.stockQuantity)} />
               </div>
             </div>
 
             <div className="flex flex-col gap-3.5">
               {[
-                ["CATEGORY", product.category],
-                ["PRICE", `$${product.price.toFixed(2)}`],
+                [
+                  "CATEGORY",
+                  categoryNameById[product.categoryId] ?? "—",
+                ],
+                ["PRICE", `$${Number(product.price).toFixed(2)}`],
                 [
                   "STOCK QUANTITY",
-                  product.stock === 0
+                  product.stockQuantity === 0
                     ? "0 — out of stock"
-                    : `${product.stock} units`,
+                    : `${product.stockQuantity} units`,
                 ],
-                ["BARCODE", product.barcode],
-                ["SOLD IN", `${product.txnCount} transactions`],
+                ["BARCODE", product.barcode ?? "—"],
               ].map(([label, value]) => (
                 <div
                   key={label}
@@ -90,7 +94,7 @@ export function ProductDetailSheet({
               ))}
             </div>
 
-            {getStockStatus(product.stock) === "out-of-stock" && (
+            {getStockStatus(product.stockQuantity) === "out-of-stock" && (
               <div className="flex items-center gap-2.5 rounded-[10px] border border-[#EBC6C1] bg-destructive-subtle px-3.5 py-2.5">
                 <AlertCircle className="size-4 shrink-0 text-destructive-subtle-foreground" />
                 <span className="text-[12.5px] font-medium text-destructive-subtle-foreground">
