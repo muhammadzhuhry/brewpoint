@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Check, KeyRound } from "lucide-react";
+import { toast } from "sonner";
 
 import type { User } from "@/lib/types";
+import { apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -21,15 +25,31 @@ function ResetPasswordContent({
   user: User;
   onClose: () => void;
 }) {
-  const [done, setDone] = useState(false);
   const [tempPassword, setTempPassword] = useState("");
+
+  const resetMutation = useMutation({
+    mutationFn: (password: string) =>
+      apiPost<User>(`/users/${user.id}/reset-password`, { password }),
+    onSuccess: () => {
+      navigator.clipboard.writeText(tempPassword).catch(() => {});
+      toast.success("Password reset");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to reset password",
+      );
+    },
+  });
 
   const handleGenerate = () => {
     const pw = generatePassword();
     setTempPassword(pw);
-    setDone(true);
-    navigator.clipboard.writeText(pw).catch(() => {});
+    resetMutation.mutate(pw);
   };
+
+  const done = resetMutation.isSuccess;
 
   return (
     <div className="flex flex-col gap-4 p-6">

@@ -16,7 +16,7 @@ export function DeactivateUserDialog({
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
 }) {
-  const reactivating = user ? !user.active : false;
+  const reactivating = user ? !user.isActive : false;
 
   return (
     <Dialog open={user !== null} onOpenChange={onOpenChange}>

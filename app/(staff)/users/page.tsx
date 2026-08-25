@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Power } from "lucide-react";
+import { toast } from "sonner";
 
 import type { User } from "@/lib/types";
-import { MOCK_USERS } from "@/lib/mock-users";
 import type { UserFormValues } from "@/lib/validators/user";
+import { useUsers } from "@/hooks/use-users";
+import { apiPost, apiPut, apiPatch } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { getTileColor, getInitials } from "@/lib/avatar-color";
 import { cn } from "@/lib/utils";
 
@@ -34,20 +38,12 @@ import { DeactivateUserDialog } from "@/components/users/deactivate-user-dialog"
 import { ResetPasswordDialog } from "@/components/users/reset-password-dialog";
 import { UserDetailSheet } from "@/components/users/user-detail-sheet";
 
-function getTodayLabel() {
-  return new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
-}
-
 export default function UsersPage() {
-  const [users, setUsers] = useState(MOCK_USERS);
-  const [nextId, setNextId] = useState(users.length + 1);
+  const { data } = useUsers();
+  const users = data ?? [];
 
   const [search, setSearch] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string | null>("All roles");
+  const [roleFilter, setRoleFilter] = useState("All roles");
 
   const [modal, setModal] = useState<{
     mode: "add" | "edit";
@@ -58,7 +54,8 @@ export default function UsersPage() {
   const [detailTarget, setDetailTarget] = useState<User | null>(null);
 
   const filtered = users.filter((u) => {
-    const matchesRole = roleFilter === "All roles" || u.role === roleFilter;
+    const matchesRole =
+      roleFilter === "All roles" || u.role === roleFilter.toLowerCase();
     const q = search.trim().toLowerCase();
     const matchesSearch =
       q === "" ||
@@ -71,43 +68,93 @@ export default function UsersPage() {
   const openEditModal = (user: User) => setModal({ mode: "edit", user });
   const closeModal = () => setModal(null);
 
-  const handleFormSubmit = (values: UserFormValues) => {
-    if (modal?.mode === "edit" && modal.user) {
-      const id = modal.user.id;
-      setUsers(
-        users.map((u) =>
-          u.id === id
-            ? {
-                ...u,
-                name: values.name.trim(),
-                username: values.username.trim(),
-                role: values.role,
-              }
-            : u,
-        ),
+  const createMutation = useMutation({
+    mutationFn: (body: {
+      username: string;
+      password: string;
+      name: string;
+      role: "admin" | "cashier";
+    }) => apiPost<User>("/users", body),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Staff member added");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to add staff member",
       );
-    } else {
-      setUsers([
-        {
-          id: nextId,
-          name: values.name.trim(),
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string;
+      body: { username: string; name: string; role: "admin" | "cashier" };
+    }) => apiPut<User>(`/users/${id}`, body),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Staff member updated");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update staff member",
+      );
+    },
+  });
+
+  const setActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      apiPatch<User>(`/users/${id}`, { isActive }),
+    onSuccess: (_data, variables) => {
+      setDeactivateTarget(null);
+      toast.success(
+        variables.isActive
+          ? "Staff member reactivated"
+          : "Staff member deactivated",
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to update status",
+      );
+    },
+  });
+
+  const handleFormSubmit = (values: UserFormValues) => {
+    const role = values.role.toLowerCase() as "admin" | "cashier";
+    if (modal?.mode === "edit" && modal.user) {
+      updateMutation.mutate({
+        id: modal.user.id,
+        body: {
           username: values.username.trim(),
-          role: values.role,
-          active: true,
-          joined: getTodayLabel(),
-          last: "—",
+          name: values.name.trim(),
+          role,
         },
-        ...users,
-      ]);
-      setNextId(nextId + 1);
+      });
+    } else {
+      createMutation.mutate({
+        username: values.username.trim(),
+        password: values.password ?? "",
+        name: values.name.trim(),
+        role,
+      });
     }
-    closeModal();
   };
 
   const confirmDeactivate = () => {
-    const id = deactivateTarget?.id;
-    setUsers(users.map((u) => (u.id === id ? { ...u, active: !u.active } : u)));
-    setDeactivateTarget(null);
+    if (deactivateTarget) {
+      setActiveMutation.mutate({
+        id: deactivateTarget.id,
+        isActive: !deactivateTarget.isActive,
+      });
+    }
   };
 
   return (
@@ -133,7 +180,10 @@ export default function UsersPage() {
           />
         </div>
 
-        <Select value={roleFilter} onValueChange={setRoleFilter}>
+        <Select
+          value={roleFilter}
+          onValueChange={(value) => value && setRoleFilter(value)}
+        >
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
@@ -153,7 +203,6 @@ export default function UsersPage() {
               <TableHead>Username</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Last active</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -164,7 +213,7 @@ export default function UsersPage() {
                 onClick={() => setDetailTarget(user)}
                 className={cn(
                   "h-16 cursor-pointer",
-                  !user.active && "opacity-70",
+                  !user.isActive && "opacity-70",
                 )}
               >
                 <TableCell>
@@ -185,15 +234,12 @@ export default function UsersPage() {
                   @{user.username}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.role === "Admin" ? "secondary" : "info"}>
-                    {user.role}
+                  <Badge variant={user.role === "admin" ? "secondary" : "info"}>
+                    {user.role === "admin" ? "Admin" : "Cashier"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <StatusBadge status={user.active ? "active" : "inactive"} />
-                </TableCell>
-                <TableCell className="text-muted-foreground tabular-nums">
-                  {user.last}
+                  <StatusBadge status={user.isActive ? "active" : "inactive"} />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex gap-1.5">

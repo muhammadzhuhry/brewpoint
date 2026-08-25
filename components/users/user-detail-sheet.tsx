@@ -51,10 +51,10 @@ export function UserDetailSheet({
                   {user.name}
                 </span>
                 <div className="flex gap-2">
-                  <Badge variant={user.role === "Admin" ? "secondary" : "info"}>
-                    {user.role}
+                  <Badge variant={user.role === "admin" ? "secondary" : "info"}>
+                    {user.role === "admin" ? "Admin" : "Cashier"}
                   </Badge>
-                  <StatusBadge status={user.active ? "active" : "inactive"} />
+                  <StatusBadge status={user.isActive ? "active" : "inactive"} />
                 </div>
               </div>
             </div>
@@ -64,12 +64,18 @@ export function UserDetailSheet({
                 ["USERNAME", `@${user.username}`],
                 [
                   "ROLE",
-                  user.role === "Admin"
+                  user.role === "admin"
                     ? "Admin — full access"
                     : "Cashier — POS & products (read-only admin)",
                 ],
-                ["JOINED", user.joined],
-                ["LAST ACTIVE", user.last],
+                [
+                  "JOINED",
+                  new Date(user.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    year: "numeric",
+                  }),
+                ],
               ].map(([label, value]) => (
                 <div
                   key={label}

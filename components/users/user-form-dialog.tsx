@@ -45,7 +45,7 @@ function UserForm({
       name: user?.name ?? "",
       username: user?.username ?? "",
       password: "",
-      role: user?.role ?? "Cashier",
+      role: user ? (user.role === "admin" ? "Admin" : "Cashier") : "Cashier",
     },
   });
 
