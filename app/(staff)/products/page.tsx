@@ -11,7 +11,9 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useProducts } from "@/hooks/use-products";
 import { useCategories } from "@/hooks/use-categories";
 import { apiPost, apiPut, apiDelete } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -75,7 +77,15 @@ export default function ProductsPage() {
       barcode?: string;
       imageUrl?: string;
     }) => apiPost<Product>("/products", body),
-    onSuccess: () => closeModal(),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Product created");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to create product",
+      );
+    },
   });
 
   const updateMutation = useMutation({
@@ -93,12 +103,28 @@ export default function ProductsPage() {
         imageUrl?: string;
       };
     }) => apiPut<Product>(`/products/${id}`, body),
-    onSuccess: () => closeModal(),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Product updated");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to update product",
+      );
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDelete<Product>(`/products/${id}`),
-    onSuccess: () => setDeleteTarget(null),
+    onSuccess: () => {
+      setDeleteTarget(null);
+      toast.success("Product deleted");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Failed to delete product",
+      );
+    },
   });
 
   const openAddModal = () => setModal({ mode: "add", product: null });
