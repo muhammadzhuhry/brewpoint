@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Plus, Tag, Pencil, Trash2, Leaf } from "lucide-react";
+import { toast } from "sonner";
 
 import type { Category } from "@/lib/types";
-import { MOCK_CATEGORIES } from "@/lib/mock-categories";
+import { useCategories } from "@/hooks/use-categories";
+import { apiPost, apiPut, apiDelete } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { CategoryFormDialog } from "@/components/categories/category-form-dialog";
@@ -15,37 +18,79 @@ import { DeleteCategoryDialog } from "@/components/categories/delete-category-di
 import { CategoryDetailSheet } from "@/components/categories/category-detail-sheet";
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState(MOCK_CATEGORIES);
-  const [nextId, setNextId] = useState(categories.length + 1);
+  const { data } = useCategories();
+  const categories = data ?? [];
 
   const [modal, setModal] = useState<{
     mode: "add" | "edit";
     category: Category | null;
   } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [deleteError, setDeleteError] = useState<string>();
   const [detailTarget, setDetailTarget] = useState<Category | null>(null);
 
   const openAdd = () => setModal({ mode: "add", category: null });
-  const openEdit = (category: Category) => setModal({ mode: "edit", category });
+  const openEdit = (category: Category) =>
+    setModal({ mode: "edit", category });
   const closeModal = () => setModal(null);
+
+  const createMutation = useMutation({
+    mutationFn: (name: string) => apiPost<Category>("/categories", { name }),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Category created");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to create category",
+      );
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      apiPut<Category>(`/categories/${id}`, { name }),
+    onSuccess: () => {
+      closeModal();
+      toast.success("Category updated");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to update category",
+      );
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiDelete<Category>(`/categories/${id}`),
+    onSuccess: () => {
+      setDeleteTarget(null);
+      setDeleteError(undefined);
+      toast.success("Category deleted");
+    },
+    onError: (error) => {
+      setDeleteError(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to delete category.",
+      );
+    },
+  });
 
   const handleFormSubmit = (name: string) => {
     if (modal?.mode === "edit" && modal.category) {
-      const id = modal.category.id;
-      setCategories(categories.map((c) => (c.id === id ? { ...c, name } : c)));
+      updateMutation.mutate({ id: modal.category.id, name });
     } else {
-      setCategories([
-        ...categories,
-        { id: nextId, name, productCount: 0, sampleProducts: [] },
-      ]);
-      setNextId(nextId + 1);
+      createMutation.mutate(name);
     }
-    closeModal();
   };
 
   const confirmDelete = () => {
-    setCategories(categories.filter((c) => c.id !== deleteTarget?.id));
-    setDeleteTarget(null);
+    if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
   };
 
   return (
@@ -75,66 +120,45 @@ export default function CategoriesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-4">
-          {categories.map((category) => {
-            const isEmpty = category.productCount === 0;
-            const sample = isEmpty
-              ? "No products assigned yet"
-              : category.sampleProducts.slice(0, 4).join(" · ");
-
-            return (
-              <div
-                key={category.id}
-                onClick={() => setDetailTarget(category)}
-                className="flex cursor-pointer flex-col gap-3.5 rounded-xl border border-border bg-card p-[18px]"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex size-11 items-center justify-center rounded-[11px] bg-icon-chip-background">
-                    <Tag className="size-5 text-icon-chip-foreground" />
-                  </div>
-                  <div className="flex gap-0.5">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEdit(category);
-                      }}
-                    >
-                      <Pencil className="size-[15px]" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget(category);
-                      }}
-                    >
-                      <Trash2 className="size-[15px] text-destructive" />
-                    </Button>
-                  </div>
+          {categories.map((category) => (
+            <div
+              key={category.id}
+              onClick={() => setDetailTarget(category)}
+              className="flex cursor-pointer flex-col gap-3.5 rounded-xl border border-border bg-card p-[18px]"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex size-11 items-center justify-center rounded-[11px] bg-icon-chip-background">
+                  <Tag className="size-5 text-icon-chip-foreground" />
                 </div>
-
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-base font-semibold text-primary">
-                      {category.name}
-                    </span>
-                    {isEmpty && <Badge variant="neutral">Empty</Badge>}
-                  </div>
-                  <span className="text-[12.5px] tabular-nums text-muted-foreground">
-                    {isEmpty
-                      ? "No products"
-                      : `${category.productCount} products`}
-                  </span>
+                <div className="flex gap-0.5">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(category);
+                    }}
+                  >
+                    <Pencil className="size-[15px]" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteTarget(category);
+                    }}
+                  >
+                    <Trash2 className="size-[15px] text-destructive" />
+                  </Button>
                 </div>
-
-                <span className="min-h-[38px] text-[12.5px] leading-relaxed text-muted-foreground">
-                  {sample}
-                </span>
               </div>
-            );
-          })}
+
+              <span className="font-display text-base font-semibold text-primary">
+                {category.name}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -151,7 +175,13 @@ export default function CategoriesPage() {
 
       <DeleteCategoryDialog
         category={deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        error={deleteError}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+            setDeleteError(undefined);
+          }
+        }}
         onConfirm={confirmDelete}
       />
 

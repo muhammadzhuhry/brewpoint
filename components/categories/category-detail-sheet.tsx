@@ -4,6 +4,7 @@ import { Pencil, Tag } from "lucide-react";
 
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useProducts } from "@/hooks/use-products";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -24,6 +25,9 @@ export function CategoryDetailSheet({
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
 }) {
+  const { data } = useProducts({ categoryId: category?.id });
+  const products = data?.items ?? [];
+
   return (
     <Sheet open={category !== null} onOpenChange={onOpenChange}>
       <SheetContent>
@@ -42,9 +46,9 @@ export function CategoryDetailSheet({
                   {category.name}
                 </span>
                 <span className="text-[13px] tabular-nums text-muted-foreground">
-                  {category.productCount === 0
+                  {products.length === 0
                     ? "No products assigned"
-                    : `${category.productCount} products`}
+                    : `${products.length} products`}
                 </span>
               </div>
             </div>
@@ -53,26 +57,26 @@ export function CategoryDetailSheet({
               <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
                 PRODUCTS IN THIS CATEGORY
               </span>
-              {category.sampleProducts.length === 0 ? (
+              {products.length === 0 ? (
                 <div className="rounded-[10px] border border-dashed border-border p-7 text-center text-[13px] text-muted-foreground">
                   No products are assigned to this category yet.
                 </div>
               ) : (
                 <div className="flex flex-col">
-                  {category.sampleProducts.map((name, i) => (
+                  {products.map((product, i) => (
                     <div
-                      key={name}
+                      key={product.id}
                       className={cn(
                         "flex h-[52px] items-center gap-3",
-                        i < category.sampleProducts.length - 1 &&
+                        i < products.length - 1 &&
                           "border-b border-[#F1F0EC]",
                       )}
                     >
                       <div className="flex size-8 items-center justify-center rounded-lg bg-icon-chip-background text-sm font-semibold text-primary">
-                        {name[0]}
+                        {product.name[0]}
                       </div>
                       <span className="text-sm font-medium text-foreground">
-                        {name}
+                        {product.name}
                       </span>
                     </div>
                   ))}
