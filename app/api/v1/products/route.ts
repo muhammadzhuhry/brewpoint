@@ -16,6 +16,9 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     page: searchParams.get("page")
       ? Number(searchParams.get("page"))
       : undefined,
+    pageSize: searchParams.get("pageSize")
+      ? Number(searchParams.get("pageSize"))
+      : undefined,
   });
   return ok(result);
 });
