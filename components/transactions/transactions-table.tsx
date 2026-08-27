@@ -3,7 +3,6 @@
 import { ChevronLeft, ChevronRight, Receipt } from "lucide-react";
 
 import type { Transaction } from "@/lib/types";
-import { getTransactionTotal, getItemCount } from "@/lib/transaction-utils";
 import { formatUSD } from "@/lib/format-currency";
 import { cn } from "@/lib/utils";
 import {
@@ -19,6 +18,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 
 export function TransactionsTable({
   pageItems,
+  cashierNameById,
   isEmpty,
   currentPage,
   totalPages,
@@ -29,6 +29,7 @@ export function TransactionsTable({
   onRowClick,
 }: {
   pageItems: Transaction[];
+  cashierNameById: Record<string, string>;
   isEmpty: boolean;
   currentPage: number;
   totalPages: number;
@@ -56,7 +57,6 @@ export function TransactionsTable({
                 <TableHead>Receipt</TableHead>
                 <TableHead>Date &amp; time</TableHead>
                 <TableHead>Cashier</TableHead>
-                <TableHead className="text-right">Items</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="w-10" />
@@ -84,16 +84,24 @@ export function TransactionsTable({
                           <Receipt className="size-4" />
                         </div>
                         <span className="text-sm font-semibold tabular-nums text-primary">
-                          {t.id}
+                          {t.id.slice(0, 8).toUpperCase()}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="tabular-nums text-muted-foreground">
-                      {t.time}
+                      {new Date(t.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}{" "}
+                      ·{" "}
+                      {new Date(t.createdAt).toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
                     </TableCell>
-                    <TableCell>{t.cashier}</TableCell>
-                    <TableCell className="text-right tabular-nums text-muted-foreground">
-                      {getItemCount(t)}
+                    <TableCell>
+                      {cashierNameById[t.cashierId] ?? "—"}
                     </TableCell>
                     <TableCell
                       className={cn(
@@ -103,7 +111,7 @@ export function TransactionsTable({
                           : "text-foreground",
                       )}
                     >
-                      {formatUSD(getTransactionTotal(t))}
+                      {formatUSD(Number(t.totalAmount))}
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={t.status} />

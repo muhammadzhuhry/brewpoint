@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import { MOCK_TRANSACTIONS } from "@/lib/mock-transactions";
-import { getTransactionTotal } from "@/lib/transaction-utils";
-import { mockCurrentUser } from "@/lib/mock-current-user";
+import type { Transaction, TransactionDetail } from "@/lib/types";
+import { useCurrentUser } from "@/hooks/use-current-user";
+import { useUsers } from "@/hooks/use-users";
+import { useTransactions, useTransactionDetail } from "@/hooks/use-transactions";
+import { apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 
 import { PageHeader } from "@/components/shared/page-header";
-import { TransactionStats } from "@/components/transactions/transaction-stats";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { TransactionsTable } from "@/components/transactions/transactions-table";
 import { TransactionDetailSheet } from "@/components/transactions/transaction-detail-sheet";
@@ -15,80 +19,92 @@ import { VoidTransactionDialog } from "@/components/transactions/void-transactio
 
 const PAGE_SIZE = 8;
 
-export default function TransactionsPage() {
-  const isAdmin = mockCurrentUser.role === "admin";
+function getDateRangeBounds(range: "today" | "7days" | "30days") {
+  const to = new Date();
+  const from = new Date();
+  from.setHours(0, 0, 0, 0);
+  if (range === "7days") from.setDate(from.getDate() - 6);
+  if (range === "30days") from.setDate(from.getDate() - 29);
+  return { from: from.toISOString(), to: to.toISOString() };
+}
 
-  const [transactions, setTransactions] = useState(MOCK_TRANSACTIONS);
-  const [search, setSearch] = useState("");
-  const [cashierFilter, setCashierFilter] = useState<string | null>(
-    "All cashiers",
+export default function TransactionsPage() {
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
+
+  const { data: usersData } = useUsers({ enabled: isAdmin });
+  const cashiers = usersData ?? [];
+  const cashierNameById: Record<string, string> = {
+    ...(currentUser ? { [currentUser.userId]: currentUser.name } : {}),
+    ...Object.fromEntries(cashiers.map((u) => [u.id, u.name])),
+  };
+
+  const [dateRange, setDateRange] = useState<"today" | "7days" | "30days">(
+    "today",
   );
+  const [cashierFilter, setCashierFilter] = useState("All cashiers");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "completed" | "voided"
   >("all");
   const [page, setPage] = useState(1);
 
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [voidId, setVoidId] = useState<string | null>(null);
+  const [voidTarget, setVoidTarget] = useState<TransactionDetail | null>(null);
 
-  const detailTransaction = transactions.find((t) => t.id === detailId) ?? null;
-  const voidTransaction = transactions.find((t) => t.id === voidId) ?? null;
-
-  const completed = transactions.filter((t) => t.status === "completed");
-  const voided = transactions.filter((t) => t.status === "voided");
-  const gross = completed.reduce((sum, t) => sum + getTransactionTotal(t), 0);
-  const avgTicket = completed.length ? gross / completed.length : 0;
-
-  const filtered = transactions.filter((t) => {
-    if (statusFilter !== "all" && t.status !== statusFilter) return false;
-    if (isAdmin && cashierFilter !== "All cashiers" && t.cashier !== cashierFilter)
-      return false;
-    const q = search.trim().toLowerCase();
-    return q === "" || t.id.toLowerCase().includes(q);
+  const { from, to } = getDateRangeBounds(dateRange);
+  const { data } = useTransactions({
+    cashierId:
+      isAdmin && cashierFilter !== "All cashiers" ? cashierFilter : undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    from,
+    to,
+    page,
+    pageSize: PAGE_SIZE,
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const pageItems = filtered.slice(startIndex, startIndex + PAGE_SIZE);
+  const transactions = data?.items ?? [];
+  const totalCount = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const currentPage = data?.page ?? page;
+  const startIndex = data ? (data.page - 1) * data.pageSize : 0;
+
+  const { data: detailTransaction } = useTransactionDetail(detailId);
 
   const canVoid = isAdmin && detailTransaction?.status !== "voided";
 
+  const voidMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      apiPost<Transaction>(`/transactions/${id}/void`, { reason }),
+    onSuccess: () => {
+      setVoidTarget(null);
+      setDetailId(null);
+      toast.success("Transaction voided");
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to void transaction",
+      );
+    },
+  });
+
   const handleVoidConfirm = (reason: string) => {
-    if (!voidTransaction) return;
-    setTransactions(
-      transactions.map((t) =>
-        t.id === voidTransaction.id
-          ? {
-              ...t,
-              status: "voided" as const,
-              voidReason: reason,
-              voidBy: mockCurrentUser.name,
-            }
-          : t,
-      ),
-    );
-    setVoidId(null);
+    if (!voidTarget) return;
+    voidMutation.mutate({ id: voidTarget.id, reason });
   };
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Transactions"
-        count={`${transactions.length} transactions`}
-      />
-
-      <TransactionStats
-        gross={gross}
-        completedCount={completed.length}
-        avgTicket={avgTicket}
-        voidedCount={voided.length}
+        count={`${totalCount} transactions`}
       />
 
       <TransactionFilters
-        search={search}
-        onSearchChange={(value) => {
-          setSearch(value);
+        dateRange={dateRange}
+        onDateRangeChange={(value) => {
+          setDateRange(value);
           setPage(1);
         }}
         cashierFilter={cashierFilter}
@@ -96,6 +112,7 @@ export default function TransactionsPage() {
           setCashierFilter(value);
           setPage(1);
         }}
+        cashiers={cashiers}
         statusFilter={statusFilter}
         onStatusFilterChange={(filter) => {
           setStatusFilter(filter);
@@ -105,27 +122,29 @@ export default function TransactionsPage() {
       />
 
       <TransactionsTable
-        pageItems={pageItems}
-        isEmpty={filtered.length === 0}
+        pageItems={transactions}
+        cashierNameById={cashierNameById}
+        isEmpty={transactions.length === 0}
         currentPage={currentPage}
         totalPages={totalPages}
         startIndex={startIndex}
         pageSize={PAGE_SIZE}
-        filteredCount={filtered.length}
+        filteredCount={totalCount}
         onPageChange={setPage}
         onRowClick={setDetailId}
       />
 
       <TransactionDetailSheet
-        transaction={detailTransaction}
+        transaction={detailTransaction ?? null}
+        cashierNameById={cashierNameById}
         onOpenChange={(open) => !open && setDetailId(null)}
         canVoid={canVoid}
-        onVoid={(t) => setVoidId(t.id)}
+        onVoid={(t) => setVoidTarget(t)}
       />
 
       <VoidTransactionDialog
-        transaction={voidTransaction}
-        onOpenChange={(open) => !open && setVoidId(null)}
+        transaction={voidTarget}
+        onOpenChange={(open) => !open && setVoidTarget(null)}
         onConfirm={handleVoidConfirm}
       />
     </div>

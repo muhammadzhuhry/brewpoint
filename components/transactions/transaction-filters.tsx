@@ -1,10 +1,7 @@
 "use client";
 
-import { Calendar, ChevronDown, Search } from "lucide-react";
-
-import { CASHIERS } from "@/lib/mock-transactions";
+import type { User } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -13,52 +10,68 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+const DATE_RANGES = [
+  { id: "today", label: "Today" },
+  { id: "7days", label: "7 days" },
+  { id: "30days", label: "30 days" },
+] as const;
+
 export function TransactionFilters({
-  search,
-  onSearchChange,
+  dateRange,
+  onDateRangeChange,
   cashierFilter,
   onCashierFilterChange,
+  cashiers,
   statusFilter,
   onStatusFilterChange,
   isAdmin,
 }: {
-  search: string;
-  onSearchChange: (value: string) => void;
-  cashierFilter: string | null;
-  onCashierFilterChange: (value: string | null) => void;
+  dateRange: "today" | "7days" | "30days";
+  onDateRangeChange: (value: "today" | "7days" | "30days") => void;
+  cashierFilter: string;
+  onCashierFilterChange: (value: string) => void;
+  cashiers: User[];
   statusFilter: "all" | "completed" | "voided";
   onStatusFilterChange: (filter: "all" | "completed" | "voided") => void;
   isAdmin: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative w-65">
-        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Search receipt no…"
-          className="pl-9"
-          value={search}
-          onChange={(e) => onSearchChange(e.target.value)}
-        />
-      </div>
-
-      <div className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-border bg-card px-3.5">
-        <Calendar className="size-[15px] text-muted-foreground" />
-        <span className="text-[13px] font-medium text-foreground">
-          Jul 7 – Jul 8, 2026
-        </span>
-        <ChevronDown className="size-3.5 text-muted-foreground" />
+      <div className="flex gap-0.5 rounded-[9px] border border-border bg-background p-[3px]">
+        {DATE_RANGES.map((r) => (
+          <button
+            key={r.id}
+            type="button"
+            onClick={() => onDateRangeChange(r.id)}
+            className={cn(
+              "rounded-lg px-3.5 py-1.5 text-[13px]",
+              dateRange === r.id
+                ? "bg-card font-semibold text-primary shadow-sm"
+                : "font-medium text-muted-foreground",
+            )}
+          >
+            {r.label}
+          </button>
+        ))}
       </div>
 
       {isAdmin && (
-        <Select value={cashierFilter} onValueChange={onCashierFilterChange}>
+        <Select
+          items={{
+            "All cashiers": "All cashiers",
+            ...Object.fromEntries(cashiers.map((c) => [c.id, c.name])),
+          }}
+          value={cashierFilter}
+          onValueChange={(value) => value && onCashierFilterChange(value)}
+        >
           <SelectTrigger className="w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {CASHIERS.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
+            <SelectItem value="All cashiers">All cashiers</SelectItem>
+            {cashiers.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.name}
               </SelectItem>
             ))}
           </SelectContent>

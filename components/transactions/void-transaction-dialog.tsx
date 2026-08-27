@@ -3,21 +3,27 @@
 import { useState } from "react";
 import { Ban } from "lucide-react";
 
-import type { Transaction } from "@/lib/types";
-import { VOID_REASONS } from "@/lib/mock-transactions";
-import { getTransactionTotal } from "@/lib/transaction-utils";
+import type { TransactionDetail } from "@/lib/types";
 import { formatUSD } from "@/lib/format-currency";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
+const VOID_REASONS = [
+  "Wrong item rung up",
+  "Customer changed mind",
+  "Duplicate charge",
+  "Cashier error",
+  "Refund issued",
+];
+
 export function VoidTransactionDialog({
   transaction,
   onOpenChange,
   onConfirm,
 }: {
-  transaction: Transaction | null;
+  transaction: TransactionDetail | null;
   onOpenChange: (open: boolean) => void;
   onConfirm: (reason: string) => void;
 }) {
@@ -42,7 +48,7 @@ function VoidTransactionForm({
   onCancel,
   onConfirm,
 }: {
-  transaction: Transaction;
+  transaction: TransactionDetail;
   onCancel: () => void;
   onConfirm: (reason: string) => void;
 }) {
@@ -65,12 +71,12 @@ function VoidTransactionForm({
 
       <div className="flex flex-col gap-1.5">
         <h3 className="font-display text-lg font-semibold text-primary">
-          Void {transaction.id}?
+          Void {transaction.id.slice(0, 8).toUpperCase()}?
         </h3>
         <p className="text-[13.5px] leading-relaxed text-muted-foreground">
           This reverses the sale of{" "}
           <strong className="text-foreground">
-            {formatUSD(getTransactionTotal(transaction))}
+            {formatUSD(Number(transaction.totalAmount))}
           </strong>{" "}
           and returns its items to stock. Voided transactions stay in history
           for reporting. This can&apos;t be undone.

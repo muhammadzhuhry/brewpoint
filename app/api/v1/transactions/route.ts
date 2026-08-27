@@ -11,6 +11,9 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
   const isAdmin = claims.role === "admin";
 
   const { searchParams } = new URL(req.url);
+  const fromParam = searchParams.get("from");
+  const toParam = searchParams.get("to");
+
   const result = await listTransactions({
     cashierId: isAdmin
       ? (searchParams.get("cashierId") ?? undefined)
@@ -18,8 +21,13 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     status:
       (searchParams.get("status") as "completed" | "voided" | null) ??
       undefined,
+    from: fromParam ? new Date(fromParam) : undefined,
+    to: toParam ? new Date(toParam) : undefined,
     page: searchParams.has("page")
       ? Number(searchParams.get("page"))
+      : undefined,
+    pageSize: searchParams.get("pageSize")
+      ? Number(searchParams.get("pageSize"))
       : undefined,
   });
   return ok(result);

@@ -25,6 +25,13 @@ export type TransactionDetail = Transaction & {
   items: TransactionItem[];
 };
 
+export type TransactionSearchResult = {
+  items: Transaction[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export type CategoryWithProductCount = Category & {
   productCount: number;
 };

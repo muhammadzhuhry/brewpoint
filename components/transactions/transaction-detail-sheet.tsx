@@ -2,8 +2,7 @@
 
 import { Ban } from "lucide-react";
 
-import type { Transaction } from "@/lib/types";
-import { getTransactionTotal } from "@/lib/transaction-utils";
+import type { TransactionDetail } from "@/lib/types";
 import { formatUSD } from "@/lib/format-currency";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,14 +17,16 @@ import { StatusBadge } from "@/components/shared/status-badge";
 
 export function TransactionDetailSheet({
   transaction,
+  cashierNameById,
   onOpenChange,
   canVoid,
   onVoid,
 }: {
-  transaction: Transaction | null;
+  transaction: TransactionDetail | null;
+  cashierNameById: Record<string, string>;
   onOpenChange: (open: boolean) => void;
   canVoid: boolean;
-  onVoid: (transaction: Transaction) => void;
+  onVoid: (transaction: TransactionDetail) => void;
 }) {
   return (
     <Sheet open={transaction !== null} onOpenChange={onOpenChange}>
@@ -39,10 +40,18 @@ export function TransactionDetailSheet({
             <div className="flex items-start justify-between">
               <div className="flex flex-col gap-1">
                 <span className="font-display text-xl font-semibold tabular-nums text-primary">
-                  {transaction.id}
+                  {transaction.id.slice(0, 8).toUpperCase()}
                 </span>
                 <span className="text-[13px] tabular-nums text-muted-foreground">
-                  {transaction.time}
+                  {new Date(transaction.createdAt).toLocaleDateString(
+                    "en-US",
+                    { month: "short", day: "numeric", year: "numeric" },
+                  )}{" "}
+                  ·{" "}
+                  {new Date(transaction.createdAt).toLocaleTimeString(
+                    "en-US",
+                    { hour: "numeric", minute: "2-digit" },
+                  )}
                 </span>
               </div>
               <StatusBadge status={transaction.status} />
@@ -51,10 +60,13 @@ export function TransactionDetailSheet({
             {transaction.status === "voided" && (
               <div className="flex flex-col gap-1 rounded-[10px] border border-[#EBC6C1] bg-destructive-subtle p-3.5">
                 <span className="text-xs font-semibold text-destructive-subtle-foreground">
-                  Voided by {transaction.voidBy ?? "Admin"}
+                  Voided by{" "}
+                  {(transaction.voidedBy &&
+                    cashierNameById[transaction.voidedBy]) ??
+                    "Admin"}
                 </span>
                 <span className="text-[12.5px] text-destructive-subtle-foreground">
-                  Reason: {transaction.voidReason ?? "—"}
+                  Reason: {transaction.voidedReason ?? "—"}
                 </span>
               </div>
             )}
@@ -66,7 +78,7 @@ export function TransactionDetailSheet({
               <div className="flex flex-col">
                 {transaction.items.map((item, i) => (
                   <div
-                    key={item.name}
+                    key={item.id}
                     className={cn(
                       "flex items-center gap-3 py-2.5",
                       i < transaction.items.length - 1 &&
@@ -74,18 +86,18 @@ export function TransactionDetailSheet({
                     )}
                   >
                     <span className="flex h-[26px] w-[30px] shrink-0 items-center justify-center rounded-[7px] bg-icon-chip-background text-[12.5px] font-semibold tabular-nums text-primary">
-                      ×{item.qty}
+                      ×{item.quantity}
                     </span>
                     <div className="flex flex-1 flex-col">
                       <span className="text-sm font-medium text-foreground">
-                        {item.name}
+                        {item.productNameSnapshot}
                       </span>
                       <span className="text-xs tabular-nums text-muted-foreground">
-                        {formatUSD(item.price)} each
+                        {formatUSD(Number(item.unitPriceSnapshot))} each
                       </span>
                     </div>
                     <span className="text-sm font-medium tabular-nums text-foreground">
-                      {formatUSD(item.qty * item.price)}
+                      {formatUSD(Number(item.subtotal))}
                     </span>
                   </div>
                 ))}
@@ -98,15 +110,15 @@ export function TransactionDetailSheet({
                   Subtotal
                 </span>
                 <span className="text-sm tabular-nums text-foreground">
-                  {formatUSD(getTransactionTotal(transaction))}
+                  {formatUSD(Number(transaction.totalAmount))}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[13.5px] text-muted-foreground">
-                  Payment · {transaction.method}
+                  Payment · Cash
                 </span>
                 <span className="text-sm tabular-nums text-foreground">
-                  {formatUSD(transaction.received)}
+                  {formatUSD(Number(transaction.amountReceived))}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -114,9 +126,7 @@ export function TransactionDetailSheet({
                   Change
                 </span>
                 <span className="text-sm tabular-nums text-foreground">
-                  {formatUSD(
-                    transaction.received - getTransactionTotal(transaction),
-                  )}
+                  {formatUSD(Number(transaction.changeAmount))}
                 </span>
               </div>
               <div className="h-px bg-border" />
@@ -125,7 +135,7 @@ export function TransactionDetailSheet({
                   Total
                 </span>
                 <span className="text-xl font-semibold tabular-nums text-primary">
-                  {formatUSD(getTransactionTotal(transaction))}
+                  {formatUSD(Number(transaction.totalAmount))}
                 </span>
               </div>
             </div>
@@ -135,7 +145,7 @@ export function TransactionDetailSheet({
                 Cashier
               </span>
               <span className="text-sm font-medium text-foreground">
-                {transaction.cashier}
+                {cashierNameById[transaction.cashierId] ?? "—"}
               </span>
             </div>
           </div>
