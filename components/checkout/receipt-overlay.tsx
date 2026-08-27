@@ -20,7 +20,7 @@ export function ReceiptOverlay({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/55">
-      <div className="flex max-h-210 w-100 flex-col overflow-auto rounded-2xl bg-card shadow-[0_20px_60px_rgba(15,20,24,0.32)]">
+      <div className="receipt-print-area flex max-h-210 w-100 flex-col overflow-auto rounded-2xl bg-card shadow-[0_20px_60px_rgba(15,20,24,0.32)] print:rounded-none print:shadow-none">
         <div className="flex flex-col items-center gap-3.5 border-b border-dashed border-border px-7 pt-7 pb-5 text-center">
           <div className="flex size-15 items-center justify-center rounded-full bg-success-subtle">
             <Check className="size-7.5 text-success" strokeWidth={2.2} />
@@ -93,8 +93,12 @@ export function ReceiptOverlay({
           </div>
         </div>
 
-        <div className="flex gap-3 px-7 pt-4 pb-6">
-          <Button variant="secondary" className="shrink-0">
+        <div className="flex gap-3 px-7 pt-4 pb-6 print:hidden">
+          <Button
+            variant="secondary"
+            className="shrink-0"
+            onClick={() => window.print()}
+          >
             <Printer className="size-4" />
             Print
           </Button>
