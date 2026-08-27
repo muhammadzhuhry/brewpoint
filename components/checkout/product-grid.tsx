@@ -17,8 +17,8 @@ export function ProductGrid({
 }: {
   products: Product[];
   isEmpty: boolean;
-  quantities: Record<number, number>;
-  onAddItem: (id: number) => void;
+  quantities: Record<string, number>;
+  onAddItem: (id: string) => void;
 }) {
   if (isEmpty) {
     return (
@@ -35,7 +35,7 @@ export function ProductGrid({
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(196px,1fr))] gap-4">
       {products.map((product) => {
-        const status = getStockStatus(product.stock);
+        const status = getStockStatus(product.stockQuantity);
         const [bg, fg] = getTileColor(product.name);
         const isOut = status === "out-of-stock";
         const qtyInCart = quantities[product.id] ?? 0;
@@ -73,7 +73,7 @@ export function ProductGrid({
               </span>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[17px] font-semibold tabular-nums text-primary">
-                  {formatUSD(product.price)}
+                  {formatUSD(Number(product.price))}
                 </span>
                 {isOut && (
                   <span className="rounded-full bg-destructive-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-destructive-subtle-foreground">
@@ -82,7 +82,7 @@ export function ProductGrid({
                 )}
                 {status === "low-stock" && (
                   <span className="rounded-full bg-warning-subtle px-2.5 py-0.5 text-[11.5px] font-semibold text-warning-subtle-foreground">
-                    {product.stock} left
+                    {product.stockQuantity} left
                   </span>
                 )}
               </div>
