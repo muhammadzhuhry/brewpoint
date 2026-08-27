@@ -40,4 +40,13 @@ export type DashboardSummary = {
   transactionCount: number;
 };
 
+export type Receipt = {
+  ref: string;
+  time: string;
+  lines: { name: string; qty: number; price: number }[];
+  subtotal: number;
+  paid: number;
+  change: number;
+};
+
 export type ProductStockStatus = "out-of-stock" | "low-stock" | "in-stock";
