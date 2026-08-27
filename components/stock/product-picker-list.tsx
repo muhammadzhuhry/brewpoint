@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 
 export function ProductPickerList({
   products,
+  categoryNameById,
   search,
   onSearchChange,
   statusFilter,
@@ -18,12 +19,13 @@ export function ProductPickerList({
   onSelect,
 }: {
   products: Product[];
+  categoryNameById: Record<string, string>;
   search: string;
   onSearchChange: (value: string) => void;
   statusFilter: "all" | "low" | "out";
   onStatusFilterChange: (filter: "all" | "low" | "out") => void;
-  selectedId: number | null;
-  onSelect: (id: number) => void;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
 }) {
   return (
     <div className="flex w-[340px] shrink-0 flex-col border-r border-border bg-card">
@@ -91,24 +93,27 @@ export function ProductPickerList({
                     {product.name}
                   </span>
                   <span className="text-[11.5px] text-[#9AA1AB]">
-                    {product.category}
+                    {categoryNameById[product.categoryId] ?? "—"}
                   </span>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span
                     className={cn(
                       "tabular-nums text-[15px] font-semibold",
-                      product.stock === 0 ? "text-destructive" : "text-primary",
+                      product.stockQuantity === 0
+                        ? "text-destructive"
+                        : "text-primary",
                     )}
                   >
-                    {product.stock}
+                    {product.stockQuantity}
                   </span>
                   <span
                     className={cn(
                       "size-[7px] rounded-full",
-                      getStockStatus(product.stock) === "out-of-stock"
+                      getStockStatus(product.stockQuantity) === "out-of-stock"
                         ? "bg-destructive"
-                        : getStockStatus(product.stock) === "low-stock"
+                        : getStockStatus(product.stockQuantity) ===
+                            "low-stock"
                           ? "bg-warning"
                           : "bg-success",
                     )}

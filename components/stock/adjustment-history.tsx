@@ -11,7 +11,13 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-export function AdjustmentHistory({ entries }: { entries: StockAdjustment[] }) {
+export function AdjustmentHistory({
+  entries,
+  adminNameById,
+}: {
+  entries: StockAdjustment[];
+  adminNameById: Record<string, string>;
+}) {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
       <div className="flex items-baseline justify-between border-b border-border px-5 py-[18px]">
@@ -33,15 +39,14 @@ export function AdjustmentHistory({ entries }: { entries: StockAdjustment[] }) {
               <TableHead>Change</TableHead>
               <TableHead>Reason</TableHead>
               <TableHead>Adjusted by</TableHead>
-              <TableHead>When</TableHead>
-              <TableHead className="text-right">Result</TableHead>
+              <TableHead className="text-right">When</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {entries.map((entry, i) => {
-              const isIncrease = entry.type === "increase";
+            {entries.map((entry) => {
+              const isIncrease = entry.adjustmentType === "increase";
               return (
-                <TableRow key={`${entry.when}-${i}`} className="h-[52px]">
+                <TableRow key={entry.id} className="h-[52px]">
                   <TableCell>
                     <span
                       className={cn(
@@ -55,20 +60,26 @@ export function AdjustmentHistory({ entries }: { entries: StockAdjustment[] }) {
                         <ArrowDown className="size-3.5" />
                       )}
                       {isIncrease ? "+" : "−"}
-                      {entry.qty}
+                      {entry.quantity}
                     </span>
                   </TableCell>
                   <TableCell className="text-[13.5px] text-foreground">
                     {entry.reason}
                   </TableCell>
                   <TableCell className="text-[13.5px] text-muted-foreground">
-                    {entry.by}
+                    {adminNameById[entry.adminId] ?? "—"}
                   </TableCell>
-                  <TableCell className="text-[13px] tabular-nums text-muted-foreground">
-                    {entry.when}
-                  </TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {entry.result}
+                  <TableCell className="text-right text-[13px] tabular-nums text-muted-foreground">
+                    {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}{" "}
+                    ·{" "}
+                    {new Date(entry.createdAt).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </TableCell>
                 </TableRow>
               );

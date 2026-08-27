@@ -64,7 +64,7 @@ export function ConfirmAdjustmentDialog({
               New stock level
             </span>
             <span className="text-base font-semibold tabular-nums text-primary">
-              {product?.stock} → {newLevel}
+              {product?.stockQuantity} → {newLevel}
             </span>
           </div>
 

@@ -4,7 +4,13 @@ import { getTileColor } from "@/lib/avatar-color";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/shared/status-badge";
 
-export function ProductHeaderCard({ product }: { product: Product }) {
+export function ProductHeaderCard({
+  product,
+  categoryNameById,
+}: {
+  product: Product;
+  categoryNameById: Record<string, string>;
+}) {
   return (
     <div className="flex items-center gap-4 rounded-xl border border-border bg-card p-5">
       <div
@@ -21,7 +27,7 @@ export function ProductHeaderCard({ product }: { product: Product }) {
           {product.name}
         </span>
         <span className="text-[13px] text-muted-foreground">
-          {product.category}
+          {categoryNameById[product.categoryId] ?? "—"}
         </span>
       </div>
       <div className="flex flex-col items-end gap-1.5">
@@ -29,14 +35,16 @@ export function ProductHeaderCard({ product }: { product: Product }) {
           <span
             className={cn(
               "font-display text-[28px] leading-none font-semibold tabular-nums",
-              product.stock === 0 ? "text-destructive" : "text-primary",
+              product.stockQuantity === 0
+                ? "text-destructive"
+                : "text-primary",
             )}
           >
-            {product.stock}
+            {product.stockQuantity}
           </span>
           <span className="text-[13px] text-muted-foreground">in stock</span>
         </div>
-        <StatusBadge status={getStockStatus(product.stock)} />
+        <StatusBadge status={getStockStatus(product.stockQuantity)} />
       </div>
     </div>
   );

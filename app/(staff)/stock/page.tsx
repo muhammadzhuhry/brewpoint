@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import type { StockAdjustment } from "@/lib/types";
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
-import { MOCK_STOCK_HISTORY } from "@/lib/mock-stock-history";
+import type { Product } from "@/lib/types";
+import { useProducts } from "@/hooks/use-products";
+import { useCategories } from "@/hooks/use-categories";
+import { useUsers } from "@/hooks/use-users";
+import { useStockAdjustments } from "@/hooks/use-stock-adjustments";
+import { apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { getStockStatus } from "@/lib/product-status";
-import { mockCurrentUser } from "@/lib/mock-current-user";
 
 import { PageHeader } from "@/components/shared/page-header";
 import { ProductPickerList } from "@/components/stock/product-picker-list";
@@ -16,48 +20,39 @@ import { AdjustmentForm } from "@/components/stock/adjustment-form";
 import { AdjustmentHistory } from "@/components/stock/adjustment-history";
 import { ConfirmAdjustmentDialog } from "@/components/stock/confirm-adjustment-dialog";
 
-function getAdjustmentTimeLabel() {
-  return (
-    "Today · " +
-    new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    })
-  );
-}
-
 export default function StockPage() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
-  const [stockHistory, setStockHistory] = useState(MOCK_STOCK_HISTORY);
+  const { data: productsData } = useProducts({ pageSize: 1000 });
+  const products = productsData?.items ?? [];
+
+  const { data: categoriesData } = useCategories();
+  const categoryNameById = Object.fromEntries(
+    (categoriesData ?? []).map((cat) => [cat.id, cat.name]),
+  );
+
+  const { data: usersData } = useUsers();
+  const adminNameById = Object.fromEntries(
+    (usersData ?? []).map((u) => [u.id, u.name]),
+  );
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "low" | "out">(
     "all",
   );
-  const [selectedId, setSelectedId] = useState<number | null>(
-    products[0]?.id ?? null,
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const [adjType, setAdjType] = useState<"increase" | "decrease">("increase");
   const [qty, setQty] = useState("");
   const [reason, setReason] = useState("");
   const [errors, setErrors] = useState<{ qty?: string; reason?: string }>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2600);
-    return () => clearTimeout(t);
-  }, [toast]);
 
   const lowCount = products.filter(
-    (p) => getStockStatus(p.stock) !== "in-stock",
+    (p) => getStockStatus(p.stockQuantity) !== "in-stock",
   ).length;
-  const outCount = products.filter((p) => p.stock === 0).length;
+  const outCount = products.filter((p) => p.stockQuantity === 0).length;
 
   const filtered = products.filter((p) => {
-    const status = getStockStatus(p.stock);
+    const status = getStockStatus(p.stockQuantity);
     if (statusFilter === "low" && status !== "low-stock") return false;
     if (statusFilter === "out" && status !== "out-of-stock") return false;
     const q = search.trim().toLowerCase();
@@ -65,9 +60,9 @@ export default function StockPage() {
   });
 
   const selected = products.find((p) => p.id === selectedId) ?? null;
-  const historyForSelected = selected ? (stockHistory[selected.id] ?? []) : [];
+  const { data: historyForSelected = [] } = useStockAdjustments(selectedId);
 
-  const selectProduct = (id: number) => {
+  const selectProduct = (id: string) => {
     setSelectedId(id);
     setAdjType("increase");
     setQty("");
@@ -84,9 +79,38 @@ export default function StockPage() {
     if (!selected) return 0;
     const d = delta();
     return adjType === "increase"
-      ? selected.stock + d
-      : Math.max(0, selected.stock - d);
+      ? selected.stockQuantity + d
+      : Math.max(0, selected.stockQuantity - d);
   };
+
+  const createMutation = useMutation({
+    mutationFn: (body: {
+      adjustmentType: "increase" | "decrease";
+      quantity: number;
+      reason: string;
+    }) =>
+      apiPost<Product>(
+        `/products/${selected?.id}/stock-adjustments`,
+        body,
+      ),
+    onSuccess: () => {
+      setConfirmOpen(false);
+      setQty("");
+      setReason("");
+      setAdjType("increase");
+      setErrors({});
+      toast.success(
+        `${adjType === "increase" ? "Added" : "Removed"} ${delta()} — ${selected?.name} now at ${newLevel()}`,
+      );
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError
+          ? error.message
+          : "Failed to record adjustment",
+      );
+    },
+  });
 
   const handleOpenConfirm = () => {
     if (!selected) return;
@@ -98,8 +122,8 @@ export default function StockPage() {
     if (!reason.trim()) {
       newErrors.reason = "A reason is required for every adjustment.";
     }
-    if (adjType === "decrease" && q > selected.stock) {
-      newErrors.qty = `Can't remove more than current stock (${selected.stock}).`;
+    if (adjType === "decrease" && q > selected.stockQuantity) {
+      newErrors.qty = `Can't remove more than current stock (${selected.stockQuantity}).`;
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -111,32 +135,11 @@ export default function StockPage() {
 
   const handleConfirmAdjustment = () => {
     if (!selected) return;
-    const q = delta();
-    const result = newLevel();
-    const entry: StockAdjustment = {
-      type: adjType,
-      qty: q,
+    createMutation.mutate({
+      adjustmentType: adjType,
+      quantity: delta(),
       reason: reason.trim(),
-      by: mockCurrentUser.name,
-      when: getAdjustmentTimeLabel(),
-      result,
-    };
-
-    setProducts(
-      products.map((p) => (p.id === selected.id ? { ...p, stock: result } : p)),
-    );
-    setStockHistory({
-      ...stockHistory,
-      [selected.id]: [entry, ...historyForSelected],
     });
-    setConfirmOpen(false);
-    setQty("");
-    setReason("");
-    setAdjType("increase");
-    setErrors({});
-    setToast(
-      `${adjType === "increase" ? "Added" : "Removed"} ${q} — ${selected.name} now at ${result}`,
-    );
   };
 
   return (
@@ -158,6 +161,7 @@ export default function StockPage() {
       <div className="-mx-6 -mb-6 flex flex-1 overflow-hidden">
         <ProductPickerList
           products={filtered}
+          categoryNameById={categoryNameById}
           search={search}
           onSearchChange={setSearch}
           statusFilter={statusFilter}
@@ -173,7 +177,10 @@ export default function StockPage() {
             </div>
           ) : (
             <>
-              <ProductHeaderCard product={selected} />
+              <ProductHeaderCard
+                product={selected}
+                categoryNameById={categoryNameById}
+              />
 
               <AdjustmentForm
                 adjType={adjType}
@@ -189,19 +196,15 @@ export default function StockPage() {
                   setErrors({ ...errors, reason: undefined });
                 }}
                 errors={errors}
-                currentStock={selected.stock}
+                currentStock={selected.stockQuantity}
                 newLevel={newLevel()}
                 onSubmit={handleOpenConfirm}
               />
 
-              <AdjustmentHistory entries={historyForSelected} />
-
-              {toast && (
-                <div className="sticky bottom-0 flex items-center gap-2.5 self-center rounded-[10px] bg-primary px-4 py-2.5 text-primary-foreground shadow-lg">
-                  <Check className="size-4 text-[#8FE0A6]" />
-                  <span className="text-[13.5px] font-medium">{toast}</span>
-                </div>
-              )}
+              <AdjustmentHistory
+                entries={historyForSelected}
+                adminNameById={adminNameById}
+              />
             </>
           )}
         </div>

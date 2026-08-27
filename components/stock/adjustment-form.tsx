@@ -2,11 +2,18 @@
 
 import { ArrowDown, ArrowUp } from "lucide-react";
 
-import { PRESET_REASONS } from "@/lib/mock-stock-history";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+
+const PRESET_REASONS = [
+  "Weekly delivery",
+  "Inventory recount",
+  "Spoilage / waste",
+  "Damaged in transit",
+  "Transfer to storage",
+];
 
 export function AdjustmentForm({
   adjType,
