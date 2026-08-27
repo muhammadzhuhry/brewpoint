@@ -1,12 +1,12 @@
 import { create } from "zustand";
 
 type CartState = {
-  quantities: Record<number, number>;
-  order: number[];
-  addItem: (productId: number) => void;
-  increment: (productId: number) => void;
-  decrement: (productId: number) => void;
-  removeItem: (productId: number) => void;
+  quantities: Record<string, number>;
+  order: string[];
+  addItem: (productId: string) => void;
+  increment: (productId: string) => void;
+  decrement: (productId: string) => void;
+  removeItem: (productId: string) => void;
   clearCart: () => void;
 };
 
