@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-import type { Product, Receipt } from "@/lib/types";
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
+import type { Product, Receipt, Transaction } from "@/lib/types";
+import { useProducts } from "@/hooks/use-products";
+import { useCategories } from "@/hooks/use-categories";
+import { apiPost } from "@/lib/api-client";
+import { ApiError } from "@/lib/api-error";
 import { useCartStore } from "@/stores/cart-store";
 import { CheckoutHeader } from "@/components/checkout/checkout-header";
 import { ProductGrid } from "@/components/checkout/product-grid";
@@ -15,32 +20,36 @@ function getNow() {
   return new Date();
 }
 
-function getReceiptTimeLabel() {
-  const now = new Date();
+function getReceiptTimeLabel(timestamp: string | Date) {
+  const d = new Date(timestamp);
   return (
-    now.toLocaleDateString("en-US", {
+    d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     }) +
     " · " +
-    now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+    d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
   );
 }
 
 export default function CheckoutPage() {
-  const [products, setProducts] = useState(MOCK_PRODUCTS);
+  const { data: productsData } = useProducts({ pageSize: 1000 });
+  const products = productsData?.items ?? [];
+
+  const { data: categoriesData } = useCategories();
+  const categories = categoriesData ?? [];
+
   const { quantities, order, addItem, increment, decrement, clearCart } =
     useCartStore();
 
   const [now, setNow] = useState<Date | null>(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [sort, setSort] = useState<string | null>("Sort: Popular");
+  const [sort, setSort] = useState("Name A–Z");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [received, setReceived] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
-  const [nextRef, setNextRef] = useState(2042);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(getNow()), 1000);
@@ -62,22 +71,23 @@ export default function CheckoutPage() {
       })
     : "--:--:--";
 
-  const categories = Array.from(new Set(products.map((p) => p.category)));
-
   const filteredProducts = products.filter((p) => {
     const matchesCategory =
-      categoryFilter === "All" || p.category === categoryFilter;
-    const matchesSearch = p.name
-      .toLowerCase()
-      .includes(search.trim().toLowerCase());
+      categoryFilter === "All" || p.categoryId === categoryFilter;
+    const q = search.trim().toLowerCase();
+    const matchesSearch =
+      q === "" ||
+      p.name.toLowerCase().includes(q) ||
+      (p.barcode?.toLowerCase().includes(q) ?? false);
     return matchesCategory && matchesSearch;
   });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sort === "Name A–Z") return a.name.localeCompare(b.name);
-    if (sort === "Price: Low to high") return a.price - b.price;
-    if (sort === "Price: High to low") return b.price - a.price;
-    return b.txnCount - a.txnCount;
+    if (sort === "Price: Low to high")
+      return Number(a.price) - Number(b.price);
+    if (sort === "Price: High to low")
+      return Number(b.price) - Number(a.price);
+    return a.name.localeCompare(b.name);
   });
 
   const cartLines = order
@@ -86,12 +96,12 @@ export default function CheckoutPage() {
     .map((product) => ({ product, qty: quantities[product.id] }));
 
   const subtotal = cartLines.reduce(
-    (sum, { product, qty }) => sum + product.price * qty,
+    (sum, { product, qty }) => sum + Number(product.price) * qty,
     0,
   );
   const itemCount = cartLines.reduce((sum, { qty }) => sum + qty, 0);
   const hasStockError = cartLines.some(
-    ({ product, qty }) => qty > product.stock,
+    ({ product, qty }) => qty > product.stockQuantity,
   );
 
   const receivedNum = parseFloat(received);
@@ -106,6 +116,18 @@ export default function CheckoutPage() {
     ]),
   ).slice(0, 4);
 
+  const checkoutMutation = useMutation({
+    mutationFn: (body: {
+      items: { productId: string; quantity: number }[];
+      amountReceived: string;
+    }) => apiPost<Transaction>("/transactions", body),
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError ? error.message : "Checkout failed",
+      );
+    },
+  });
+
   const openCheckout = () => {
     setReceived("");
     setCheckoutOpen(true);
@@ -113,29 +135,38 @@ export default function CheckoutPage() {
 
   const handleCompleteSale = () => {
     if (!isValidReceived) return;
-    setProducts(
-      products.map((p) =>
-        quantities[p.id]
-          ? { ...p, stock: Math.max(0, p.stock - quantities[p.id]) }
-          : p,
-      ),
+
+    const lineSnapshot = cartLines.map(({ product, qty }) => ({
+      name: product.name,
+      qty,
+      price: Number(product.price),
+    }));
+
+    checkoutMutation.mutate(
+      {
+        items: cartLines.map(({ product, qty }) => ({
+          productId: product.id,
+          quantity: qty,
+        })),
+        amountReceived: received,
+      },
+      {
+        onSuccess: (transaction) => {
+          setReceipt({
+            ref: `TX-${transaction.id.slice(0, 8).toUpperCase()}`,
+            time: getReceiptTimeLabel(transaction.createdAt),
+            lines: lineSnapshot,
+            subtotal: Number(transaction.totalAmount),
+            paid: Number(transaction.amountReceived),
+            change: Number(transaction.changeAmount),
+          });
+          clearCart();
+          setCheckoutOpen(false);
+          setReceived("");
+          toast.success("Sale completed");
+        },
+      },
     );
-    setReceipt({
-      ref: `TX-${nextRef}`,
-      time: getReceiptTimeLabel(),
-      lines: cartLines.map(({ product, qty }) => ({
-        name: product.name,
-        qty,
-        price: product.price,
-      })),
-      subtotal,
-      paid: receivedNum,
-      change,
-    });
-    setNextRef(nextRef + 1);
-    clearCart();
-    setCheckoutOpen(false);
-    setReceived("");
   };
 
   return (
