@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { products, transactions, transactionItems } from "@/lib/db/schema";
@@ -92,6 +92,8 @@ export async function checkout(
 export async function listTransactions(params: {
   cashierId?: string;
   status?: "completed" | "voided";
+  from?: Date;
+  to?: Date;
   page?: number;
   pageSize?: number;
 }) {
@@ -104,6 +106,12 @@ export async function listTransactions(params: {
   }
   if (params.status) {
     conditions.push(eq(transactions.status, params.status));
+  }
+  if (params.from) {
+    conditions.push(gte(transactions.createdAt, params.from));
+  }
+  if (params.to) {
+    conditions.push(lte(transactions.createdAt, params.to));
   }
   const where = conditions.length ? and(...conditions) : undefined;
 
