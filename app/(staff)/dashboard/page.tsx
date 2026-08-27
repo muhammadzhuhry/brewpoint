@@ -3,21 +3,90 @@
 import { useState } from "react";
 import { PieChart } from "lucide-react";
 
-import { MOCK_DASHBOARD, type DashboardPeriod } from "@/lib/mock-dashboard";
-import { MOCK_PRODUCTS } from "@/lib/mock-products";
+import type { DashboardPeriod, StatDelta } from "@/lib/types";
+import { useDashboardSummary, useBestSellers } from "@/hooks/use-dashboard";
+import { useProducts } from "@/hooks/use-products";
+import { formatUSD } from "@/lib/format-currency";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { StatsGrid } from "@/components/dashboard/stats-grid";
-import { SalesChart } from "@/components/dashboard/sales-chart";
 import { BestSellers } from "@/components/dashboard/best-sellers";
-import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { LowStock } from "@/components/dashboard/low-stock";
+
+function getPeriodBounds(period: DashboardPeriod) {
+  const to = new Date();
+  const from = new Date();
+  from.setHours(0, 0, 0, 0);
+  if (period === "week") from.setDate(from.getDate() - 6);
+  if (period === "month") from.setDate(from.getDate() - 29);
+  return { from, to };
+}
+
+function getPreviousPeriodBounds(from: Date, to: Date) {
+  const duration = to.getTime() - from.getTime();
+  return {
+    from: new Date(from.getTime() - duration),
+    to: new Date(from.getTime()),
+  };
+}
+
+function getDateLabel(from: Date, to: Date, period: DashboardPeriod) {
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  return period === "today" ? fmt(to) : `${fmt(from)} – ${fmt(to)}`;
+}
+
+function getDeltaNote(period: DashboardPeriod) {
+  if (period === "today") return "vs yesterday";
+  if (period === "week") return "vs last week";
+  return "vs prev. 30 days";
+}
+
+function computeDelta(current: number, previous: number): StatDelta {
+  if (previous === 0) {
+    return current === 0 ? { text: "—", up: true } : { text: "↑ new", up: true };
+  }
+  const pct = ((current - previous) / previous) * 100;
+  return {
+    text: `${pct >= 0 ? "↑" : "↓"} ${Math.abs(pct).toFixed(1)}%`,
+    up: pct >= 0,
+  };
+}
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>("today");
-  const snapshot = MOCK_DASHBOARD[period];
+  const { from, to } = getPeriodBounds(period);
+  const { from: prevFrom, to: prevTo } = getPreviousPeriodBounds(from, to);
 
-  const hasNoSales = snapshot.bars.every((bar) => bar.value === 0);
+  const { data: summary } = useDashboardSummary({
+    from: from.toISOString(),
+    to: to.toISOString(),
+  });
+  const { data: prevSummary } = useDashboardSummary({
+    from: prevFrom.toISOString(),
+    to: prevTo.toISOString(),
+  });
+  const { data: bestSellers } = useBestSellers({
+    from: from.toISOString(),
+    to: to.toISOString(),
+    limit: 5,
+  });
+  const { data: productsData } = useProducts({ pageSize: 1000 });
+
+  const totalSales = Number(summary?.totalSales ?? "0");
+  const transactionCount = summary?.transactionCount ?? 0;
+  const avgTicket = transactionCount > 0 ? totalSales / transactionCount : 0;
+
+  const prevTotalSales = Number(prevSummary?.totalSales ?? "0");
+  const prevTransactionCount = prevSummary?.transactionCount ?? 0;
+  const prevAvgTicket =
+    prevTransactionCount > 0 ? prevTotalSales / prevTransactionCount : 0;
+
+  const hasNoSales = transactionCount === 0;
   const periodLabel =
     period === "today"
       ? "today"
@@ -30,7 +99,7 @@ export default function DashboardPage() {
       <DashboardHeader
         period={period}
         onPeriodChange={setPeriod}
-        dateLabel={snapshot.dateLabel}
+        dateLabel={getDateLabel(from, to, period)}
       />
 
       {hasNoSales ? (
@@ -43,17 +112,21 @@ export default function DashboardPage() {
         </div>
       ) : (
         <>
-          <StatsGrid snapshot={snapshot} />
+          <StatsGrid
+            totalSales={formatUSD(totalSales)}
+            transactionCount={transactionCount}
+            avgTicket={formatUSD(avgTicket)}
+            deltas={{
+              sales: computeDelta(totalSales, prevTotalSales),
+              txns: computeDelta(transactionCount, prevTransactionCount),
+              avg: computeDelta(avgTicket, prevAvgTicket),
+            }}
+            deltaNote={getDeltaNote(period)}
+          />
 
-          <div className="grid grid-cols-[1fr_550px] items-stretch gap-4">
-            <SalesChart snapshot={snapshot} />
-            <BestSellers snapshot={snapshot} />
-          </div>
+          <BestSellers items={bestSellers ?? []} />
 
-          <div className="grid grid-cols-[1fr_600px] items-stretch gap-4">
-            <CategoryBreakdown snapshot={snapshot} />
-            <LowStock products={MOCK_PRODUCTS} />
-          </div>
+          <LowStock products={productsData?.items ?? []} />
         </>
       )}
     </div>

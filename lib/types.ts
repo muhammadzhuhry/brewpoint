@@ -57,3 +57,10 @@ export type Receipt = {
 };
 
 export type ProductStockStatus = "out-of-stock" | "low-stock" | "in-stock";
+
+export type DashboardPeriod = "today" | "week" | "month";
+
+export type StatDelta = {
+  text: string;
+  up: boolean;
+};

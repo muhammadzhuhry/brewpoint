@@ -2,8 +2,8 @@
 
 import { Calendar } from "lucide-react";
 
-import type { DashboardPeriod } from "@/lib/mock-dashboard";
-import { mockCurrentUser } from "@/lib/mock-current-user";
+import type { DashboardPeriod } from "@/lib/types";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { cn } from "@/lib/utils";
 
 export function DashboardHeader({
@@ -15,6 +15,8 @@ export function DashboardHeader({
   onPeriodChange: (period: DashboardPeriod) => void;
   dateLabel: string;
 }) {
+  const { data: currentUser } = useCurrentUser();
+
   return (
     <div className="-mx-6 -mt-6 flex h-16 items-center justify-between border-b border-border bg-card px-6">
       <div className="flex flex-col gap-0.5">
@@ -22,7 +24,7 @@ export function DashboardHeader({
           Dashboard
         </h1>
         <span className="text-xs text-muted-foreground">
-          Good morning, {mockCurrentUser.name} — here&apos;s how the shop is
+          Good morning, {currentUser?.name ?? ""} — here&apos;s how the shop is
           doing.
         </span>
       </div>

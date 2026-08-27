@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { StatDelta } from "@/lib/mock-dashboard";
+import type { StatDelta } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function StatCard({

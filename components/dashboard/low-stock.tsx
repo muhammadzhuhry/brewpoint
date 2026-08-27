@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 export function LowStock({ products }: { products: Product[] }) {
   const lowStockProducts = [...products]
-    .filter((p) => getStockStatus(p.stock) !== "in-stock")
-    .sort((a, b) => a.stock - b.stock);
+    .filter((p) => getStockStatus(p.stockQuantity) !== "in-stock")
+    .sort((a, b) => a.stockQuantity - b.stockQuantity);
 
   return (
     <div className="w-[600px] rounded-xl border border-border bg-card p-5">
@@ -19,7 +19,8 @@ export function LowStock({ products }: { products: Product[] }) {
       </div>
       <div className="flex flex-col">
         {lowStockProducts.map((product, i) => {
-          const isOut = getStockStatus(product.stock) === "out-of-stock";
+          const isOut =
+            getStockStatus(product.stockQuantity) === "out-of-stock";
           return (
             <div
               key={product.id}
@@ -45,7 +46,7 @@ export function LowStock({ products }: { products: Product[] }) {
                     isOut ? "bg-destructive" : "bg-warning",
                   )}
                 />
-                {isOut ? "Out of stock" : `${product.stock} left`}
+                {isOut ? "Out of stock" : `${product.stockQuantity} left`}
               </span>
             </div>
           );

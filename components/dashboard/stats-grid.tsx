@@ -1,38 +1,43 @@
-import { Coffee, DollarSign, Receipt, Tag } from "lucide-react";
+import { DollarSign, Receipt, Tag } from "lucide-react";
 
-import type { DashboardSnapshot } from "@/lib/mock-dashboard";
+import type { StatDelta } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 
-export function StatsGrid({ snapshot }: { snapshot: DashboardSnapshot }) {
+export function StatsGrid({
+  totalSales,
+  transactionCount,
+  avgTicket,
+  deltas,
+  deltaNote,
+}: {
+  totalSales: string;
+  transactionCount: number;
+  avgTicket: string;
+  deltas: { sales: StatDelta; txns: StatDelta; avg: StatDelta };
+  deltaNote: string;
+}) {
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-3 gap-4">
       <StatCard
         label="Total sales"
-        value={snapshot.stats.sales}
+        value={totalSales}
         icon={<DollarSign className="size-4" />}
-        delta={snapshot.deltas.sales}
-        deltaNote={snapshot.deltaNote}
+        delta={deltas.sales}
+        deltaNote={deltaNote}
       />
       <StatCard
         label="Transactions"
-        value={snapshot.stats.txns}
+        value={String(transactionCount)}
         icon={<Receipt className="size-4" />}
-        delta={snapshot.deltas.txns}
-        deltaNote={snapshot.deltaNote}
+        delta={deltas.txns}
+        deltaNote={deltaNote}
       />
       <StatCard
         label="Avg. ticket"
-        value={snapshot.stats.avg}
+        value={avgTicket}
         icon={<Tag className="size-4" />}
-        delta={snapshot.deltas.avg}
-        deltaNote={snapshot.deltaNote}
-      />
-      <StatCard
-        label="Items sold"
-        value={snapshot.stats.items}
-        icon={<Coffee className="size-4" />}
-        delta={snapshot.deltas.items}
-        deltaNote={snapshot.deltaNote}
+        delta={deltas.avg}
+        deltaNote={deltaNote}
       />
     </div>
   );
