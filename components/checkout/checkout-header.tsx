@@ -12,7 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import type { Product } from "@/lib/types";
+import type { Category, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -47,13 +47,18 @@ export function CheckoutHeader({
   timeLabel: string;
   search: string;
   onSearchChange: (value: string) => void;
-  sort: string | null;
-  onSortChange: (value: string | null) => void;
+  sort: string;
+  onSortChange: (value: string) => void;
   categoryFilter: string;
   onCategoryFilterChange: (value: string) => void;
-  categories: string[];
+  categories: Category[];
   products: Product[];
 }) {
+  const pillItems = [
+    { id: "All", name: "All" },
+    ...categories.map((cat) => ({ id: cat.id, name: cat.name })),
+  ];
+
   return (
     <div className="flex flex-col gap-3.5 px-6 pt-5 pb-3">
       <div className="flex items-center justify-between gap-4">
@@ -102,12 +107,14 @@ export function CheckoutHeader({
           />
         </div>
 
-        <Select value={sort} onValueChange={onSortChange}>
+        <Select
+          value={sort}
+          onValueChange={(value) => value && onSortChange(value)}
+        >
           <SelectTrigger className="h-12 w-52">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Sort: Popular">Sort: Popular</SelectItem>
             <SelectItem value="Name A–Z">Name A–Z</SelectItem>
             <SelectItem value="Price: Low to high">
               Price: Low to high
@@ -120,18 +127,18 @@ export function CheckoutHeader({
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-0.5">
-        {["All", ...categories].map((c) => {
-          const isOn = categoryFilter === c;
+        {pillItems.map((item) => {
+          const isOn = categoryFilter === item.id;
           const count =
-            c === "All"
+            item.id === "All"
               ? products.length
-              : products.filter((p) => p.category === c).length;
-          const Icon = CATEGORY_ICONS[c] ?? Coffee;
+              : products.filter((p) => p.categoryId === item.id).length;
+          const Icon = CATEGORY_ICONS[item.name] ?? Coffee;
           return (
             <button
-              key={c}
+              key={item.id}
               type="button"
-              onClick={() => onCategoryFilterChange(c)}
+              onClick={() => onCategoryFilterChange(item.id)}
               className={cn(
                 "flex shrink-0 items-center gap-2 rounded-full border py-1.5 pr-3.5 pl-1.5 text-[13.5px] font-medium whitespace-nowrap",
                 isOn
@@ -152,7 +159,7 @@ export function CheckoutHeader({
                   )}
                 />
               </span>
-              {c}
+              {item.name}
               <span
                 className={cn(
                   "flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold",
