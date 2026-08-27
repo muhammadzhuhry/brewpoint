@@ -4,7 +4,7 @@ import { Check, Printer } from "lucide-react";
 
 import type { Receipt } from "@/lib/types";
 import { formatUSD } from "@/lib/format-currency";
-import { mockCurrentUser } from "@/lib/mock-current-user";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 
 export function ReceiptOverlay({
@@ -14,6 +14,8 @@ export function ReceiptOverlay({
   receipt: Receipt | null;
   onNewSale: () => void;
 }) {
+  const { data: currentUser } = useCurrentUser();
+
   if (!receipt) return null;
 
   return (
@@ -35,7 +37,7 @@ export function ReceiptOverlay({
 
         <div className="flex flex-col gap-3 px-7 py-5.5">
           <span className="text-[11.5px] font-semibold tracking-wide text-muted-foreground">
-            MAPLE &amp; VINE COFFEE · {mockCurrentUser.name.toUpperCase()}
+            MAPLE &amp; VINE COFFEE · {currentUser?.name.toUpperCase() ?? ""}
           </span>
 
           <div className="flex flex-col gap-2">
