@@ -29,8 +29,8 @@ export function CartPanel({
   itemCount: number;
   subtotal: number;
   hasStockError: boolean;
-  onIncrement: (id: number) => void;
-  onDecrement: (id: number) => void;
+  onIncrement: (id: string) => void;
+  onDecrement: (id: string) => void;
   onClearCart: () => void;
   onCharge: () => void;
 }) {
@@ -71,7 +71,7 @@ export function CartPanel({
         ) : (
           <div className="flex flex-col gap-1 p-3.5">
             {cartLines.map(({ product, qty }) => {
-              const over = qty > product.stock;
+              const over = qty > product.stockQuantity;
               return (
                 <div
                   key={product.id}
@@ -89,11 +89,11 @@ export function CartPanel({
                     </span>
                     {over ? (
                       <span className="text-xs font-semibold text-destructive">
-                        Only {product.stock} in stock
+                        Only {product.stockQuantity} in stock
                       </span>
                     ) : (
                       <span className="text-xs tabular-nums text-muted-foreground">
-                        {formatUSD(product.price)} each
+                        {formatUSD(Number(product.price))} each
                       </span>
                     )}
                   </div>
@@ -122,7 +122,7 @@ export function CartPanel({
                     </button>
                   </div>
                   <span className="w-14 text-right text-[13.5px] font-semibold tabular-nums text-foreground">
-                    {formatUSD(product.price * qty)}
+                    {formatUSD(Number(product.price) * qty)}
                   </span>
                 </div>
               );
