@@ -52,12 +52,12 @@ The "user" throughout this document refers to **internal staff who operate the P
 ### Core Constraints
 
 - Frontend: Next.js (web application, desktop/tablet browser — no native mobile app in v1).
-- Backend: Go Fiber, exposed as a REST API consumed by the frontend.
+- Backend: a single Next.js app — Route Handlers (`app/api/v1/**/route.ts`) structured as a REST API, not a separate service. This keeps the option open to swap in a standalone backend (e.g. Go Fiber) later behind one env-var change, without it being required for v1. *(Revised 2026-08 — the original plan called for a separate Go Fiber service; `TECH_SPEC.md` v2.0 consolidated this into one app to reduce MVP scope.)*
 - Database: PostgreSQL.
 - Single-outlet only in v1 — no multi-branch or multi-tenant support.
 - No customer-facing app, loyalty program, or online ordering in v1.
-- No payment gateway integration in v1 — payment is recorded manually (cash or "other," with amount received and change calculated by the system).
-- No physical receipt printing in v1 — receipt is shown on screen only.
+- No payment gateway integration in v1 — payment is recorded manually as cash, with amount received and change calculated by the system. *(Revised 2026-08 — the checkout flow only ever implemented a cash tender; a selectable "other" payment method was scoped out during Part 3 and never built.)*
+- No dedicated receipt-printer hardware integration in v1 — the on-screen receipt can be sent to the browser's own print dialog (targeting a standard Letter/A4 printer), but thermal receipt-printer paper widths (58mm/80mm) are not supported. *(Revised 2026-08 — a "Print Receipt" button using `window.print()` plus a print stylesheet was added during Part 3 as a small user-requested enhancement; it does not require any physical receipt-printer hardware.)*
 - Role-based access control with two roles: `admin` and `cashier`.
 - Authentication is required for all actions; there is no public/anonymous access.
 
@@ -66,7 +66,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 - Multi-outlet / multi-branch management.
 - Online storefront or self-order kiosk.
 - Payment gateway / card / QR payment integration.
-- Physical receipt/printer integration.
+- Dedicated thermal receipt-printer hardware integration (58mm/80mm paper sizing) — browser-based printing to a standard printer is in v1, see Core Constraints above.
 - Customer loyalty, membership, or rewards system.
 - Advanced analytics (forecasting, trends beyond basic daily/periodic totals).
 - Native mobile app.
@@ -108,7 +108,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 - Login fails with a generic "invalid username or password" message (does not reveal which field is wrong).
 - A valid login returns a session/token and redirects to the correct landing page based on role.
 - Logout invalidates the current session/token.
-- Inactive sessions expire after a configurable duration (default: 8 hours).
+- The session token has a configurable, fixed lifetime from the moment of login (default: 8 hours) after which it expires and the user must log in again — this is not a sliding/idle-activity timer, it does not extend on continued use.
 
 **Dependencies:** User Management (accounts must exist to log in).
 
@@ -171,7 +171,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 - As an **Admin**, I want to create a new product (name, price, category, stock quantity, optional barcode, optional image) so that it becomes available for sale.
 - As an **Admin or Cashier**, I want to view a list of all products (with pagination) so that I can browse the catalog.
 - As an **Admin or Cashier**, I want to view a product's detail (name, price, category, current stock, barcode) so that I can confirm its information before selling or editing it.
-- As an **Admin**, I want to update a product's information (name, price, category, image) so that I can keep the catalog accurate.
+- As an **Admin**, I want to update a product's information (name, price, category, stock quantity, barcode, image) so that I can keep the catalog accurate.
 - As an **Admin**, I want to delete (soft-delete) a product so that discontinued items no longer appear for sale, without breaking historical transactions that reference it.
 - As a **Cashier**, I want to search products by name or barcode so that I can quickly find an item at checkout.
 - As an **Admin or Cashier**, I want the product list to clearly indicate when a product is out of stock so that it isn't sold by mistake.
@@ -222,7 +222,8 @@ The "user" throughout this document refers to **internal staff who operate the P
 
 **User Stories:**
 
-- As an **Admin or Cashier**, I want to view a list of past transactions so that I can review what has been sold.
+- As an **Admin**, I want to view a list of all past transactions so that I can review what has been sold storewide.
+- As a **Cashier**, I want to view a list of my own past transactions so that I can review what I've sold.
 - As an **Admin or Cashier**, I want to filter the transaction list by date range so that I can review a specific period.
 - As an **Admin**, I want to filter the transaction list by cashier so that I can review a specific staff member's activity.
 - As an **Admin or Cashier**, I want to view a transaction's detail (items, quantities, prices, total, payment amount, change, cashier, timestamp, status) so that I can verify what happened in that sale.
@@ -231,7 +232,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 
 - List is sorted by most recent first by default.
 - Voided transactions are visually distinguished from completed ones in both the list and detail view.
-- Cashiers can view all transactions (read-only) but cannot void them.
+- A cashier's transaction list and detail views are scoped to their own sales only (`cashierId` filter is enforced server-side, ignoring any value the client attempts to pass) — they cannot see other cashiers' transactions, and cannot void any transaction. Only an admin can view every cashier's transactions and filter by cashier. *(Revised 2026-08 — resolves Open Question 1 below: v1 deliberately keeps this restriction rather than the broader "cashiers see all transactions" originally proposed, so staff don't see each other's sales patterns/performance.)*
 
 **Dependencies:** Point of Sale (Checkout).
 
@@ -264,7 +265,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 **User Stories:**
 
 - As an **Admin**, I want to see today's total sales amount and transaction count so that I know how the store is performing right now.
-- As an **Admin**, I want to see total sales for a selected date range so that I can review a specific period.
+- As an **Admin**, I want to see total sales for a selected period (Today / This Week / This Month) so that I can review recent performance, including the percentage change versus the immediately preceding period of equal length. *(Revised 2026-08 — v1 uses fixed period presets rather than an arbitrary custom date range, since no PRD requirement called for arbitrary ranges specifically; the period-over-period delta was added as a small enhancement beyond the original scope, computed by calling the summary twice with no new backend endpoint.)*
 - As an **Admin**, I want to see a simple list of best-selling products so that I know what to stock more of.
 
 **Acceptance Criteria:**
@@ -344,7 +345,7 @@ The "user" throughout this document refers to **internal staff who operate the P
                           v                     v
                    [Success: Receipt]   [Error: Insufficient Stock]
 
-[Transaction History] <-- accessible by both roles (read-only for Cashier)
+[Transaction History] <-- Admin sees all transactions; Cashier sees only their own (both read-only, void is Admin-only)
 ```
 
 ---
@@ -367,9 +368,9 @@ The "user" throughout this document refers to **internal staff who operate the P
 
 ## Open Questions & Assumptions
 
-- **Question 1:** Should a cashier be allowed to see other cashiers' transaction history, or only their own?
-- **Question 2:** Should voided transactions be restricted to same-day voids only, or allowed at any time?
-- **Question 3:** Is a "draft"/held order (park a cart and resume later) needed for v1, or can it wait for a future release?
+- **Question 1 — Resolved (2026-08):** Should a cashier be allowed to see other cashiers' transaction history, or only their own? → **Only their own.** Implemented as a server-side scope in `listTransactions`/`getTransactionById`, not just a UI filter. See Transaction History acceptance criteria above.
+- **Question 2 — Resolved (2026-08):** Should voided transactions be restricted to same-day voids only, or allowed at any time? → **Any time.** `voidTransaction` has no age check on the transaction being voided — only that it isn't already voided.
+- **Question 3 — Resolved (2026-08):** Is a "draft"/held order (park a cart and resume later) needed for v1, or can it wait for a future release? → **Waits.** Not built in v1; cart state lives only in-memory (Zustand) for the current session, with no "hold and resume" capability. Remains a candidate for a future release.
 - **Assumption 1:** The system is used by a single store with one physical counter/device context in mind for MVP, though multiple cashier accounts may use it.
 - **Assumption 2:** All monetary values are in a single currency (USD, changed from IDR 2026-07 per product decision) with no multi-currency support needed.
 - **Assumption 3:** Tax is out of scope for v1 unless clarified otherwise; total = sum of line items.
@@ -379,7 +380,7 @@ The "user" throughout this document refers to **internal staff who operate the P
 ## Glossary
 
 - **Admin:** A staff role with full access — manages products, categories, users, stock adjustments, and views the dashboard.
-- **Cashier:** A staff role limited to processing transactions and viewing (read-only) transaction history and products.
+- **Cashier:** A staff role limited to processing transactions, browsing products, and viewing (read-only) their own transaction history — not other cashiers' sales.
 - **Checkout:** The action of finalizing a cart into a completed transaction.
 - **Void:** Marking a completed transaction as cancelled after the fact, restoring any stock it had deducted.
 - **Stock Adjustment:** A manual, non-sales change to a product's stock quantity, always tied to a recorded reason.
