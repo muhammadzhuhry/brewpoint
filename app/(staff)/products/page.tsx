@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, RefreshCw } from "lucide-react";
 
 import type { Product } from "@/lib/types";
@@ -32,6 +32,8 @@ import { ProductDetailSheet } from "@/components/products/product-detail-sheet";
 const PAGE_SIZE = 8;
 
 export default function ProductsPage() {
+  const queryClient = useQueryClient();
+
   const { data: currentUser } = useCurrentUser();
   const isAdmin = currentUser?.role === "admin";
 
@@ -78,6 +80,8 @@ export default function ProductsPage() {
       imageUrl?: string;
     }) => apiPost<Product>("/products", body),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       closeModal();
       toast.success("Product created");
     },
@@ -104,6 +108,8 @@ export default function ProductsPage() {
       };
     }) => apiPut<Product>(`/products/${id}`, body),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       closeModal();
       toast.success("Product updated");
     },
@@ -117,6 +123,8 @@ export default function ProductsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDelete<Product>(`/products/${id}`),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       setDeleteTarget(null);
       toast.success("Product deleted");
     },

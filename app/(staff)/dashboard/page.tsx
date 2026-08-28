@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PieChart } from "lucide-react";
 
 import type { DashboardPeriod, StatDelta } from "@/lib/types";
@@ -59,8 +59,17 @@ function computeDelta(current: number, previous: number): StatDelta {
 
 export default function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>("today");
-  const { from, to } = getPeriodBounds(period);
-  const { from: prevFrom, to: prevTo } = getPreviousPeriodBounds(from, to);
+  // Memoized on `period` only — computing `new Date()` fresh on every render
+  // (instead of once per period change) fed a constantly-changing `to` into
+  // the TanStack Query key below, which triggered an infinite refetch loop
+  // (every fetch success re-rendered the component, which produced a new
+  // `to`, which looked like a new query). Found via Playwright UI testing —
+  // a curl-only smoke test can't catch a render-loop like this.
+  const { from, to } = useMemo(() => getPeriodBounds(period), [period]);
+  const { from: prevFrom, to: prevTo } = useMemo(
+    () => getPreviousPeriodBounds(from, to),
+    [from, to],
+  );
 
   const { data: summary } = useDashboardSummary({
     from: from.toISOString(),

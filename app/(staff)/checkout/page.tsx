@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { Product, Receipt, Transaction } from "@/lib/types";
@@ -34,6 +34,8 @@ function getReceiptTimeLabel(timestamp: string | Date) {
 }
 
 export default function CheckoutPage() {
+  const queryClient = useQueryClient();
+
   const { data: productsData } = useProducts({ pageSize: 1000 });
   const products = productsData?.items ?? [];
 
@@ -152,6 +154,9 @@ export default function CheckoutPage() {
       },
       {
         onSuccess: (transaction) => {
+          queryClient.invalidateQueries({ queryKey: ["products"] });
+          queryClient.invalidateQueries({ queryKey: ["transactions"] });
+          queryClient.invalidateQueries({ queryKey: ["dashboard"] });
           setReceipt({
             ref: `TX-${transaction.id.slice(0, 8).toUpperCase()}`,
             time: getReceiptTimeLabel(transaction.createdAt),

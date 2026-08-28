@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { Transaction, TransactionDetail } from "@/lib/types";
@@ -29,6 +29,8 @@ function getDateRangeBounds(range: "today" | "7days" | "30days") {
 }
 
 export default function TransactionsPage() {
+  const queryClient = useQueryClient();
+
   const { data: currentUser } = useCurrentUser();
   const isAdmin = currentUser?.role === "admin";
 
@@ -51,7 +53,11 @@ export default function TransactionsPage() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [voidTarget, setVoidTarget] = useState<TransactionDetail | null>(null);
 
-  const { from, to } = getDateRangeBounds(dateRange);
+  // Memoized on `dateRange` — see the identical fix + explanation in
+  // app/(staff)/dashboard/page.tsx (an unmemoized `new Date()` here fed a
+  // constantly-changing `to` into the query key and caused an infinite
+  // refetch loop, found via Playwright UI testing).
+  const { from, to } = useMemo(() => getDateRangeBounds(dateRange), [dateRange]);
   const { data } = useTransactions({
     cashierId:
       isAdmin && cashierFilter !== "All cashiers" ? cashierFilter : undefined,
@@ -76,6 +82,9 @@ export default function TransactionsPage() {
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       apiPost<Transaction>(`/transactions/${id}/void`, { reason }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       setVoidTarget(null);
       setDetailId(null);
       toast.success("Transaction voided");

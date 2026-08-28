@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Tag, Pencil, Trash2, Leaf } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +20,8 @@ import { DeleteCategoryDialog } from "@/components/categories/delete-category-di
 import { CategoryDetailSheet } from "@/components/categories/category-detail-sheet";
 
 export default function CategoriesPage() {
+  const queryClient = useQueryClient();
+
   const { data: currentUser } = useCurrentUser();
   const isAdmin = currentUser?.role === "admin";
 
@@ -42,6 +44,7 @@ export default function CategoriesPage() {
   const createMutation = useMutation({
     mutationFn: (name: string) => apiPost<Category>("/categories", { name }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       closeModal();
       toast.success("Category created");
     },
@@ -58,6 +61,7 @@ export default function CategoriesPage() {
     mutationFn: ({ id, name }: { id: string; name: string }) =>
       apiPut<Category>(`/categories/${id}`, { name }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       closeModal();
       toast.success("Category updated");
     },
@@ -73,6 +77,7 @@ export default function CategoriesPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDelete<Category>(`/categories/${id}`),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       setDeleteTarget(null);
       setDeleteError(undefined);
       toast.success("Category deleted");

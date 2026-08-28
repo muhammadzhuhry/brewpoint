@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Power } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,6 +39,8 @@ import { ResetPasswordDialog } from "@/components/users/reset-password-dialog";
 import { UserDetailSheet } from "@/components/users/user-detail-sheet";
 
 export default function UsersPage() {
+  const queryClient = useQueryClient();
+
   const { data } = useUsers();
   const users = data ?? [];
 
@@ -76,6 +78,7 @@ export default function UsersPage() {
       role: "admin" | "cashier";
     }) => apiPost<User>("/users", body),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       closeModal();
       toast.success("Staff member added");
     },
@@ -97,6 +100,7 @@ export default function UsersPage() {
       body: { username: string; name: string; role: "admin" | "cashier" };
     }) => apiPut<User>(`/users/${id}`, body),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       closeModal();
       toast.success("Staff member updated");
     },
@@ -113,6 +117,7 @@ export default function UsersPage() {
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
       apiPatch<User>(`/users/${id}`, { isActive }),
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
       setDeactivateTarget(null);
       toast.success(
         variables.isActive

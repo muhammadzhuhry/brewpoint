@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { Product } from "@/lib/types";
@@ -21,6 +21,8 @@ import { AdjustmentHistory } from "@/components/stock/adjustment-history";
 import { ConfirmAdjustmentDialog } from "@/components/stock/confirm-adjustment-dialog";
 
 export default function StockPage() {
+  const queryClient = useQueryClient();
+
   const { data: productsData } = useProducts({ pageSize: 1000 });
   const products = productsData?.items ?? [];
 
@@ -94,6 +96,10 @@ export default function StockPage() {
         body,
       ),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({
+        queryKey: ["stock-adjustments", selectedId],
+      });
       setConfirmOpen(false);
       setQty("");
       setReason("");
