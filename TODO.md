@@ -445,24 +445,33 @@ For each module below: end up with a real `useQuery`/`useMutation` call against 
 
 ### 3.4 Cache Invalidation (this is where TanStack Query earns its place)
 
-- [ ] After creating/updating/deleting a product → invalidate the products query
-- [ ] After a successful checkout → invalidate products (stock changed), transactions, and dashboard queries
-- [ ] After a void → invalidate the specific transaction, transaction list, and dashboard queries
-- [ ] After a stock adjustment → invalidate the product and its adjustment history
+**Concept recap:** `invalidateQueries({ queryKey: [...] })` marks matching cached queries stale and triggers an automatic refetch for any that are currently mounted — different from `queryClient.removeQueries(...)` (already used once, in logout) which just deletes the cache entry outright, so the next mount starts from a loading state. By default `invalidateQueries` does **prefix matching**, not exact matching: `invalidateQueries({ queryKey: ["products"] })` matches every cached variant — `["products", { search: "latte" }]`, `["products", { pageSize: 1000 }]`, all of them — because they all *start with* `"products"`. This is why none of the wiring below needs to know the exact `params` any particular page used; invalidating the prefix is enough.
+
+- [x] **Prep — query-key restructure:** `hooks/use-dashboard.ts`'s two prefixes unified to `["dashboard", "summary", params]` / `["dashboard", "best-sellers", params]`, so one `["dashboard"]` invalidation now covers both
+- [x] **Products** — `createMutation`/`updateMutation`/`deleteMutation` each invalidate `["products"]` **and `["categories"]`** (live `productCount` per category would otherwise go stale)
+- [x] **Categories** — `createMutation`/`updateMutation`/`deleteMutation` each invalidate `["categories"]` only
+- [x] **Users** — `createMutation`/`updateMutation`/`setActiveMutation` each invalidate `["users"]`; `resetMutation` deliberately left alone (nothing displayed depends on it)
+- [x] **POS/Checkout** — `checkoutMutation`'s per-call `onSuccess` invalidates `["products"]`, `["transactions"]`, `["dashboard"]`
+- [x] **Transaction History** — `voidMutation` invalidates `["transactions"]`, `["products"]`, and `["dashboard"]` (stock restored + sales totals change)
+- [x] **Stock Adjustments** — `createMutation` invalidates `["products"]` and `["stock-adjustments", selectedId]`
+- [x] **Dashboard** — confirmed no mutations of its own, purely a target
+- [x] Every `page.tsx` above calls `useQueryClient()` once near the top, not per-mutation. `tsc` clean across the whole project after wiring all 6 modules
 
 ### 3.5 Full End-to-End Manual QA
 
 Walk through every flow in `PRD.md` Section "User Flows" for real, start to finish:
 
-- [ ] Flow 1: Login (correct + incorrect credentials)
-- [ ] Flow 2: Admin adds a new product, sees it appear in the POS product grid
-- [ ] Flow 3: Cashier completes a full checkout, stock decrements, receipt shows correctly
-- [ ] Flow 3 (error path): attempt checkout on an item with 0 stock, confirm it's blocked with a clear message
-- [ ] Flow 4: Admin reviews dashboard for today, then changes date range
-- [ ] Admin voids a transaction, confirms stock is restored and the product is sellable again
-- [ ] Admin performs a manual stock adjustment, confirms it reflects immediately in the product list
-- [ ] Cashier attempts to access an admin-only page (Users) directly by URL — confirm they're blocked
-- [ ] Log out, confirm session is cleared and protected pages redirect to login
+- [x] **Smoke test (Claude ran this via curl)** — login as admin + cashier ✓, list products/categories (live `productCount` confirmed) ✓, create a product ✓, checkout (stock 10→7) ✓, void (stock 7→10, dashboard summary excludes the voided sale) ✓, transaction history shows the voided entry ✓, delete product → soft-deleted (`isActive:false`, drops out of active list) ✓. All passed. No bugs found — the only surprise was `GET /products/{id}` has no handler (only `PUT`/`DELETE` exist), which turned out to be correct: nothing in the app ever fetches a single product by id, every screen reads from the already-loaded list
+- [x] **UI test via Playwright (2026-08, via Claude)** — `@playwright/test` installed and configured (`playwright.config.ts`, `tests/`). `tests/global.setup.ts` logs in as the seeded admin via the API and provisions a dedicated `cashier_e2e` account (idempotent — reuses it on re-runs), saving storage state for both roles so individual specs start pre-authenticated where that isn't the thing under test. 8 spec files cover the flows below (15 tests total, all passing, verified stable across repeated runs). **Real bug found and fixed in the process** — not just a passing/failing report: both `app/(staff)/dashboard/page.tsx` and `app/(staff)/transactions/page.tsx` computed `new Date()` directly in the component body (`getPeriodBounds(period)` / `getDateRangeBounds(dateRange)`, unmemoized) and fed the result straight into a TanStack Query key. Every render produced a new `to` timestamp -> looked like a new query -> refetched -> the fetch success re-rendered the component -> new `to` again -- an infinite refetch loop (hundreds of requests/sec against `/api/v1/dashboard/summary` and `/api/v1/transactions`, confirmed via network log during a headless run). The curl smoke test above could never have caught this since it doesn't re-render anything. Fixed by wrapping both in `useMemo` keyed on `period`/`dateRange`. Run with `npm run test:e2e` (needs the DB + `npm run dev` already running; the config's `webServer` will reuse an already-running dev server on `:3000`, and `npx playwright install chromium` is needed once if browsers aren't installed yet).
+- [x] Flow 1: Login (correct + incorrect credentials) — `tests/01-login.spec.ts`
+- [x] Flow 2: Admin adds a new product, sees it appear in the POS product grid — `tests/02-add-product.spec.ts`
+- [x] Flow 3: Cashier completes a full checkout, stock decrements, receipt shows correctly — `tests/03-checkout.spec.ts`
+- [x] Flow 3 (error path): attempt checkout on an item with 0 stock, confirm it's blocked with a clear message — `tests/03-checkout.spec.ts` (second test — confirms the tile is disabled and shows "Out of stock", matching `PRD.md`'s "cannot be added to a cart" acceptance criterion)
+- [x] Flow 4: Admin reviews dashboard for today, then changes date range — `tests/04-dashboard.spec.ts` (this is the test that surfaced the infinite-loop bug above)
+- [x] Admin voids a transaction, confirms stock is restored and the product is sellable again — `tests/05-void-transaction.spec.ts`
+- [x] Admin performs a manual stock adjustment, confirms it reflects immediately in the product list — `tests/06-stock-adjustment.spec.ts`
+- [x] Cashier attempts to access an admin-only page (Users) directly by URL — confirm they're blocked — `tests/07-rbac.spec.ts` (also covers `/stock` and the sidebar not rendering the Users link)
+- [x] Log out, confirm session is cleared and protected pages redirect to login — `tests/08-logout.spec.ts`
 
 **Checkpoint:** at the end of Part 3, BrewPoint is a fully working, real, end-to-end application — this is your MVP.
 
