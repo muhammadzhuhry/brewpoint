@@ -9,7 +9,7 @@ export function useDashboardSummary(params: { from?: string; to?: string }) {
   if (params.to) searchParams.set("to", params.to);
 
   return useQuery({
-    queryKey: ["dashboard-summary", params],
+    queryKey: ["dashboard", "summary", params],
     queryFn: () =>
       apiGet<DashboardSummary>(`/dashboard/summary?${searchParams.toString()}`),
   });
@@ -26,7 +26,7 @@ export function useBestSellers(params: {
   if (params.limit) searchParams.set("limit", String(params.limit));
 
   return useQuery({
-    queryKey: ["dashboard-best-sellers", params],
+    queryKey: ["dashboard", "best-sellers", params],
     queryFn: () =>
       apiGet<BestSeller[]>(
         `/dashboard/best-sellers?${searchParams.toString()}`,
