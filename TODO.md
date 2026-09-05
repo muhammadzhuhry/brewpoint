@@ -488,3 +488,12 @@ Walk through every flow in `PRD.md` Section "User Flows" for real, start to fini
 - [ ] Do one final full walkthrough of Part 3.5's QA list against the **live** deployed URL, not localhost
 
 **Once every box above is checked, MVP v1.0 is done — the rest of your journey continues in `ROADMAP.md` starting at v1.1 (indexing, Redis via Upstash, rate limiting).**
+
+---
+
+## Part 5 — Small Post-MVP Enhancements (optional, picked from 2026-08 feature brainstorm)
+
+Two small nice-to-haves, kept intentionally simple — not full scope notes like Part 2/3, since these are polish, not core MVP requirements.
+
+- [ ] **Staff performance mini-list on Dashboard** — small list under/near Best Sellers showing each cashier's transaction count + total sales for the selected period. Data already exists (`transactions.cashierId`); add a `GROUP BY cashierId` aggregate to `dashboard-service.ts` (a new function, e.g. `getCashierPerformance({ from, to })`), a `hooks/use-dashboard.ts` query for it, and a small component to render it. Admin-only (page already gated at the route level).
+- [ ] **Filter Transaction History by product** — let admin/cashier narrow the transaction list to only transactions containing a specific product. `listTransactions` in `transaction-service.ts` needs a join against `transaction_items` plus a new `productId` filter param; `transactions/route.ts` forwards it from `searchParams`; `transaction-filters.tsx` gets a product-picker `Select` (reuse the existing `useProducts()` hook for the option list, same `items` map pattern as the cashier filter).
